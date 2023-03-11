@@ -10,7 +10,7 @@
 
 #pragma once
 
-constexpr int HARMONIC_N = 100;
+constexpr int HARMONIC_N = 128;
 constexpr int SYNTH_MAX_VOICES = 64;
 
 struct SynthParameters

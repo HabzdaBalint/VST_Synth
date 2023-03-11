@@ -18,15 +18,14 @@
         <FILE id="VQaVwk" name="Filter.cpp" compile="1" resource="0" file="Source/DataModel/Filter.cpp"/>
         <FILE id="OcR59b" name="FXProcessorBase.h" compile="0" resource="0"
               file="Source/DataModel/FXProcessorBase.h"/>
-        <FILE id="TdXDcU" name="Header.h" compile="0" resource="0" file="Source/DataModel/Header.h"/>
         <FILE id="DcL8yG" name="Oscillator.cpp" compile="1" resource="0" file="Source/DataModel/Oscillator.cpp"/>
+        <FILE id="Bv1f9b" name="PluginParameters.h" compile="0" resource="0"
+              file="Source/DataModel/PluginParameters.h"/>
         <FILE id="lgLAkb" name="ProcessorChain.cpp" compile="1" resource="0"
               file="Source/DataModel/ProcessorChain.cpp"/>
         <FILE id="qXVfPh" name="SynthParameters.h" compile="0" resource="0"
               file="Source/DataModel/SynthParameters.h"/>
         <FILE id="LDrCCW" name="Unison.cpp" compile="1" resource="0" file="Source/DataModel/Unison.cpp"/>
-        <FILE id="hGqP3e" name="WavetableSynthesizer.cpp" compile="1" resource="0"
-              file="Source/DataModel/WavetableSynthesizer.cpp"/>
       </GROUP>
       <FILE id="MEepZL" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

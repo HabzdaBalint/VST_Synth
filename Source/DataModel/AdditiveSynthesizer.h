@@ -20,13 +20,27 @@ class AdditiveSynthesizer : public juce::AudioProcessor
 public:
     AdditiveSynthesizer() : AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo()))
     {
+        for (size_t i = 0; i < 8; i++)
+        {
+            mipMap.add(new juce::dsp::LookupTableTransform<float>());
+        }
+
         synth.addSound(new AdditiveSound());
 
         for (size_t i = 0; i < SYNTH_MAX_VOICES; i++)
         {
-            synth.addVoice(new AdditiveVoice(synthParameters, lut));
+            synth.addVoice(new AdditiveVoice(synthParameters, mipMap, 8));
         }
         synth.setNoteStealingEnabled(true);
+    }
+
+    ~AdditiveSynthesizer() 
+    {
+        for (size_t i = 0; i < mipMap.size(); i++)
+        {
+            delete(mipMap[i]);
+        }
+        mipMap.removeRange(0, mipMap.size());
     }
 
     const juce::String getName() const override { return "Additive Synth"; }
@@ -40,7 +54,6 @@ public:
     const juce::String getProgramName(int) override { return {}; }
     void changeProgramName(int, const juce::String&) override {}
 
-    /*TODO: maybe?*/
     juce::AudioProcessorEditor* createEditor() override { return nullptr; }
     bool hasEditor() const override { return false; }
 
@@ -55,9 +68,6 @@ public:
             }
         }
         
-        /*Lookup table updates with a period of the current additive formula*/
-        lut.initialise([this] (float x) { return WaveTableFormula(x); }, 0, juce::MathConstants<float>::twoPi, 300);
-
         juce::dsp::ProcessSpec processSpec;
         processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
         processSpec.numChannels = getTotalNumOutputChannels();
@@ -75,7 +85,6 @@ public:
         synthGain.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
     }
 
-    /*TODO:*/
     double getTailLengthSeconds() const override { return 0;}
     
     void getStateInformation(juce::MemoryBlock& destData) {}
@@ -107,27 +116,37 @@ public:
             paramId.clear();
         }
 
-        lut.initialise([this](float x) { return WaveTableFormula(x); }, 0, juce::MathConstants<float>::twoPi, 300);
+        updateLookupTable();
     }
 
-    //todo EVENTUALLY MAYBE EASE IN AND OUT FOR PARAMETER CHANGES
+    void updateLookupTable()
+    {
+        for (size_t i = 0; i < 8; i++)
+        {
+            mipMap[i]->initialise([this, i](float x) { return WaveTableFormula(x, HARMONIC_N / pow(2, i)); }, 0, juce::MathConstants<float>::twoPi, 1024);
+        }
+    }
+
 private:
     juce::Synthesiser synth;
     juce::dsp::Gain<float> synthGain;
 
     SynthParameters synthParameters; 
 
-    juce::dsp::LookupTableTransform<float> lut = juce::dsp::LookupTableTransform<float>();
+    juce::Array<juce::dsp::LookupTableTransform<float>*> mipMap;
 
     /*Generates the full formula for the current setup of the additive synth. Used for maintaining the lookup table. This function could also be used for accurate rendering, if time is not a constraint*/
-    const float WaveTableFormula(float angle)
+    const float WaveTableFormula(float angle, float harmonics)
     {
         float sample = 0.f;
         
         /*Generating a single sample with every harmonic.*/
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < harmonics; i++)
         {
-            sample += synthParameters.partialGain[i] * sin((i+1)*angle + synthParameters.partialPhase[i] * juce::MathConstants<float>::pi);
+            if (synthParameters.partialGain[i] != 0.f)
+            {
+                sample += synthParameters.partialGain[i] * sin((i + 1) * angle + synthParameters.partialPhase[i] * juce::MathConstants<float>::pi);
+            }
         }
         return sample;
     }

@@ -190,7 +190,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    //---------------------//SYNTH PARAMS//---------------------//
+    //---------------------// SYNTH PARAMS //---------------------//
     /*Master Gain for the oscillator. All voices are affected by this value*/
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "synthGain",
@@ -202,14 +202,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
     juce::String paramName;
     for (size_t i = 0; i < HARMONIC_N; i++)
     {
-        //Generating parameters to represent the linear gain values of the 100 partials
+        //Generating parameters to represent the linear gain values of the partials
         paramId << "partial" << i + 1 << "Gain";
         paramName << "Partial #" << i + 1 << " Gain";
-        layout.add(std::make_unique <juce::AudioParameterFloat>(paramId, paramName, juce::NormalisableRange<float>(0.f, 1.f, 0.01), 0.f));
+        layout.add(std::make_unique <juce::AudioParameterFloat>(paramId, paramName, juce::NormalisableRange<float>(0.f, 1.f, 0.001), 0.f));
         paramId.clear();
         paramName.clear();
 
-        //Generating parameters to represent the phase of the 100 partials. These are represented as multiples of pi
+        //Generating parameters to represent the phase of the partials. These are represented as multiples of pi
         paramId << "partial" << i + 1 << "Phase";
         paramName << "Partial #" << i + 1 << " Phase";
         layout.add(std::make_unique <juce::AudioParameterFloat>(paramId, paramName, juce::NormalisableRange<float>(0.f, 2.f, 0.01), 0.f));
@@ -236,14 +236,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
         0));
 
 
-    /*The global starting point of on waveform*/
+    /*The global starting point of on waveform. in multiples of pi*/
     layout.add(std::make_unique <juce::AudioParameterFloat>(
         "globalPhase",
         "Phase",
         juce::NormalisableRange<float>(0.f, 2.f, 0.01),
         0.f));
 
-    /*Sets the angle range for phase start randomization on new voices and unison*/
+    /*Sets the angle range for phase start randomization on new voices and unison. multiple of 2*pi*/
     layout.add(std::make_unique <juce::AudioParameterFloat>(
         "globalPhaseRNG",
         "Phase Randomness",
@@ -268,7 +268,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "unisonGain",
         "Unison Gain",
-        juce::NormalisableRange<float>(0.f, 1.f, 0.01),
+        juce::NormalisableRange<float>(0.f, 1.f, 0.001),
         0.f));
 
     return layout;
