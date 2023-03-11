@@ -1,33 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="gAhR6L" name="VST_Synth" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
-  <MAINGROUP id="njJzZl" name="VST_Synth">
-    <GROUP id="{2DF250F8-156D-C79D-3E64-D7F401B66C59}" name="Source">
-      <FILE id="qR2X0z" name="PluginProcessor.cpp" compile="1" resource="0"
+<JUCERPROJECT id="HxxUwD" name="VST_Synth" projectType="audioplug" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              pluginFormats="buildStandalone,buildVST3" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
+              pluginManufacturer="HabzdaBalint" cppLanguageStandard="20" aaxIdentifier="https://github.com/HabzdaBalint/VST_Synth">
+  <MAINGROUP id="LS9iqU" name="VST_Synth">
+    <GROUP id="{275637AC-08AF-D899-4B9D-E950976BC3EF}" name="Source">
+      <GROUP id="{98E83673-5F1A-279E-EB46-947F82C731E6}" name="View"/>
+      <GROUP id="{C59C8F0C-E530-D1E2-F43E-1365982B8990}" name="DataModel">
+        <FILE id="qztplg" name="AdditiveSound.h" compile="0" resource="0" file="Source/DataModel/AdditiveSound.h"/>
+        <FILE id="Ff5Km8" name="AdditiveSynthesizer.h" compile="0" resource="0"
+              file="Source/DataModel/AdditiveSynthesizer.h"/>
+        <FILE id="yGnygp" name="AdditiveVoice.h" compile="0" resource="0" file="Source/DataModel/AdditiveVoice.h"/>
+        <FILE id="eAKDvV" name="Compressor.cpp" compile="1" resource="0" file="Source/DataModel/Compressor.cpp"/>
+        <FILE id="UJHakN" name="Delay.cpp" compile="1" resource="0" file="Source/DataModel/Delay.cpp"/>
+        <FILE id="HA2h8j" name="Equalizer.cpp" compile="1" resource="0" file="Source/DataModel/Equalizer.cpp"/>
+        <FILE id="VQaVwk" name="Filter.cpp" compile="1" resource="0" file="Source/DataModel/Filter.cpp"/>
+        <FILE id="OcR59b" name="FXProcessorBase.h" compile="0" resource="0"
+              file="Source/DataModel/FXProcessorBase.h"/>
+        <FILE id="TdXDcU" name="Header.h" compile="0" resource="0" file="Source/DataModel/Header.h"/>
+        <FILE id="DcL8yG" name="Oscillator.cpp" compile="1" resource="0" file="Source/DataModel/Oscillator.cpp"/>
+        <FILE id="lgLAkb" name="ProcessorChain.cpp" compile="1" resource="0"
+              file="Source/DataModel/ProcessorChain.cpp"/>
+        <FILE id="qXVfPh" name="SynthParameters.h" compile="0" resource="0"
+              file="Source/DataModel/SynthParameters.h"/>
+        <FILE id="LDrCCW" name="Unison.cpp" compile="1" resource="0" file="Source/DataModel/Unison.cpp"/>
+        <FILE id="hGqP3e" name="WavetableSynthesizer.cpp" compile="1" resource="0"
+              file="Source/DataModel/WavetableSynthesizer.cpp"/>
+      </GROUP>
+      <FILE id="MEepZL" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
-      <FILE id="C4eOrG" name="PluginProcessor.h" compile="0" resource="0"
+      <FILE id="ecLO6z" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
-      <FILE id="eVKn6I" name="PluginEditor.cpp" compile="1" resource="0"
+      <FILE id="XmiHcY" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
-      <FILE id="gJglbZ" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="yUWoUz" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
   </MAINGROUP>
-  <MODULES>
-    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
-            useGlobalPath="1"/>
-    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-  </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
     <VS2022 targetFolder="Builds/VisualStudio2022">
@@ -44,6 +53,7 @@
         <MODULEPATH id="juce_audio_utils" path="../JUCE/modules"/>
         <MODULEPATH id="juce_core" path="../JUCE/modules"/>
         <MODULEPATH id="juce_data_structures" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../JUCE/modules"/>
         <MODULEPATH id="juce_events" path="../JUCE/modules"/>
         <MODULEPATH id="juce_graphics" path="../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../JUCE/modules"/>
@@ -51,4 +61,20 @@
       </MODULEPATHS>
     </VS2022>
   </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
 </JUCERPROJECT>
