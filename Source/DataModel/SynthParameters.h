@@ -10,8 +10,11 @@
 
 #pragma once
 
-constexpr int HARMONIC_N = 128;
+#include <JuceHeader.h>
+
 constexpr int SYNTH_MAX_VOICES = 64;
+constexpr int HARMONIC_N = 128;
+const int LOOKUP_SIZE = ceil(log2(HARMONIC_N)+1);
 
 struct SynthParameters
 {
@@ -25,4 +28,8 @@ struct SynthParameters
     int unisonPairCount = 0;
     int unisonDetune = 0;
     float unisonGain = 0;
+    int pitchWheelRange = 2;
+
+    juce::ADSR::Parameters amplitudeADSRParams;
+    juce::ADSR::Parameters filterADSRParams;
 };

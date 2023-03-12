@@ -10,17 +10,16 @@
 
 #pragma once
 
-#include <JuceHeader.h>
+#include "SynthParameters.h"
 #include "AdditiveSound.h"
 #include "AdditiveVoice.h"
-#include "SynthParameters.h"
 
 class AdditiveSynthesizer : public juce::AudioProcessor
 {
 public:
     AdditiveSynthesizer() : AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo()))
     {
-        for (size_t i = 0; i < 8; i++)
+        for (size_t i = 0; i < LOOKUP_SIZE; i++)
         {
             mipMap.add(new juce::dsp::LookupTableTransform<float>());
         }
@@ -29,7 +28,7 @@ public:
 
         for (size_t i = 0; i < SYNTH_MAX_VOICES; i++)
         {
-            synth.addVoice(new AdditiveVoice(synthParameters, mipMap, 8));
+            synth.addVoice(new AdditiveVoice(synthParameters, mipMap));
         }
         synth.setNoteStealingEnabled(true);
     }
@@ -65,8 +64,12 @@ public:
             if (auto voice = dynamic_cast<AdditiveVoice*>(synth.getVoice(i)))
             {
                 voice->setCurrentPlaybackSampleRate(sampleRate);
+                voice->amplitudeADSR.setSampleRate(sampleRate);
+                voice->filterADSR.setSampleRate(sampleRate);
             }
         }
+
+        
         
         juce::dsp::ProcessSpec processSpec;
         processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
@@ -87,9 +90,9 @@ public:
 
     double getTailLengthSeconds() const override { return 0;}
     
-    void getStateInformation(juce::MemoryBlock& destData) {}
+    void getStateInformation(juce::MemoryBlock& destData) override {}
 
-    void setStateInformation(const void* data, int sizeInBytes) {}
+    void setStateInformation(const void* data, int sizeInBytes) override {}
 
     void updateParameters(juce::AudioProcessorValueTreeState& apvts)
     {
@@ -97,6 +100,8 @@ public:
         synthParameters.octaveTuning = apvts.getRawParameterValue("oscillatorOctaves")->load();
         synthParameters.semitoneTuning = apvts.getRawParameterValue("oscillatorSemitones")->load();
         synthParameters.fineTuningCents = apvts.getRawParameterValue("oscillatorFine")->load();
+
+        synthParameters.pitchWheelRange = apvts.getRawParameterValue("pitchWheelRange")->load();
 
         synthParameters.globalPhseStart = apvts.getRawParameterValue("globalPhase")->load();
         synthParameters.randomPhaseRange = apvts.getRawParameterValue("globalPhaseRNG")->load();
@@ -116,12 +121,32 @@ public:
             paramId.clear();
         }
 
+        /*todo optimize*/
         updateLookupTable();
+
+        synthParameters.amplitudeADSRParams.attack = apvts.getRawParameterValue("amplitudeADSRAttack")->load()/1000;
+        synthParameters.amplitudeADSRParams.decay = apvts.getRawParameterValue("amplitudeADSRDecay")->load()/1000;
+        synthParameters.amplitudeADSRParams.sustain = apvts.getRawParameterValue("amplitudeADSRSustain")->load();
+        synthParameters.amplitudeADSRParams.release = apvts.getRawParameterValue("amplitudeADSRRelease")->load()/1000;
+
+        synthParameters.filterADSRParams.attack = apvts.getRawParameterValue("filterADSRAttack")->load()/1000;
+        synthParameters.filterADSRParams.decay = apvts.getRawParameterValue("filterADSRDecay")->load()/1000;
+        synthParameters.filterADSRParams.sustain = apvts.getRawParameterValue("filterADSRSustain")->load();
+        synthParameters.filterADSRParams.release = apvts.getRawParameterValue("filterADSRRelease")->load()/1000;
+
+        for (size_t i = 0; i < synth.getNumVoices(); i++)
+        {
+            if (auto voice = dynamic_cast<AdditiveVoice*>(synth.getVoice(i)))
+            {
+                voice->amplitudeADSR.setParameters(synthParameters.amplitudeADSRParams);
+                voice->filterADSR.setParameters(synthParameters.filterADSRParams);
+            }
+        }
     }
 
     void updateLookupTable()
     {
-        for (size_t i = 0; i < 8; i++)
+        for (size_t i = 0; i < LOOKUP_SIZE; i++)
         {
             mipMap[i]->initialise([this, i](float x) { return WaveTableFormula(x, HARMONIC_N / pow(2, i)); }, 0, juce::MathConstants<float>::twoPi, 1024);
         }
@@ -140,7 +165,7 @@ private:
     {
         float sample = 0.f;
         
-        /*Generating a single sample with every harmonic.*/
+        /*Generating a single sample using every harmonic.*/
         for (size_t i = 0; i < harmonics; i++)
         {
             if (synthParameters.partialGain[i] != 0.f)

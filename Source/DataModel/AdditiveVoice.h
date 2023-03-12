@@ -15,7 +15,9 @@
 class AdditiveVoice : public juce::SynthesiserVoice
 {
 public:
-    AdditiveVoice(SynthParameters& params, juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap, int mipMapSize) : synthParameters(&params), mipMap(mipMap), mipMapSize(mipMapSize) {}
+    AdditiveVoice(SynthParameters& synthParams, juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap) :
+        synthParameters(&synthParams),
+        mipMap(mipMap) {}
 
     ~AdditiveVoice() {}
 
@@ -23,106 +25,125 @@ public:
 
     void controllerMoved(int controllerNumber, int newControllerValue) override { }
 
-    //Pitch Wheel is allowed to modify the tone by 2 semitones up and 2 semitones down
     void pitchWheelMoved(int newPitchWheelValue) override
     {
-        //todo
+        pitchWheelOffset = ((float)newPitchWheelValue-8192)/8192;
+
+        updateFrequencies();
+        updateAngles();
     }
 
     void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* sound, int currentPitchWheelPosition) override
     {
         currentNote = midiNoteNumber;
         velocityGain = velocity;
+        pitchWheelOffset = ((float)currentPitchWheelPosition-8192)/8192;
 
         updatePhases();
         updateFrequencies();
         updateAngles();
 
-        /*adsr*/
+        amplitudeADSR.reset();
+        filterADSR.reset();
+        amplitudeADSR.noteOn();
+        filterADSR.noteOn();
     }
 
     void stopNote(float velocity, bool allowTailOff) override
     {
-        /*adsr*/
-        //if (!allowTailOff) etc
-        clearCurrentNote();
-        resetProperties();
+        amplitudeADSR.noteOff();
+        filterADSR.noteOff();
+        
+        if (!allowTailOff || !amplitudeADSR.isActive())
+        {
+            clearCurrentNote();
+            resetProperties();
+        }
     }
 
+    /// @brief Audio callback function. Generates audio buffer
+    /// @param outputBuffer The incoming (and outgoing) buffer where the generated data needs to go
+    /// @param startSample The starting sample within the buffer
+    /// @param numSamples Length of the buffer
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override
     {
-        /*render loop, apply gain*/
-        auto* leftBufferPointer = outputBuffer.getWritePointer(0, startSample);
-        auto* rightBufferPointer = outputBuffer.getWritePointer(1, startSample);
+        /*render buffer, apply gain*/
+        generatedBuffer.clear();
+        generatedBuffer.setSize(2, numSamples, false, false, true);
 
-        for (size_t sample = 0; sample < numSamples; sample++)
+        for (size_t channel = 0; channel < 2; channel++)
         {
-            if (fundamentalCurrentAngle[0] > juce::MathConstants<float>::twoPi)
-            {
-                fundamentalCurrentAngle[0] -= juce::MathConstants<float>::twoPi;
-            }
-            if (fundamentalCurrentAngle[1] > juce::MathConstants<float>::twoPi)
-            {
-                fundamentalCurrentAngle[1] -= juce::MathConstants<float>::twoPi;
-            }
+            auto* bufferPointer = generatedBuffer.getWritePointer(channel, 0);
 
-            /*Generating the fundamental data for the sample*/
-            leftBufferPointer[sample] += velocityGain * mipMap[mipMapIndex]->operator()(fundamentalCurrentAngle[0]);
-            rightBufferPointer[sample] += velocityGain * mipMap[mipMapIndex]->operator()(fundamentalCurrentAngle[1]);
-
-            fundamentalCurrentAngle[0] += fundamentalAngleDelta;
-            fundamentalCurrentAngle[1] += fundamentalAngleDelta;
-
-            /*Generating unison data for the sample*/
-            for (size_t i = 0; i < synthParameters->unisonPairCount; i++)
+            for (size_t sample = 0; sample < numSamples; sample++)
             {
-                if (unisonCurrentAngles[0][i] > juce::MathConstants<float>::twoPi)
+                if (fundamentalCurrentAngle[channel] > juce::MathConstants<float>::twoPi)
                 {
-                    unisonCurrentAngles[0][i] -= juce::MathConstants<float>::twoPi;
-                }
-                if (unisonCurrentAngles[1][i] > juce::MathConstants<float>::twoPi)
-                {
-                    unisonCurrentAngles[1][i] -= juce::MathConstants<float>::twoPi;
+                    fundamentalCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
                 }
 
-                leftBufferPointer[sample] += velocityGain * synthParameters->unisonGain * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[0][i]);
-                rightBufferPointer[sample] += velocityGain * synthParameters->unisonGain * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[1][i]);
+                /*Generating the fundamental data for the sample*/
+                bufferPointer[sample] += velocityGain * mipMap[mipMapIndex]->operator()(fundamentalCurrentAngle[channel]);
 
-                unisonCurrentAngles[0][i] += unisonAngleDeltas[i];
-                unisonCurrentAngles[1][i] += unisonAngleDeltas[i];
+                fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
+
+                /*Generating unison data for the sample*/
+                for (size_t unison = 0; unison < synthParameters->unisonPairCount; unison++)
+                {
+                    if (unisonCurrentAngles[channel][unison] > juce::MathConstants<float>::twoPi)
+                    {
+                        unisonCurrentAngles[channel][unison] -= juce::MathConstants<float>::twoPi;
+                    }
+
+                    bufferPointer[sample] += velocityGain * synthParameters->unisonGain * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[channel][unison]);
+
+                    unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
+                }
+                bufferPointer[sample] *= amplitudeADSR.getNextSample();
+            }
+        }
+        
+        for (size_t channel = 0; channel < 2; channel++)
+        {
+            outputBuffer.addFrom (channel, startSample, generatedBuffer, channel, 0, numSamples);
+
+            if (! amplitudeADSR.isActive())
+            {
+                clearCurrentNote();
             }
         }
 
-        /*adsr*/
         updateFrequencies();
         updateAngles();
     }
 
-    /*todo: random phase*/
+    /// @brief Used to randomise the starting phases of all generated waveforms
     void updatePhases()
     {
-        fundamentalCurrentAngle[0] = getRandomPhase();
-        fundamentalCurrentAngle[1] = getRandomPhase();
-
-        for (size_t i = 0; i < 2 * synthParameters->unisonPairCount; i++)
+        for (size_t channel = 0; channel < 2; channel++)
         {
-            unisonCurrentAngles[0][i] = getRandomPhase();
-            unisonCurrentAngles[1][i] = getRandomPhase();
-        }
+            fundamentalCurrentAngle[channel] = getRandomPhase();
+            for (size_t i = 0; i < 2 * synthParameters->unisonPairCount; i++)
+            {
+                unisonCurrentAngles[channel][i] = getRandomPhase();
+            }
+        }       
     }
 
+    /// @brief Used to generate a random phase offset based on the configured starting position and range
+    /// @return Returns the generated offset
     float getRandomPhase()
     {
         return (rng.nextFloat() * synthParameters->randomPhaseRange * juce::MathConstants<float>::twoPi) + (synthParameters->globalPhseStart * juce::MathConstants<float>::pi);
     }
 
-    /*Updating frequencies in case of getting a new note or another tuning parameter change*/
+    /*Updating frequencies in case of receiving a new note or a tuning parameter change or pitch wheel event*/
     void updateFrequencies()
     {
         //formula for equal temperament from midi note# with A4 at 440Hz
         fundamentalFrequency = 440.f * pow(2, ((float)currentNote - 69.f) / 12);
-        //Applying octave, semitone and fine tuning in one power function 
-        float unifiedGlobalTuningOffset = pow(2, synthParameters->octaveTuning + ((float)synthParameters->semitoneTuning / 12) + ((float)synthParameters->fineTuningCents / 1200));
+        //Applying octave, semitone and fine tuning and pitchwheel offsets
+        float unifiedGlobalTuningOffset = pow(2, synthParameters->octaveTuning + ((float)synthParameters->semitoneTuning / 12) + ((float)synthParameters->fineTuningCents / 1200) + ((float)synthParameters->pitchWheelRange * pitchWheelOffset / 12));
         fundamentalFrequency *= unifiedGlobalTuningOffset;
 
         /*Calculating evenly spaced unison frequency offsets and applying the global tuning offset*/
@@ -145,7 +166,7 @@ public:
         findMipMapToUse();
     }
 
-    /*Updating angles to match new frequencies*/
+    /// @brief Used to generate new angle deltas for the given frequencies the voice is expected to generate
     void updateAngles()
     {
         auto sampleRate = getSampleRate();
@@ -161,23 +182,27 @@ public:
         }
     }
 
-    /*Checks the highest possible overtone the current highest generated frequency can safely generate without aliasing*/
+    /// @brief Checks the highest possible overtone the current highest generated frequency can safely generate without aliasing and selects the right lookup table with the correct number of overtones
     void findMipMapToUse()
     {
         float highestGeneratedOvertone = getSampleRate();
         mipMapIndex = -1;
-        while (highestGeneratedOvertone >= (getSampleRate() / 2) && mipMapIndex < mipMapSize)
+        while (highestGeneratedOvertone >= (getSampleRate() / 2) && mipMapIndex < LOOKUP_SIZE)
         {
             mipMapIndex++;
             highestGeneratedOvertone = highestCurrentFrequency * (HARMONIC_N / pow(2, mipMapIndex));
         }
     }
 
-    /*only call if rendering is guaranteed to be stopped*/
+    /// @brief Used to stop playback and reset values when a note off message arrives
     void resetProperties()
     {
+        generatedBuffer.clear();
         velocityGain = 0;
         currentNote = 0;
+
+        pitchWheelOffset = 0;
+
         fundamentalCurrentAngle[0] = 0;
         fundamentalCurrentAngle[1] = 0;
         fundamentalAngleDelta = 0;
@@ -195,16 +220,20 @@ public:
         }
     }
 
+    juce::ADSR amplitudeADSR;
+    juce::ADSR filterADSR;
 private:
+    juce::AudioBuffer<float> generatedBuffer;
     SynthParameters* synthParameters;
+    
+    juce::Random rng;
 
     juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap;
-    int mipMapSize = 0;
 
     float velocityGain = 0;
     float currentNote = 0;
 
-    juce::Random rng;
+    float pitchWheelOffset = 0;
 
     float fundamentalCurrentAngle[2] = { 0,0 };
     float fundamentalAngleDelta = 0;

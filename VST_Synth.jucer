@@ -3,7 +3,8 @@
 <JUCERPROJECT id="HxxUwD" name="VST_Synth" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               pluginFormats="buildStandalone,buildVST3" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
-              pluginManufacturer="HabzdaBalint" cppLanguageStandard="20" aaxIdentifier="https://github.com/HabzdaBalint/VST_Synth">
+              pluginManufacturer="HabzdaBalint" cppLanguageStandard="20" aaxIdentifier="https://github.com/HabzdaBalint/VST_Synth"
+              companyWebsite="https://github.com/HabzdaBalint/VST_Synth">
   <MAINGROUP id="LS9iqU" name="VST_Synth">
     <GROUP id="{275637AC-08AF-D899-4B9D-E950976BC3EF}" name="Source">
       <GROUP id="{98E83673-5F1A-279E-EB46-947F82C731E6}" name="View"/>
@@ -25,7 +26,6 @@
               file="Source/DataModel/ProcessorChain.cpp"/>
         <FILE id="qXVfPh" name="SynthParameters.h" compile="0" resource="0"
               file="Source/DataModel/SynthParameters.h"/>
-        <FILE id="LDrCCW" name="Unison.cpp" compile="1" resource="0" file="Source/DataModel/Unison.cpp"/>
       </GROUP>
       <FILE id="MEepZL" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

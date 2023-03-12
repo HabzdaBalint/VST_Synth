@@ -68,8 +68,7 @@ double VST_SynthAudioProcessor::getTailLengthSeconds() const
 
 int VST_SynthAudioProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    return 1;   
 }
 
 int VST_SynthAudioProcessor::getCurrentProgram()
@@ -93,8 +92,6 @@ void VST_SynthAudioProcessor::changeProgramName (int index, const juce::String& 
 //==============================================================================
 void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
     updateParameters();
     additiveSynth.setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
     additiveSynth.prepareToPlay(sampleRate, samplesPerBlock);
@@ -102,8 +99,6 @@ void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 
 void VST_SynthAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -113,20 +108,14 @@ bool VST_SynthAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
     juce::ignoreUnused (layouts);
     return true;
   #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
      && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-    // This checks if the input layout matches the output layout
    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
    #endif
-
     return true;
   #endif
 }
@@ -142,16 +131,6 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         buffer.clear (i, 0, buffer.getNumSamples());
     updateParameters();
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-
-    //auto* channelData = buffer.getWritePointer(0);
-    //auto* channelData = buffer.getWritePointer(1);
-
     additiveSynth.processBlock(buffer, midiMessages);
 
     /*todo other fx*/
@@ -160,7 +139,7 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 //==============================================================================
 bool VST_SynthAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* VST_SynthAudioProcessor::createEditor()
@@ -196,7 +175,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
         "synthGain",
         "Gain",
         juce::NormalisableRange<float>(-90.f, 0.f, 0.1),
-        -6.0f));
+        -12.0f));
 
     juce::String paramId;
     juce::String paramName;
@@ -217,24 +196,33 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
         paramName.clear();
     }
 
+    /*Tuning of the generated notes in octaves*/
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "oscillatorOctaves",
         "Octaves",
         juce::NormalisableRange<float>(-2, 2, 1),
         0));
 
+    /*Tuning of the generated notes in semitones*/
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "oscillatorSemitones",
         "Semitones",
         juce::NormalisableRange<float>(-12, 12, 1),
         0));
 
+    /*Tuning of the generated notes in cents*/
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "oscillatorFine",
         "Fine Tuning",
         juce::NormalisableRange<float>(-100, 100, 1),
         0));
 
+    /*Pitch Wheel range in semitones*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "pitchWheelRange",
+        "Pitch Wheel Semitones",
+        juce::NormalisableRange<float>(0, 12, 1),
+        2));
 
     /*The global starting point of on waveform. in multiples of pi*/
     layout.add(std::make_unique <juce::AudioParameterFloat>(
@@ -247,7 +235,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
     layout.add(std::make_unique <juce::AudioParameterFloat>(
         "globalPhaseRNG",
         "Phase Randomness",
-        juce::NormalisableRange<float>(0.f, 1.f, 0.1),
+        juce::NormalisableRange<float>(0.f, 1.f, 0.01),
         0));
 
     /*Pairs of unison to add (one tuned higher and one lower)*/
@@ -264,12 +252,68 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
         juce::NormalisableRange<float>(0, 100, 1),
         0));
 
-    /*Linear gain value of the unison (always added over fundamental)*/
+    /*Level of the unison in linear amplitude*/
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "unisonGain",
         "Unison Gain",
         juce::NormalisableRange<float>(0.f, 1.f, 0.001),
         0.f));
+
+    /*Attack time for the oscillator's amplitudes in ms*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "amplitudeADSRAttack",
+        "A",
+        juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
+        0.5));
+
+    /*Decay time for the oscillator's amplitudes in ms*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "amplitudeADSRDecay",
+        "D",
+        juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
+        1000.f));
+
+    /*Sustain level for the oscillator's amplitudes in linear amplitude*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "amplitudeADSRSustain",
+        "S",
+        juce::NormalisableRange<float>(0.f, 1.f, 0.001),
+        1.f));
+
+    /*Release time for the oscillator's amplitudes in ms*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "amplitudeADSRRelease",
+        "R",
+        juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
+        50.f));
+
+    /*Attack time for the oscillator's filter in ms*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "filterADSRAttack",
+        "A",
+        juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
+        0.5));
+
+    /*Decay time for the oscillator's filter in ms*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "filterADSRDecay",
+        "D",
+        juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
+        1000.f));
+
+    /*Sustain level for the oscillator's filter in linear amplitude*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "filterADSRSustain",
+        "S",
+        juce::NormalisableRange<float>(0.f, 1.f, 0.001),
+        1.f));
+
+    /*Release time for the oscillator's filter in ms*/
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "filterADSRRelease",
+        "R",
+        juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
+        50.f));
 
     return layout;
 }
@@ -280,7 +324,6 @@ void VST_SynthAudioProcessor::updateParameters()
 }
 
 //==============================================================================
-// This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new VST_SynthAudioProcessor();
