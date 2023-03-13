@@ -28,7 +28,7 @@ public:
 
         for (size_t i = 0; i < SYNTH_MAX_VOICES; i++)
         {
-            synth.addVoice(new AdditiveVoice(synthParameters, mipMap));
+            synth.addVoice(new AdditiveVoice(synthParametersAtomic, mipMap));
         }
         synth.setNoteStealingEnabled(true);
     }
@@ -42,7 +42,7 @@ public:
         mipMap.removeRange(0, mipMap.size());
     }
 
-    const juce::String getName() const override { return "Additive Synth"; }
+    const juce::String getName() const override { return "Additive Synthesizer"; }
     bool acceptsMidi() const override { return true; }
     bool producesMidi() const override { return false; }
     bool isMidiEffect() const override { return false; }
@@ -53,8 +53,8 @@ public:
     const juce::String getProgramName(int) override { return {}; }
     void changeProgramName(int, const juce::String&) override {}
 
-    juce::AudioProcessorEditor* createEditor() override { return nullptr; }
-    bool hasEditor() const override { return false; }
+    juce::AudioProcessorEditor* createEditor() override { return nullptr; } //todo return the synth's editor object
+    bool hasEditor() const override { return true; }
 
     void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override
     {
@@ -65,12 +65,9 @@ public:
             {
                 voice->setCurrentPlaybackSampleRate(sampleRate);
                 voice->amplitudeADSR.setSampleRate(sampleRate);
-                voice->filterADSR.setSampleRate(sampleRate);
             }
         }
 
-        
-        
         juce::dsp::ProcessSpec processSpec;
         processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
         processSpec.numChannels = getTotalNumOutputChannels();
@@ -94,69 +91,77 @@ public:
 
     void setStateInformation(const void* data, int sizeInBytes) override {}
 
-    void updateParameters(juce::AudioProcessorValueTreeState& apvts)
+    void updateSynthParameters()
     {
-        synthGain.setGainDecibels(apvts.getRawParameterValue("synthGain")->load());
-        synthParameters.octaveTuning = apvts.getRawParameterValue("oscillatorOctaves")->load();
-        synthParameters.semitoneTuning = apvts.getRawParameterValue("oscillatorSemitones")->load();
-        synthParameters.fineTuningCents = apvts.getRawParameterValue("oscillatorFine")->load();
+        synthGain.setGainDecibels(synthParameters.synthGain->get());
+        synthParametersAtomic.octaveTuning = synthParameters.octaveTuning->get();
+        synthParametersAtomic.semitoneTuning = synthParameters.semitoneTuning->get();
+        synthParametersAtomic.fineTuningCents = synthParameters.fineTuningCents->get();
 
-        synthParameters.pitchWheelRange = apvts.getRawParameterValue("pitchWheelRange")->load();
+        synthParametersAtomic.pitchWheelRange = synthParameters.pitchWheelRange->get();
 
-        synthParameters.globalPhseStart = apvts.getRawParameterValue("globalPhase")->load();
-        synthParameters.randomPhaseRange = apvts.getRawParameterValue("globalPhaseRNG")->load();
+        synthParametersAtomic.globalPhseStart = synthParameters.globalPhseStart->get();
+        synthParametersAtomic.randomPhaseRange = synthParameters.randomPhaseRange->get();
 
-        synthParameters.unisonPairCount = apvts.getRawParameterValue("unisonCount")->load();
-        synthParameters.unisonGain = apvts.getRawParameterValue("unisonGain")->load();
-        synthParameters.unisonDetune = apvts.getRawParameterValue("unisonDetune")->load();
+        synthParametersAtomic.unisonPairCount = synthParameters.unisonPairCount->get();
+        synthParametersAtomic.unisonGain = synthParameters.unisonGain->get();
+        synthParametersAtomic.unisonDetune = synthParameters.unisonDetune->get();
+
+        synthParametersAtomic.attack = synthParameters.attack->get()/1000;
+        synthParametersAtomic.decay = synthParameters.decay->get()/1000;
+        synthParametersAtomic.sustain = synthParameters.sustain->get();
+        synthParametersAtomic.release = synthParameters.release->get()/1000;
 
         juce::String paramId;
         for (size_t i = 0; i < HARMONIC_N; i++)
         {
-            paramId << "partial" << i + 1 << "Gain";
-            synthParameters.partialGain[i] = apvts.getRawParameterValue(paramId)->load();
-            paramId.clear();
-            paramId << "partial" << i + 1 << "Phase";
-            synthParameters.partialPhase[i] = apvts.getRawParameterValue(paramId)->load();
-            paramId.clear();
+            synthParametersAtomic.partialGain[i] = synthParameters.partialGain[i]->get();
+            synthParametersAtomic.partialPhase[i] = synthParameters.partialPhase[i]->get();
         }
 
-        /*todo optimize*/
         updateLookupTable();
-
-        synthParameters.amplitudeADSRParams.attack = apvts.getRawParameterValue("amplitudeADSRAttack")->load()/1000;
-        synthParameters.amplitudeADSRParams.decay = apvts.getRawParameterValue("amplitudeADSRDecay")->load()/1000;
-        synthParameters.amplitudeADSRParams.sustain = apvts.getRawParameterValue("amplitudeADSRSustain")->load();
-        synthParameters.amplitudeADSRParams.release = apvts.getRawParameterValue("amplitudeADSRRelease")->load()/1000;
-
-        synthParameters.filterADSRParams.attack = apvts.getRawParameterValue("filterADSRAttack")->load()/1000;
-        synthParameters.filterADSRParams.decay = apvts.getRawParameterValue("filterADSRDecay")->load()/1000;
-        synthParameters.filterADSRParams.sustain = apvts.getRawParameterValue("filterADSRSustain")->load();
-        synthParameters.filterADSRParams.release = apvts.getRawParameterValue("filterADSRRelease")->load()/1000;
-
-        for (size_t i = 0; i < synth.getNumVoices(); i++)
-        {
-            if (auto voice = dynamic_cast<AdditiveVoice*>(synth.getVoice(i)))
-            {
-                voice->amplitudeADSR.setParameters(synthParameters.amplitudeADSRParams);
-                voice->filterADSR.setParameters(synthParameters.filterADSRParams);
-            }
-        }
     }
 
     void updateLookupTable()
     {
         for (size_t i = 0; i < LOOKUP_SIZE; i++)
         {
-            mipMap[i]->initialise([this, i](float x) { return WaveTableFormula(x, HARMONIC_N / pow(2, i)); }, 0, juce::MathConstants<float>::twoPi, 1024);
+            mipMap[i]->initialise([this, i](float x) { return WaveTableFormula(x, HARMONIC_N / pow(2, i)); }, 0, juce::MathConstants<float>::twoPi, 2048);
         }
     }
 
+    void registerListeners(juce::AudioProcessorValueTreeState& apvts)
+    {
+        synthParameters.update();
+
+        apvts.addParameterListener("synthGain", &synthParameters);
+
+        for (size_t i = 0; i < HARMONIC_N; i++)
+        {
+            apvts.addParameterListener(synthParameters.getPartialGainParameterName(i), &synthParameters);
+            apvts.addParameterListener(synthParameters.getPartialPhaseParameterName(i), &synthParameters);
+        }
+        
+        apvts.addParameterListener("oscillatorOctaves", &synthParameters);
+        apvts.addParameterListener("oscillatorSemitones", &synthParameters);
+        apvts.addParameterListener("oscillatorFine", &synthParameters);
+        apvts.addParameterListener("pitchWheelRange", &synthParameters);
+        apvts.addParameterListener("globalPhase", &synthParameters);
+        apvts.addParameterListener("globalPhaseRNG", &synthParameters);
+        apvts.addParameterListener("unisonCount", &synthParameters);
+        apvts.addParameterListener("unisonDetune", &synthParameters);
+        apvts.addParameterListener("unisonGain", &synthParameters);
+        apvts.addParameterListener("amplitudeADSRAttack", &synthParameters);
+        apvts.addParameterListener("amplitudeADSRDecay", &synthParameters);
+        apvts.addParameterListener("amplitudeADSRSustain", &synthParameters);
+        apvts.addParameterListener("amplitudeADSRRelease", &synthParameters);
+    }
+
+    SynthParameters synthParameters{ [this]() { updateSynthParameters(); } };
 private:
     juce::Synthesiser synth;
     juce::dsp::Gain<float> synthGain;
-
-    SynthParameters synthParameters; 
+    SynthParametersAtomic synthParametersAtomic;
 
     juce::Array<juce::dsp::LookupTableTransform<float>*> mipMap;
 
@@ -168,9 +173,9 @@ private:
         /*Generating a single sample using every harmonic.*/
         for (size_t i = 0; i < harmonics; i++)
         {
-            if (synthParameters.partialGain[i] != 0.f)
+            if (synthParametersAtomic.partialGain[i] != 0.f)
             {
-                sample += synthParameters.partialGain[i] * sin((i + 1) * angle + synthParameters.partialPhase[i] * juce::MathConstants<float>::pi);
+                sample += synthParametersAtomic.partialGain[i] * sin((i + 1) * angle + synthParametersAtomic.partialPhase[i] * juce::MathConstants<float>::twoPi);
             }
         }
         return sample;
