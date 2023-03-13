@@ -22,14 +22,13 @@ struct SynthParameters
     int semitoneTuning = 0;
     int fineTuningCents = 0;
     float partialGain[HARMONIC_N];
-    float partialPhase[HARMONIC_N];
-    float globalPhseStart = 0;
-    float randomPhaseRange = 0;
+    juce::dsp::Phase<float> partialPhase[HARMONIC_N];
+    juce::dsp::Phase<float> globalPhseStart;
+    juce::dsp::Phase<float> randomPhaseRange;
     int unisonPairCount = 0;
     int unisonDetune = 0;
     float unisonGain = 0;
     int pitchWheelRange = 2;
 
     juce::ADSR::Parameters amplitudeADSRParams;
-    juce::ADSR::Parameters filterADSRParams;
 };

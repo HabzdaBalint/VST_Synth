@@ -44,15 +44,12 @@ public:
         updateAngles();
 
         amplitudeADSR.reset();
-        filterADSR.reset();
         amplitudeADSR.noteOn();
-        filterADSR.noteOn();
     }
 
     void stopNote(float velocity, bool allowTailOff) override
     {
         amplitudeADSR.noteOff();
-        filterADSR.noteOff();
         
         if (!allowTailOff || !amplitudeADSR.isActive())
         {
@@ -134,7 +131,7 @@ public:
     /// @return Returns the generated offset
     float getRandomPhase()
     {
-        return (rng.nextFloat() * synthParameters->randomPhaseRange * juce::MathConstants<float>::twoPi) + (synthParameters->globalPhseStart * juce::MathConstants<float>::pi);
+        return (((rng.nextFloat() * synthParameters->randomPhaseRange.phase) + synthParameters->globalPhseStart.phase) * juce::MathConstants<float>::twoPi);
     }
 
     /*Updating frequencies in case of receiving a new note or a tuning parameter change or pitch wheel event*/
@@ -221,7 +218,6 @@ public:
     }
 
     juce::ADSR amplitudeADSR;
-    juce::ADSR filterADSR;
 private:
     juce::AudioBuffer<float> generatedBuffer;
     SynthParameters* synthParameters;
