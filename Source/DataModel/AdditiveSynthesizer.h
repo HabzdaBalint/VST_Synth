@@ -28,7 +28,7 @@ public:
 
         for (size_t i = 0; i < SYNTH_MAX_VOICES; i++)
         {
-            synth.addVoice(new AdditiveVoice(synthParameters, mipMap));
+            synth.addVoice(new AdditiveVoice(synthParametersAtomic, mipMap));
         }
         synth.setNoteStealingEnabled(true);
     }
@@ -91,185 +91,77 @@ public:
 
     void setStateInformation(const void* data, int sizeInBytes) override {}
 
-    void updateParameters(juce::AudioProcessorValueTreeState& apvts)
+    void updateSynthParameters()
     {
-        synthGain.setGainDecibels(apvts.getRawParameterValue("synthGain")->load());
-        synthParameters.octaveTuning = apvts.getRawParameterValue("oscillatorOctaves")->load();
-        synthParameters.semitoneTuning = apvts.getRawParameterValue("oscillatorSemitones")->load();
-        synthParameters.fineTuningCents = apvts.getRawParameterValue("oscillatorFine")->load();
+        synthGain.setGainDecibels(synthParameters.synthGain->get());
+        synthParametersAtomic.octaveTuning = synthParameters.octaveTuning->get();
+        synthParametersAtomic.semitoneTuning = synthParameters.semitoneTuning->get();
+        synthParametersAtomic.fineTuningCents = synthParameters.fineTuningCents->get();
 
-        synthParameters.pitchWheelRange = apvts.getRawParameterValue("pitchWheelRange")->load();
+        synthParametersAtomic.pitchWheelRange = synthParameters.pitchWheelRange->get();
 
-        synthParameters.globalPhseStart.phase = apvts.getRawParameterValue("globalPhase")->load();
-        synthParameters.randomPhaseRange.phase = apvts.getRawParameterValue("globalPhaseRNG")->load();
+        synthParametersAtomic.globalPhseStart = synthParameters.globalPhseStart->get();
+        synthParametersAtomic.randomPhaseRange = synthParameters.randomPhaseRange->get();
 
-        synthParameters.unisonPairCount = apvts.getRawParameterValue("unisonCount")->load();
-        synthParameters.unisonGain = apvts.getRawParameterValue("unisonGain")->load();
-        synthParameters.unisonDetune = apvts.getRawParameterValue("unisonDetune")->load();
+        synthParametersAtomic.unisonPairCount = synthParameters.unisonPairCount->get();
+        synthParametersAtomic.unisonGain = synthParameters.unisonGain->get();
+        synthParametersAtomic.unisonDetune = synthParameters.unisonDetune->get();
 
+        synthParametersAtomic.attack = synthParameters.attack->get()/1000;
+        synthParametersAtomic.decay = synthParameters.decay->get()/1000;
+        synthParametersAtomic.sustain = synthParameters.sustain->get();
+        synthParametersAtomic.release = synthParameters.release->get()/1000;
+
+        juce::String paramId;
         for (size_t i = 0; i < HARMONIC_N; i++)
         {
-            synthParameters.partialGain[i] = apvts.getRawParameterValue(getPartialGainParameterName(i))->load();
-            synthParameters.partialPhase[i].phase = apvts.getRawParameterValue(getPartialPhaseParameterName(i))->load();
+            synthParametersAtomic.partialGain[i] = synthParameters.partialGain[i]->get();
+            synthParametersAtomic.partialPhase[i] = synthParameters.partialPhase[i]->get();
         }
 
-        /*todo optimize*/
         updateLookupTable();
-
-        synthParameters.amplitudeADSRParams.attack = apvts.getRawParameterValue("amplitudeADSRAttack")->load()/1000;
-        synthParameters.amplitudeADSRParams.decay = apvts.getRawParameterValue("amplitudeADSRDecay")->load()/1000;
-        synthParameters.amplitudeADSRParams.sustain = apvts.getRawParameterValue("amplitudeADSRSustain")->load();
-        synthParameters.amplitudeADSRParams.release = apvts.getRawParameterValue("amplitudeADSRRelease")->load()/1000;
-
-        for (size_t i = 0; i < synth.getNumVoices(); i++)
-        {
-            if (auto voice = dynamic_cast<AdditiveVoice*>(synth.getVoice(i)))
-            {
-                voice->amplitudeADSR.setParameters(synthParameters.amplitudeADSRParams);
-            }
-        }
     }
 
     void updateLookupTable()
     {
         for (size_t i = 0; i < LOOKUP_SIZE; i++)
         {
-            mipMap[i]->initialise([this, i](float x) { return WaveTableFormula(x, HARMONIC_N / pow(2, i)); }, 0, juce::MathConstants<float>::twoPi, 1024);
+            mipMap[i]->initialise([this, i](float x) { return WaveTableFormula(x, HARMONIC_N / pow(2, i)); }, 0, juce::MathConstants<float>::twoPi, 2048);
         }
     }
 
-    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout& layout)
+    void registerListeners(juce::AudioProcessorValueTreeState& apvts)
     {
-        //---------------------// SYNTH PARAMS //---------------------//
-        /*Master Gain for the oscillator. All voices are affected by this value*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "synthGain",
-            "Gain",
-            juce::NormalisableRange<float>(-90.f, 0.f, 0.1),-12.0f));
+        synthParameters.update();
+
+        apvts.addParameterListener("synthGain", &synthParameters);
 
         for (size_t i = 0; i < HARMONIC_N; i++)
         {
-            juce::String namePrefix = "Partial " + juce::String(i+1) + " ";
-            //Generating parameters to represent the linear gain values of the partials
-            layout.add(std::make_unique <juce::AudioParameterFloat>(
-                getPartialGainParameterName(i), 
-                namePrefix + "Gain", 
-                juce::NormalisableRange<float>(0.f, 1.f, 0.001), 0.f));
-
-            //Generating parameters to represent the phase of the partials. These are represented as multiples of 2*pi
-            layout.add(std::make_unique <juce::AudioParameterFloat>(
-                getPartialPhaseParameterName(i), 
-                namePrefix + "Phase", 
-                juce::NormalisableRange<float>(0.f, 1.f, 0.01), 0.f));
+            apvts.addParameterListener(synthParameters.getPartialGainParameterName(i), &synthParameters);
+            apvts.addParameterListener(synthParameters.getPartialPhaseParameterName(i), &synthParameters);
         }
-
-        /*Tuning of the generated notes in octaves*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "oscillatorOctaves",
-            "Octaves",
-            juce::NormalisableRange<float>(-2, 2, 1),
-            0));
-
-        /*Tuning of the generated notes in semitones*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "oscillatorSemitones",
-            "Semitones",
-            juce::NormalisableRange<float>(-12, 12, 1),
-            0));
-
-        /*Tuning of the generated notes in cents*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "oscillatorFine",
-            "Fine Tuning",
-            juce::NormalisableRange<float>(-100, 100, 1),
-            0));
-
-        /*Pitch Wheel range in semitones*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "pitchWheelRange",
-            "Pitch Wheel Semitones",
-            juce::NormalisableRange<float>(0, 12, 1),
-            2));
-
-        /*The global starting point of on waveform. in multiples of 2*pi*/
-        layout.add(std::make_unique <juce::AudioParameterFloat>(
-            "globalPhase",
-            "Phase",
-            juce::NormalisableRange<float>(0.f, 1.f, 0.01),
-            0.f));
-
-        /*Sets the angle range for phase start randomization on new voices and unison. multiple of 2*pi*/
-        layout.add(std::make_unique <juce::AudioParameterFloat>(
-            "globalPhaseRNG",
-            "Phase Randomness",
-            juce::NormalisableRange<float>(0.f, 1.f, 0.01),
-            0));
-
-        /*Pairs of unison to add (one tuned higher and one lower)*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "unisonCount",
-            "Unison Count",
-            juce::NormalisableRange<float>(0, 5, 1),
-            0));
-
-        /*Detuning of the farthest unison pair in cents. The pairs inbetween have a tuning that is evenly distributed between the normal frequency and this one*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "unisonDetune",
-            "Unison Detune",
-            juce::NormalisableRange<float>(0, 100, 1),
-            0));
-
-        /*Level of the unison in linear amplitude*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "unisonGain",
-            "Unison Gain",
-            juce::NormalisableRange<float>(0.f, 1.f, 0.001),
-            0.f));
-
-        /*Attack time for the oscillator's amplitudes in ms*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "amplitudeADSRAttack",
-            "A",
-            juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
-            0.5));
-
-        /*Decay time for the oscillator's amplitudes in ms*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "amplitudeADSRDecay",
-            "D",
-            juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
-            1000.f));
-
-        /*Sustain level for the oscillator's amplitudes in linear amplitude*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "amplitudeADSRSustain",
-            "S",
-            juce::NormalisableRange<float>(0.f, 1.f, 0.001),
-            1.f));
-
-        /*Release time for the oscillator's amplitudes in ms*/
-        layout.add(std::make_unique<juce::AudioParameterFloat>(
-            "amplitudeADSRRelease",
-            "R",
-            juce::NormalisableRange<float>(0.f, 16000.f, 0.1),
-            50.f));
+        
+        apvts.addParameterListener("oscillatorOctaves", &synthParameters);
+        apvts.addParameterListener("oscillatorSemitones", &synthParameters);
+        apvts.addParameterListener("oscillatorFine", &synthParameters);
+        apvts.addParameterListener("pitchWheelRange", &synthParameters);
+        apvts.addParameterListener("globalPhase", &synthParameters);
+        apvts.addParameterListener("globalPhaseRNG", &synthParameters);
+        apvts.addParameterListener("unisonCount", &synthParameters);
+        apvts.addParameterListener("unisonDetune", &synthParameters);
+        apvts.addParameterListener("unisonGain", &synthParameters);
+        apvts.addParameterListener("amplitudeADSRAttack", &synthParameters);
+        apvts.addParameterListener("amplitudeADSRDecay", &synthParameters);
+        apvts.addParameterListener("amplitudeADSRSustain", &synthParameters);
+        apvts.addParameterListener("amplitudeADSRRelease", &synthParameters);
     }
 
-    juce::String getPartialGainParameterName(size_t index)
-    {
-        return "partial" + juce::String(index) + "gain";
-    }
-
-    juce::String getPartialPhaseParameterName(size_t index)
-    {
-        return "partial" + juce::String(index) + "phase";
-    }
-
+    SynthParameters synthParameters{ [this]() { updateSynthParameters(); } };
 private:
     juce::Synthesiser synth;
     juce::dsp::Gain<float> synthGain;
-
-    SynthParameters synthParameters; 
+    SynthParametersAtomic synthParametersAtomic;
 
     juce::Array<juce::dsp::LookupTableTransform<float>*> mipMap;
 
@@ -281,9 +173,9 @@ private:
         /*Generating a single sample using every harmonic.*/
         for (size_t i = 0; i < harmonics; i++)
         {
-            if (synthParameters.partialGain[i] != 0.f)
+            if (synthParametersAtomic.partialGain[i] != 0.f)
             {
-                sample += synthParameters.partialGain[i] * sin((i + 1) * angle + synthParameters.partialPhase[i].phase * juce::MathConstants<float>::twoPi);
+                sample += synthParametersAtomic.partialGain[i] * sin((i + 1) * angle + synthParametersAtomic.partialPhase[i] * juce::MathConstants<float>::twoPi);
             }
         }
         return sample;

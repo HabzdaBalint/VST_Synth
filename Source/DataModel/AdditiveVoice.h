@@ -15,8 +15,8 @@
 class AdditiveVoice : public juce::SynthesiserVoice
 {
 public:
-    AdditiveVoice(SynthParameters& synthParams, juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap) :
-        synthParameters(&synthParams),
+    AdditiveVoice(SynthParametersAtomic& synthParamsAtomic, juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap) :
+        synthParametersAtomic(&synthParamsAtomic),
         mipMap(mipMap) {}
 
     ~AdditiveVoice() {}
@@ -44,6 +44,7 @@ public:
         updateAngles();
 
         amplitudeADSR.reset();
+        updateADSRParams();
         amplitudeADSR.noteOn();
     }
 
@@ -85,14 +86,14 @@ public:
                 fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
 
                 /*Generating unison data for the sample*/
-                for (size_t unison = 0; unison < synthParameters->unisonPairCount; unison++)
+                for (size_t unison = 0; unison < synthParametersAtomic->unisonPairCount; unison++)
                 {
                     if (unisonCurrentAngles[channel][unison] > juce::MathConstants<float>::twoPi)
                     {
                         unisonCurrentAngles[channel][unison] -= juce::MathConstants<float>::twoPi;
                     }
 
-                    bufferPointer[sample] += velocityGain * synthParameters->unisonGain * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[channel][unison]);
+                    bufferPointer[sample] += velocityGain * synthParametersAtomic->unisonGain * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[channel][unison]);
 
                     unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
                 }
@@ -110,6 +111,7 @@ public:
             }
         }
 
+        updateADSRParams();
         updateFrequencies();
         updateAngles();
     }
@@ -120,7 +122,7 @@ public:
         for (size_t channel = 0; channel < 2; channel++)
         {
             fundamentalCurrentAngle[channel] = getRandomPhase();
-            for (size_t i = 0; i < 2 * synthParameters->unisonPairCount; i++)
+            for (size_t i = 0; i < 2 * synthParametersAtomic->unisonPairCount; i++)
             {
                 unisonCurrentAngles[channel][i] = getRandomPhase();
             }
@@ -131,7 +133,7 @@ public:
     /// @return Returns the generated offset
     float getRandomPhase()
     {
-        return (((rng.nextFloat() * synthParameters->randomPhaseRange.phase) + synthParameters->globalPhseStart.phase) * juce::MathConstants<float>::twoPi);
+        return (((rng.nextFloat() * synthParametersAtomic->randomPhaseRange) + synthParametersAtomic->globalPhseStart) * juce::MathConstants<float>::twoPi);
     }
 
     /*Updating frequencies in case of receiving a new note or a tuning parameter change or pitch wheel event*/
@@ -140,18 +142,18 @@ public:
         //formula for equal temperament from midi note# with A4 at 440Hz
         fundamentalFrequency = 440.f * pow(2, ((float)currentNote - 69.f) / 12);
         //Applying octave, semitone and fine tuning and pitchwheel offsets
-        float unifiedGlobalTuningOffset = pow(2, synthParameters->octaveTuning + ((float)synthParameters->semitoneTuning / 12) + ((float)synthParameters->fineTuningCents / 1200) + ((float)synthParameters->pitchWheelRange * pitchWheelOffset / 12));
+        float unifiedGlobalTuningOffset = pow(2, synthParametersAtomic->octaveTuning + (synthParametersAtomic->semitoneTuning / 12) + (synthParametersAtomic->fineTuningCents / 1200) + (synthParametersAtomic->pitchWheelRange * pitchWheelOffset / 12));
         fundamentalFrequency *= unifiedGlobalTuningOffset;
 
         /*Calculating evenly spaced unison frequency offsets and applying the global tuning offset*/
-        float unisonTuningRange = pow(2, (float)synthParameters->unisonDetune / 1200);
-        float unisonTuningStep = (unisonTuningRange - 1) / synthParameters->unisonPairCount;
-        for (size_t i = 0; i < synthParameters->unisonPairCount; i++)
+        float unisonTuningRange = pow(2, synthParametersAtomic->unisonDetune / 1200);
+        float unisonTuningStep = (unisonTuningRange - 1) / synthParametersAtomic->unisonPairCount;
+        for (size_t i = 0; i < synthParametersAtomic->unisonPairCount; i++)
         {
             unisonFrequencyOffsets[i] = 1 + (unisonTuningStep * (i + 1));
         }
 
-        if (synthParameters->unisonPairCount > 0)
+        if (synthParametersAtomic->unisonPairCount > 0)
         {
             highestCurrentFrequency = fundamentalFrequency * unisonTuningRange;
         }
@@ -170,7 +172,7 @@ public:
         float cyclesPerSample = fundamentalFrequency / sampleRate;
         fundamentalAngleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
 
-        for (size_t i = 0; i < (2 * synthParameters->unisonPairCount); i += 2)
+        for (size_t i = 0; i < (2 * synthParametersAtomic->unisonPairCount); i += 2)
         {
             cyclesPerSample = (fundamentalFrequency * unisonFrequencyOffsets[i]) / sampleRate;
             unisonAngleDeltas[i] = cyclesPerSample * juce::MathConstants<float>::twoPi;
@@ -217,10 +219,22 @@ public:
         }
     }
 
+    void updateADSRParams()
+    {
+        juce::ADSR::Parameters params;
+
+        params.attack = synthParametersAtomic->attack;
+        params.decay = synthParametersAtomic->decay;
+        params.sustain = synthParametersAtomic->sustain;
+        params.release = synthParametersAtomic->release;
+
+        amplitudeADSR.setParameters(params);
+    }
+
     juce::ADSR amplitudeADSR;
 private:
     juce::AudioBuffer<float> generatedBuffer;
-    SynthParameters* synthParameters;
+    SynthParametersAtomic* synthParametersAtomic;
     
     juce::Random rng;
 

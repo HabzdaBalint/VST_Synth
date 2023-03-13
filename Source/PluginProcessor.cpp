@@ -21,7 +21,9 @@ VST_SynthAudioProcessor::VST_SynthAudioProcessor()
                      #endif
                        )
 #endif
-{}
+{
+    additiveSynth.registerListeners(apvts);
+}
 
 VST_SynthAudioProcessor::~VST_SynthAudioProcessor() {}
 
@@ -143,17 +145,14 @@ void VST_SynthAudioProcessor::setStateInformation (const void* data, int sizeInB
 
 void VST_SynthAudioProcessor::updateParameters()
 {
-    additiveSynth.updateParameters(apvts);
-    //auto num1 = apvts.state.getChild(0).getChild(0).getPropertyName(1).toString();
-    //int num2 = additiveSynth.apvts.state.getNumChildren();
-    //("synthGain", nullptr).getValue();
+    //additiveSynth.updateSynthParameters();
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    additiveSynth.createParameterLayout(layout);
+    additiveSynth.synthParameters.createParameterLayout(layout);
 
     return layout;
 }
