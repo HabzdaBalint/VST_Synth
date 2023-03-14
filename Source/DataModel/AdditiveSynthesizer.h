@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "SynthParameters.h"
+#include "AdditiveSynthParameters.h"
 #include "AdditiveSound.h"
 #include "AdditiveVoice.h"
 
@@ -33,11 +33,11 @@ public:
         synth.setNoteStealingEnabled(true);
     }
 
-    ~AdditiveSynthesizer() 
+    ~AdditiveSynthesizer()
     {
         for (size_t i = 0; i < mipMap.size(); i++)
         {
-            delete(mipMap[i]);
+            delete (mipMap[i]);
         }
         mipMap.removeRange(0, mipMap.size());
     }
@@ -51,9 +51,9 @@ public:
     int getCurrentProgram() override { return 0; }
     void setCurrentProgram(int) override {}
     const juce::String getProgramName(int) override { return {}; }
-    void changeProgramName(int, const juce::String&) override {}
+    void changeProgramName(int, const juce::String &) override {}
 
-    juce::AudioProcessorEditor* createEditor() override { return nullptr; } //todo return the synth's editor object
+    juce::AudioProcessorEditor *createEditor() override { return nullptr; } // todo return the synth's editor object
     bool hasEditor() const override { return true; }
 
     void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override
@@ -61,7 +61,7 @@ public:
         synth.setCurrentPlaybackSampleRate(sampleRate);
         for (size_t i = 0; i < synth.getNumVoices(); i++)
         {
-            if (auto voice = dynamic_cast<AdditiveVoice*>(synth.getVoice(i)))
+            if (auto voice = dynamic_cast<AdditiveVoice *>(synth.getVoice(i)))
             {
                 voice->setCurrentPlaybackSampleRate(sampleRate);
                 voice->amplitudeADSR.setSampleRate(sampleRate);
@@ -77,19 +77,19 @@ public:
 
     void releaseResources() override {}
 
-    void processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) override
+    void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override
     {
         synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
-        juce::dsp::AudioBlock<float> audioBlock{ buffer };
+        juce::dsp::AudioBlock<float> audioBlock{buffer};
         synthGain.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
     }
 
-    double getTailLengthSeconds() const override { return 0;}
-    
-    void getStateInformation(juce::MemoryBlock& destData) override {}
+    double getTailLengthSeconds() const override { return 0; }
 
-    void setStateInformation(const void* data, int sizeInBytes) override {}
+    void getStateInformation(juce::MemoryBlock &destData) override {}
+
+    void setStateInformation(const void *data, int sizeInBytes) override {}
 
     void updateSynthParameters()
     {
@@ -107,10 +107,10 @@ public:
         synthParametersAtomic.unisonGain = synthParameters.unisonGain->get();
         synthParametersAtomic.unisonDetune = synthParameters.unisonDetune->get();
 
-        synthParametersAtomic.attack = synthParameters.attack->get()/1000;
-        synthParametersAtomic.decay = synthParameters.decay->get()/1000;
+        synthParametersAtomic.attack = synthParameters.attack->get() / 1000;
+        synthParametersAtomic.decay = synthParameters.decay->get() / 1000;
         synthParametersAtomic.sustain = synthParameters.sustain->get();
-        synthParametersAtomic.release = synthParameters.release->get()/1000;
+        synthParametersAtomic.release = synthParameters.release->get() / 1000;
 
         juce::String paramId;
         for (size_t i = 0; i < HARMONIC_N; i++)
@@ -126,11 +126,13 @@ public:
     {
         for (size_t i = 0; i < LOOKUP_SIZE; i++)
         {
-            mipMap[i]->initialise([this, i](float x) { return WaveTableFormula(x, HARMONIC_N / pow(2, i)); }, 0, juce::MathConstants<float>::twoPi, 2048);
+            mipMap[i]->initialise([this, i](float x)
+                                  { return WaveTableFormula(x, HARMONIC_N / pow(2, i)); },
+                                  0, juce::MathConstants<float>::twoPi, 2048);
         }
     }
 
-    void registerListeners(juce::AudioProcessorValueTreeState& apvts)
+    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
     {
         synthParameters.update();
 
@@ -141,7 +143,7 @@ public:
             apvts.addParameterListener(synthParameters.getPartialGainParameterName(i), &synthParameters);
             apvts.addParameterListener(synthParameters.getPartialPhaseParameterName(i), &synthParameters);
         }
-        
+
         apvts.addParameterListener("oscillatorOctaves", &synthParameters);
         apvts.addParameterListener("oscillatorSemitones", &synthParameters);
         apvts.addParameterListener("oscillatorFine", &synthParameters);
@@ -157,19 +159,21 @@ public:
         apvts.addParameterListener("amplitudeADSRRelease", &synthParameters);
     }
 
-    SynthParameters synthParameters{ [this]() { updateSynthParameters(); } };
+    AdditiveSynthParameters synthParameters{[this]()
+                                    { updateSynthParameters(); }};
+
 private:
     juce::Synthesiser synth;
     juce::dsp::Gain<float> synthGain;
-    SynthParametersAtomic synthParametersAtomic;
+    AdditiveSynthParametersAtomic synthParametersAtomic;
 
-    juce::Array<juce::dsp::LookupTableTransform<float>*> mipMap;
+    juce::Array<juce::dsp::LookupTableTransform<float> *> mipMap;
 
     /*Generates the full formula for the current setup of the additive synth. Used for maintaining the lookup table. This function could also be used for accurate rendering, if time is not a constraint*/
     const float WaveTableFormula(float angle, float harmonics)
     {
         float sample = 0.f;
-        
+
         /*Generating a single sample using every harmonic.*/
         for (size_t i = 0; i < harmonics; i++)
         {

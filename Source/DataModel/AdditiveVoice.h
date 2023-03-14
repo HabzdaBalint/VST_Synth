@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "SynthParameters.h"
+#include "AdditiveSynthParameters.h"
 
 class AdditiveVoice : public juce::SynthesiserVoice
 {
