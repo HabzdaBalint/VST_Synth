@@ -25,12 +25,18 @@ public:
 
     void controllerMoved(int controllerNumber, int newControllerValue) override { }
 
+    bool isVoiceActive() const override
+    {
+        return ( getCurrentlyPlayingNote() >= 0 || amplitudeADSR.isActive() );
+    }
+
     void pitchWheelMoved(int newPitchWheelValue) override
     {
         pitchWheelOffset = ((float)newPitchWheelValue-8192)/8192;
 
         updateFrequencies();
         updateAngles();
+
     }
 
     void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* sound, int currentPitchWheelPosition) override
@@ -64,8 +70,8 @@ public:
     /// @param startSample The starting sample within the buffer
     /// @param numSamples Length of the buffer
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override
-    {
-        if(!bypassPlaying)
+    {   //No point in updating variables and generating 0 value samples if velocity is 0 or if the voice is not in use
+        if( isVoiceActive() && (!bypassPlaying || velocityGain > 0.f) )
         {
             /*render buffer, apply gain*/
             generatedBuffer.clear();
@@ -82,12 +88,12 @@ public:
                         fundamentalCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
                     }
 
-                    /*Generating the fundamental data for the sample*/
+                    //Generating the fundamental data for the sample
                     bufferPointer[sample] += velocityGain * mipMap[mipMapIndex]->operator()(fundamentalCurrentAngle[channel]);
 
                     fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
 
-                    /*Generating unison data for the sample*/
+                    //Generating unison data for the sample
                     for (size_t unison = 0; unison < synthParametersAtomic->unisonPairCount; unison++)
                     {
                         if (unisonCurrentAngles[channel][unison] > juce::MathConstants<float>::twoPi)
@@ -99,6 +105,8 @@ public:
 
                         unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
                     }
+
+                    //Applying the envelope to the sample
                     bufferPointer[sample] *= amplitudeADSR.getNextSample();
                 }
             }
@@ -112,11 +120,11 @@ public:
                     clearCurrentNote();
                 }
             }
+
+            updateADSRParams();
+            updateFrequencies();
+            updateAngles();
         }
-        
-        updateADSRParams();
-        updateFrequencies();
-        updateAngles();
     }
 
     /// @brief Used to randomise the starting phases of all generated waveforms
@@ -139,7 +147,7 @@ public:
         return (((rng.nextFloat() * synthParametersAtomic->randomPhaseRange) + synthParametersAtomic->globalPhseStart) * juce::MathConstants<float>::twoPi);
     }
 
-    /*Updating frequencies in case of receiving a new note or a tuning parameter change or pitch wheel event*/
+    /// @brief Called to update frequencies with current parameters
     void updateFrequencies()
     {
         //formula for equal temperament from midi note# with A4 at 440Hz
@@ -184,7 +192,7 @@ public:
         }
     }
 
-    /// @brief Checks the highest possible overtone the current highest generated frequency can safely generate without aliasing and selects the right lookup table with the correct number of overtones
+    /// @brief Checks the highest possible overtone the current highest generated frequency can safely generate without aliasing on the current samplerate and selects the right lookup table with the correct number of overtones. If nothing can be safely generated without aliasing, bypassPlaying is set to true
     void findMipMapToUse()
     {
         float highestGeneratedOvertone = getSampleRate();
