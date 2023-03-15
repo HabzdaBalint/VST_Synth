@@ -143,7 +143,6 @@ public:
             apvts.addParameterListener(synthParameters.getPartialGainParameterName(i), &synthParameters);
             apvts.addParameterListener(synthParameters.getPartialPhaseParameterName(i), &synthParameters);
         }
-
         apvts.addParameterListener("oscillatorOctaves", &synthParameters);
         apvts.addParameterListener("oscillatorSemitones", &synthParameters);
         apvts.addParameterListener("oscillatorFine", &synthParameters);
