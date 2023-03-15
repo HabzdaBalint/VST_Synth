@@ -1,11 +1,11 @@
 /*
-  ==============================================================================
+==============================================================================
 
     AdditiveVoice.h
     Created: 11 Mar 2023 2:17:04am
     Author:  Habama10
 
-  ==============================================================================
+==============================================================================
 */
 
 #pragma once
@@ -15,7 +15,7 @@
 class AdditiveVoice : public juce::SynthesiserVoice
 {
 public:
-    AdditiveVoice(SynthParametersAtomic& synthParamsAtomic, juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap) :
+    AdditiveVoice(AdditiveSynthParametersAtomic& synthParamsAtomic, juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap) :
         synthParametersAtomic(&synthParamsAtomic),
         mipMap(mipMap) {}
 
@@ -65,52 +65,55 @@ public:
     /// @param numSamples Length of the buffer
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override
     {
-        /*render buffer, apply gain*/
-        generatedBuffer.clear();
-        generatedBuffer.setSize(2, numSamples, false, false, true);
-
-        for (size_t channel = 0; channel < 2; channel++)
+        if(!bypassPlaying)
         {
-            auto* bufferPointer = generatedBuffer.getWritePointer(channel, 0);
+            /*render buffer, apply gain*/
+            generatedBuffer.clear();
+            generatedBuffer.setSize(2, numSamples, false, false, true);
 
-            for (size_t sample = 0; sample < numSamples; sample++)
+            for (size_t channel = 0; channel < 2; channel++)
             {
-                if (fundamentalCurrentAngle[channel] > juce::MathConstants<float>::twoPi)
+                auto* bufferPointer = generatedBuffer.getWritePointer(channel, 0);
+
+                for (size_t sample = 0; sample < numSamples; sample++)
                 {
-                    fundamentalCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
-                }
-
-                /*Generating the fundamental data for the sample*/
-                bufferPointer[sample] += velocityGain * mipMap[mipMapIndex]->operator()(fundamentalCurrentAngle[channel]);
-
-                fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
-
-                /*Generating unison data for the sample*/
-                for (size_t unison = 0; unison < synthParametersAtomic->unisonPairCount; unison++)
-                {
-                    if (unisonCurrentAngles[channel][unison] > juce::MathConstants<float>::twoPi)
+                    if (fundamentalCurrentAngle[channel] > juce::MathConstants<float>::twoPi)
                     {
-                        unisonCurrentAngles[channel][unison] -= juce::MathConstants<float>::twoPi;
+                        fundamentalCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
                     }
 
-                    bufferPointer[sample] += velocityGain * synthParametersAtomic->unisonGain * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[channel][unison]);
+                    /*Generating the fundamental data for the sample*/
+                    bufferPointer[sample] += velocityGain * mipMap[mipMapIndex]->operator()(fundamentalCurrentAngle[channel]);
 
-                    unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
+                    fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
+
+                    /*Generating unison data for the sample*/
+                    for (size_t unison = 0; unison < synthParametersAtomic->unisonPairCount; unison++)
+                    {
+                        if (unisonCurrentAngles[channel][unison] > juce::MathConstants<float>::twoPi)
+                        {
+                            unisonCurrentAngles[channel][unison] -= juce::MathConstants<float>::twoPi;
+                        }
+
+                        bufferPointer[sample] += velocityGain * synthParametersAtomic->unisonGain * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[channel][unison]);
+
+                        unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
+                    }
+                    bufferPointer[sample] *= amplitudeADSR.getNextSample();
                 }
-                bufferPointer[sample] *= amplitudeADSR.getNextSample();
+            }
+            
+            for (size_t channel = 0; channel < 2; channel++)
+            {
+                outputBuffer.addFrom (channel, startSample, generatedBuffer, channel, 0, numSamples);
+
+                if (! amplitudeADSR.isActive())
+                {
+                    clearCurrentNote();
+                }
             }
         }
         
-        for (size_t channel = 0; channel < 2; channel++)
-        {
-            outputBuffer.addFrom (channel, startSample, generatedBuffer, channel, 0, numSamples);
-
-            if (! amplitudeADSR.isActive())
-            {
-                clearCurrentNote();
-            }
-        }
-
         updateADSRParams();
         updateFrequencies();
         updateAngles();
@@ -191,6 +194,14 @@ public:
             mipMapIndex++;
             highestGeneratedOvertone = highestCurrentFrequency * (HARMONIC_N / pow(2, mipMapIndex));
         }
+        if(mipMapIndex >= LOOKUP_SIZE)
+        {
+            bypassPlaying = true;
+        }
+        else
+        {
+            bypassPlaying = false;
+        }
     }
 
     /// @brief Used to stop playback and reset values when a note off message arrives
@@ -199,6 +210,7 @@ public:
         generatedBuffer.clear();
         velocityGain = 0;
         currentNote = 0;
+        bypassPlaying = false;
 
         pitchWheelOffset = 0;
 
@@ -234,7 +246,7 @@ public:
     juce::ADSR amplitudeADSR;
 private:
     juce::AudioBuffer<float> generatedBuffer;
-    SynthParametersAtomic* synthParametersAtomic;
+    AdditiveSynthParametersAtomic* synthParametersAtomic;
     
     juce::Random rng;
 
@@ -242,6 +254,7 @@ private:
 
     float velocityGain = 0;
     float currentNote = 0;
+    float bypassPlaying = false;
 
     float pitchWheelOffset = 0;
 

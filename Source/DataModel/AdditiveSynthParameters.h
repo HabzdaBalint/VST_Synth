@@ -1,11 +1,11 @@
 /*
-  ==============================================================================
+==============================================================================
 
     AdditiveSynthParameters.h
     Created: 11 Mar 2023 2:19:15am
     Author:  Habama10
 
-  ==============================================================================
+==============================================================================
 */
 
 #pragma once
@@ -13,7 +13,7 @@
 #include <JuceHeader.h>
 
 constexpr int SYNTH_MAX_VOICES = 64;
-constexpr int HARMONIC_N = 128;
+constexpr int HARMONIC_N = 64;
 const int LOOKUP_SIZE = ceil(log2(HARMONIC_N) + 1);
 
 struct AdditiveSynthParameters : juce::AudioProcessorValueTreeState::Listener

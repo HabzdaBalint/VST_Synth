@@ -1,9 +1,9 @@
 /*
-  ==============================================================================
+==============================================================================
 
     This file contains the basic framework code for a JUCE plugin processor.
 
-  ==============================================================================
+==============================================================================
 */
 
 #include "PluginProcessor.h"
@@ -22,10 +22,15 @@ VST_SynthAudioProcessor::VST_SynthAudioProcessor()
                        )
 #endif
 {
-    additiveSynth.registerListeners(apvts);
+    additiveSynth->registerListeners(apvts);
+    fxChain->registerListeners(apvts);
 }
 
-VST_SynthAudioProcessor::~VST_SynthAudioProcessor() {}
+VST_SynthAudioProcessor::~VST_SynthAudioProcessor()
+{
+    delete(additiveSynth);
+    delete(fxChain);
+}
 
 //==============================================================================
 const juce::String VST_SynthAudioProcessor::getName() const
@@ -75,12 +80,13 @@ void VST_SynthAudioProcessor::changeProgramName (int index, const juce::String& 
 //==============================================================================
 void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    updateParameters();
-    additiveSynth.setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
-    additiveSynth.prepareToPlay(sampleRate, samplesPerBlock);
+    additiveSynth->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
+    additiveSynth->prepareToPlay(sampleRate, samplesPerBlock);
+    fxChain->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
+    fxChain->prepareToPlay(sampleRate, samplesPerBlock);
 }
 
-void VST_SynthAudioProcessor::releaseResources() { }
+void VST_SynthAudioProcessor::releaseResources() {}
 
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool VST_SynthAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -110,11 +116,11 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    updateParameters();
 
-    additiveSynth.processBlock(buffer, midiMessages);
+    additiveSynth->processBlock(buffer, midiMessages);
 
     /*todo other fx*/
+    fxChain->processBlock(buffer, midiMessages);
 }
 
 //==============================================================================
@@ -139,20 +145,15 @@ void VST_SynthAudioProcessor::setStateInformation (const void* data, int sizeInB
     if (tree.isValid())
     {
         apvts.replaceState(tree);
-        updateParameters();
     }
-}
-
-void VST_SynthAudioProcessor::updateParameters()
-{
-    //additiveSynth.updateSynthParameters();
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    additiveSynth.synthParameters.createParameterLayout(layout);
+    additiveSynth->synthParameters.createParameterLayout(layout);
+    fxChain->chainParameters.createParameterLayout(layout);
 
     return layout;
 }

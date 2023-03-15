@@ -27,8 +27,6 @@
         <FILE id="yFIkJ5" name="FXProcessorChain.h" compile="0" resource="0"
               file="Source/DataModel/FXProcessorChain.h"/>
         <FILE id="tOjoZm" name="FXPhaser.h" compile="0" resource="0" file="Source/DataModel/FXPhaser.h"/>
-        <FILE id="Bv1f9b" name="PluginParameters.h" compile="0" resource="0"
-              file="Source/DataModel/PluginParameters.h"/>
         <FILE id="N6v6m4" name="FXReverb.h" compile="0" resource="0" file="Source/DataModel/FXReverb.h"/>
       </GROUP>
       <FILE id="MEepZL" name="PluginProcessor.cpp" compile="1" resource="0"

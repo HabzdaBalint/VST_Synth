@@ -1,9 +1,9 @@
 /*
-  ==============================================================================
+==============================================================================
 
     This file contains the basic framework code for a JUCE plugin processor.
 
-  ==============================================================================
+==============================================================================
 */
 
 #pragma once
@@ -58,13 +58,11 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    AdditiveSynthesizer additiveSynth;
-    FXProcessorChain fxChain;
+    AdditiveSynthesizer *additiveSynth = new AdditiveSynthesizer();
+    FXProcessorChain *fxChain = new FXProcessorChain();
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Audio Parameters", createParameterLayout() };
-
-    void updateParameters();
 
 private:
     //==============================================================================

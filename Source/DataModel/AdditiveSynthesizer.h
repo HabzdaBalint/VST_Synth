@@ -1,11 +1,11 @@
 /*
-  ==============================================================================
+==============================================================================
 
     AdditiveSynthesizer.h
     Created: 5 Mar 2023 15:47:05am
     Author:  Habama10
 
-  ==============================================================================
+==============================================================================
 */
 
 #pragma once
@@ -24,13 +24,13 @@ public:
             mipMap.add(new juce::dsp::LookupTableTransform<float>());
         }
 
-        synth.addSound(new AdditiveSound());
+        synth->addSound(new AdditiveSound());
 
         for (size_t i = 0; i < SYNTH_MAX_VOICES; i++)
         {
-            synth.addVoice(new AdditiveVoice(synthParametersAtomic, mipMap));
+            synth->addVoice(new AdditiveVoice(synthParametersAtomic, mipMap));
         }
-        synth.setNoteStealingEnabled(true);
+        synth->setNoteStealingEnabled(true);
     }
 
     ~AdditiveSynthesizer()
@@ -40,12 +40,16 @@ public:
             delete (mipMap[i]);
         }
         mipMap.removeRange(0, mipMap.size());
+        delete(synthGain);
+        delete(synth);
     }
 
     const juce::String getName() const override { return "Additive Synthesizer"; }
     bool acceptsMidi() const override { return true; }
     bool producesMidi() const override { return false; }
-    bool isMidiEffect() const override { return false; }
+
+    juce::AudioProcessorEditor* createEditor() override { return nullptr; } // todo return the synth's editor object
+    bool hasEditor() const override { return true; }
 
     int getNumPrograms() override { return 1; }
     int getCurrentProgram() override { return 0; }
@@ -53,15 +57,17 @@ public:
     const juce::String getProgramName(int) override { return {}; }
     void changeProgramName(int, const juce::String &) override {}
 
-    juce::AudioProcessorEditor *createEditor() override { return nullptr; } // todo return the synth's editor object
-    bool hasEditor() const override { return true; }
+    void getStateInformation(juce::MemoryBlock& destData) override {}
+    void setStateInformation(const void* data, int sizeInBytes) override {}
+
+    double getTailLengthSeconds() const override { return 0; }
 
     void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override
     {
-        synth.setCurrentPlaybackSampleRate(sampleRate);
-        for (size_t i = 0; i < synth.getNumVoices(); i++)
+        synth->setCurrentPlaybackSampleRate(sampleRate);
+        for (size_t i = 0; i < synth->getNumVoices(); i++)
         {
-            if (auto voice = dynamic_cast<AdditiveVoice *>(synth.getVoice(i)))
+            if (auto voice = dynamic_cast<AdditiveVoice *>(synth->getVoice(i)))
             {
                 voice->setCurrentPlaybackSampleRate(sampleRate);
                 voice->amplitudeADSR.setSampleRate(sampleRate);
@@ -72,28 +78,22 @@ public:
         processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
         processSpec.numChannels = getTotalNumOutputChannels();
         processSpec.sampleRate = sampleRate;
-        synthGain.prepare(processSpec);
+        synthGain->prepare(processSpec);
     }
 
     void releaseResources() override {}
 
     void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override
     {
-        synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+        synth->renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
         juce::dsp::AudioBlock<float> audioBlock{buffer};
-        synthGain.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
+        synthGain->process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
     }
-
-    double getTailLengthSeconds() const override { return 0; }
-
-    void getStateInformation(juce::MemoryBlock &destData) override {}
-
-    void setStateInformation(const void *data, int sizeInBytes) override {}
 
     void updateSynthParameters()
     {
-        synthGain.setGainDecibels(synthParameters.synthGain->get());
+        synthGain->setGainDecibels(synthParameters.synthGain->get());
         synthParametersAtomic.octaveTuning = synthParameters.octaveTuning->get();
         synthParametersAtomic.semitoneTuning = synthParameters.semitoneTuning->get();
         synthParametersAtomic.fineTuningCents = synthParameters.fineTuningCents->get();
@@ -161,10 +161,9 @@ public:
 
     AdditiveSynthParameters synthParameters{[this]()
                                     { updateSynthParameters(); }};
-
 private:
-    juce::Synthesiser synth;
-    juce::dsp::Gain<float> synthGain;
+    juce::Synthesiser* synth = new juce::Synthesiser();
+    juce::dsp::Gain<float>* synthGain = new juce::dsp::Gain<float>();
     AdditiveSynthParametersAtomic synthParametersAtomic;
 
     juce::Array<juce::dsp::LookupTableTransform<float> *> mipMap;

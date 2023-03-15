@@ -1,11 +1,11 @@
 /*
-  ==============================================================================
+==============================================================================
 
     FXProcessorChainParameters.h
     Created: 13 Mar 2023 11:51:05pm
     Author:  Habama10
 
-  ==============================================================================
+==============================================================================
 */
 
 #pragma once
@@ -36,7 +36,7 @@ struct FXProcessorChainParameters : juce::AudioProcessorValueTreeState::Listener
             vector.emplace_back(bypassProcessor[i]);
             //Bypasses for each loaded Effect
             choiceProcessor[i] = new juce::AudioParameterChoice(getFXChoiceParameterName(i), "FX Slot " + juce::String(i), choices, 0);
-            layout.add(vector.begin(), vector.end());
+            vector.emplace_back(choiceProcessor[i]);
         }
 
         layout.add(vector.begin(), vector.end());
