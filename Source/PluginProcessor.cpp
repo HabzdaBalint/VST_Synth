@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
 //==============================================================================
 VST_SynthAudioProcessor::VST_SynthAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -24,6 +25,8 @@ VST_SynthAudioProcessor::VST_SynthAudioProcessor()
 {
     additiveSynth->registerListeners(apvts);
     fxChain->registerListeners(apvts);
+    fxChain->equalizer->registerListeners(apvts);
+    fxChain->filter->registerListeners(apvts);
 }
 
 VST_SynthAudioProcessor::~VST_SynthAudioProcessor()
@@ -80,7 +83,6 @@ void VST_SynthAudioProcessor::changeProgramName (int index, const juce::String& 
 //==============================================================================
 void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    additiveSynth->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
     additiveSynth->prepareToPlay(sampleRate, samplesPerBlock);
     fxChain->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
     fxChain->prepareToPlay(sampleRate, samplesPerBlock);
@@ -119,7 +121,7 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     additiveSynth->processBlock(buffer, midiMessages);
 
-    /*todo other fx*/
+    //todo other fx
     fxChain->processBlock(buffer, midiMessages);
 }
 
@@ -154,7 +156,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
 
     additiveSynth->synthParameters.createParameterLayout(layout);
     fxChain->chainParameters.createParameterLayout(layout);
-
+    fxChain->equalizer->equalizerParameters.createParameterLayout(layout);
+    fxChain->filter->filterParameters.createParameterLayout(layout);
+    
     return layout;
 }
 

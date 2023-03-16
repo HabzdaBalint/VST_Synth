@@ -32,10 +32,10 @@ struct FXProcessorChainParameters : juce::AudioProcessorValueTreeState::Listener
         for (size_t i = 0; i < FX_MAX_SLOTS; i++)
         {
             //Bypasses for each loaded Effect
-            bypassProcessor[i] = new juce::AudioParameterBool(getFXBypassParameterName(i), "Bypass " + juce::String(i) , false);
+            bypassProcessor[i] = new juce::AudioParameterBool(getFXBypassParameterName(i), "Bypass " + juce::String(i+1) , false);
             vector.emplace_back(bypassProcessor[i]);
             //Bypasses for each loaded Effect
-            choiceProcessor[i] = new juce::AudioParameterChoice(getFXChoiceParameterName(i), "FX Slot " + juce::String(i), choices, 0);
+            choiceProcessor[i] = new juce::AudioParameterChoice(getFXChoiceParameterName(i), "FX Slot " + juce::String(i+1), choices, 0);
             vector.emplace_back(choiceProcessor[i]);
         }
 

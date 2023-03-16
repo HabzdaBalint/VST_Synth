@@ -9,6 +9,10 @@
     <GROUP id="{275637AC-08AF-D899-4B9D-E950976BC3EF}" name="Source">
       <GROUP id="{98E83673-5F1A-279E-EB46-947F82C731E6}" name="View"/>
       <GROUP id="{C59C8F0C-E530-D1E2-F43E-1365982B8990}" name="DataModel">
+        <FILE id="fgKJtM" name="FXFilterParameters.h" compile="0" resource="0"
+              file="Source/DataModel/FXFilterParameters.h"/>
+        <FILE id="UTt0IE" name="FXEqualizerParameters.h" compile="0" resource="0"
+              file="Source/DataModel/FXEqualizerParameters.h"/>
         <FILE id="WThaRZ" name="AdditiveSynthParameters.h" compile="0" resource="0"
               file="Source/DataModel/AdditiveSynthParameters.h"/>
         <FILE id="PwA8By" name="FXCompressor.h" compile="0" resource="0" file="Source/DataModel/FXCompressor.h"/>

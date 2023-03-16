@@ -59,7 +59,7 @@ struct AdditiveSynthParameters : juce::AudioProcessorValueTreeState::Listener
             // Generating parameters to represent the linear gain values of the partials
             partialGain[i] = new juce::AudioParameterFloat(getPartialGainParameterName(i),
                                                            namePrefix + "Gain",
-                                                           juce::NormalisableRange<float>(0.f, 1.f, 0.001), 0.f);
+                                                           juce::NormalisableRange<float>(0.f, 1.f, 0.001), 0.f);   //todo reset to 0.f
             vector.emplace_back(partialGain[i]);
 
             // Generating parameters to represent the phase of the partials. These are represented as multiples of 2*pi
@@ -72,25 +72,25 @@ struct AdditiveSynthParameters : juce::AudioProcessorValueTreeState::Listener
         /*Tuning of the generated notes in octaves*/
         octaveTuning = new juce::AudioParameterFloat("oscillatorOctaves",
                                                      "Octaves",
-                                                     juce::NormalisableRange<float>(-2, 2, 1), 0);
+                                                     juce::NormalisableRange<float>(-2.f, 2.f, 1.f), 0.f);
         vector.emplace_back(octaveTuning);
 
         /*Tuning of the generated notes in semitones*/
         semitoneTuning = new juce::AudioParameterFloat("oscillatorSemitones",
                                                        "Semitones",
-                                                       juce::NormalisableRange<float>(-12, 12, 1), 0);
+                                                       juce::NormalisableRange<float>(-12.f, 12.f, 1.f), 0.f);
         vector.emplace_back(semitoneTuning);
 
         /*Tuning of the generated notes in cents*/
         fineTuningCents = new juce::AudioParameterFloat("oscillatorFine",
                                                         "Fine Tuning",
-                                                        juce::NormalisableRange<float>(-100, 100, 1), 0);
+                                                        juce::NormalisableRange<float>(-100.f, 100.f, 1.f), 0.f);
         vector.emplace_back(fineTuningCents);
 
         /*Pitch Wheel range in semitones*/
         pitchWheelRange = new juce::AudioParameterFloat("pitchWheelRange",
                                                         "Pitch Wheel Semitones",
-                                                        juce::NormalisableRange<float>(0, 12, 1), 2);
+                                                        juce::NormalisableRange<float>(0.f, 12.f, 1.f), 2.f);
         vector.emplace_back(pitchWheelRange);
 
         /*The global starting point of on waveform. in multiples of 2*pi*/
@@ -102,19 +102,19 @@ struct AdditiveSynthParameters : juce::AudioProcessorValueTreeState::Listener
         /*Sets the angle range for phase start randomization on new voices and unison. multiple of 2*pi*/
         randomPhaseRange = new juce::AudioParameterFloat("globalPhaseRNG",
                                                          "Phase Randomness",
-                                                         juce::NormalisableRange<float>(0.f, 1.f, 0.01), 0);
+                                                         juce::NormalisableRange<float>(0.f, 1.f, 0.01), 0.f);
         vector.emplace_back(randomPhaseRange);
 
         /*Pairs of unison to add (one tuned higher and one lower)*/
         unisonPairCount = new juce::AudioParameterFloat("unisonCount",
                                                         "Unison Count",
-                                                        juce::NormalisableRange<float>(0, 5, 1), 0);
+                                                        juce::NormalisableRange<float>(0.f, 5.f, 1.f), 0.f);
         vector.emplace_back(unisonPairCount);
 
         /*Detuning of the farthest unison pair in cents. The pairs inbetween have a tuning that is evenly distributed between the normal frequency and this one*/
         unisonDetune = new juce::AudioParameterFloat("unisonDetune",
                                                      "Unison Detune",
-                                                     juce::NormalisableRange<float>(0, 100, 1), 0);
+                                                     juce::NormalisableRange<float>(0.f, 100.f, 1.f), 0.f);
         vector.emplace_back(unisonDetune);
 
         /*Level of the unison in linear amplitude*/

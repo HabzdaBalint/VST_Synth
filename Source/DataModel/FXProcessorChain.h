@@ -33,7 +33,12 @@ public:
         }
     }
 
-    ~FXProcessorChain() {}
+    ~FXProcessorChain()
+    {
+        delete(equalizer);
+        delete(filter);
+        //delete all fx
+    }
 
     const juce::String getName() const override { return "Effect Chain"; }
     bool acceptsMidi() const override { return true; }
@@ -55,18 +60,6 @@ public:
 
     void prepareToPlay(double sampleRate, int samplesPerBlock) override
     {
-        for (size_t i = 0; i < FX_MAX_SLOTS; i++)
-        {
-            if (fxProcessorChain[i] != nullptr)
-            {
-                fxProcessorChain[i]->setPlayConfigDetails(getMainBusNumInputChannels(),
-                    getMainBusNumOutputChannels(),
-                    sampleRate, samplesPerBlock);
-
-                fxProcessorChain[i]->prepareToPlay(sampleRate, samplesPerBlock);
-            }
-        }
-
         updateGraph();
     }
 
@@ -81,12 +74,9 @@ public:
 
     void processBlock(juce::AudioSampleBuffer &buffer, juce::MidiBuffer &midiMessages) override
     {
-        //todo potentially move to a listener instead of the audio callback
-        updateGraph();
-
         for (size_t i = 0; i < FX_MAX_SLOTS; i++)
         {
-            if( !bypassSlot[i] && fxProcessorChain[i] != nullptr )
+            if (!bypassSlot[i] && fxProcessorChain[i] != nullptr)
                 fxProcessorChain[i]->processBlock(buffer, midiMessages);
         }
     }
@@ -105,8 +95,8 @@ public:
     FXProcessorChainParameters chainParameters{[this]()
                                                { updateGraph(); }};
 
-    FXEqualizer* equalizer = nullptr;
-    FXFilter* filter = nullptr;
+    FXEqualizer* equalizer = new FXEqualizer();
+    FXFilter* filter = new FXFilter();
     FXCompressor* compressor = nullptr;
     FXDelay* delay = nullptr;
     FXReverb* reverb = nullptr;
@@ -129,9 +119,13 @@ private:
                 break;
             case 1:
                 fxProcessorChain[i] = equalizer;
+                equalizer->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+                equalizer->prepareToPlay(getSampleRate(), getBlockSize());
                 break;
             case 2:
                 fxProcessorChain[i] = filter;
+                filter->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+                filter->prepareToPlay(getSampleRate(), getBlockSize());
                 break;
             case 3:
                 fxProcessorChain[i] = compressor;
