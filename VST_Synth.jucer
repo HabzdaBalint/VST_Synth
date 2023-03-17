@@ -4,11 +4,17 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               pluginFormats="buildStandalone,buildVST3" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
               pluginManufacturer="HabzdaBalint" cppLanguageStandard="20" aaxIdentifier="https://github.com/HabzdaBalint/VST_Synth"
-              companyWebsite="https://github.com/HabzdaBalint/VST_Synth">
+              companyWebsite="https://github.com/HabzdaBalint/VST_Synth" pluginVST3Category="Instrument,Synth">
   <MAINGROUP id="LS9iqU" name="VST_Synth">
     <GROUP id="{275637AC-08AF-D899-4B9D-E950976BC3EF}" name="Source">
       <GROUP id="{98E83673-5F1A-279E-EB46-947F82C731E6}" name="View"/>
       <GROUP id="{C59C8F0C-E530-D1E2-F43E-1365982B8990}" name="DataModel">
+        <FILE id="EvbrIE" name="FXReverbParameters.h" compile="0" resource="0"
+              file="Source/DataModel/FXReverbParameters.h"/>
+        <FILE id="bmmten" name="FXDelayParameters.h" compile="0" resource="0"
+              file="Source/DataModel/FXDelayParameters.h"/>
+        <FILE id="wYVfMz" name="FXCompressorParameters.h" compile="0" resource="0"
+              file="Source/DataModel/FXCompressorParameters.h"/>
         <FILE id="fgKJtM" name="FXFilterParameters.h" compile="0" resource="0"
               file="Source/DataModel/FXFilterParameters.h"/>
         <FILE id="UTt0IE" name="FXEqualizerParameters.h" compile="0" resource="0"
@@ -46,23 +52,23 @@
   <EXPORTFORMATS>
     <VS2022 targetFolder="Builds/VisualStudio2022">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="VST_Synth"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="VST_Synth"/>
+        <CONFIGURATION isDebug="1" name="Debug"/>
+        <CONFIGURATION isDebug="0" name="Release"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_audio_basics" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_core" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_dsp" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../juce"/>
+        <MODULEPATH id="juce_audio_devices" path="../../juce"/>
+        <MODULEPATH id="juce_audio_formats" path="../../juce"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../juce"/>
+        <MODULEPATH id="juce_audio_processors" path="../../juce"/>
+        <MODULEPATH id="juce_audio_utils" path="../../juce"/>
+        <MODULEPATH id="juce_core" path="../../juce"/>
+        <MODULEPATH id="juce_data_structures" path="../../juce"/>
+        <MODULEPATH id="juce_dsp" path="../../juce"/>
+        <MODULEPATH id="juce_events" path="../../juce"/>
+        <MODULEPATH id="juce_graphics" path="../../juce"/>
+        <MODULEPATH id="juce_gui_basics" path="../../juce"/>
+        <MODULEPATH id="juce_gui_extra" path="../../juce"/>
       </MODULEPATHS>
     </VS2022>
   </EXPORTFORMATS>

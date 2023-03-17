@@ -27,6 +27,8 @@ VST_SynthAudioProcessor::VST_SynthAudioProcessor()
     fxChain->registerListeners(apvts);
     fxChain->equalizer->registerListeners(apvts);
     fxChain->filter->registerListeners(apvts);
+    fxChain->compressor->registerListeners(apvts);
+    fxChain->delay->registerListeners(apvts);
 }
 
 VST_SynthAudioProcessor::~VST_SynthAudioProcessor()
@@ -121,7 +123,6 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     additiveSynth->processBlock(buffer, midiMessages);
 
-    //todo other fx
     fxChain->processBlock(buffer, midiMessages);
 }
 
@@ -158,7 +159,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
     fxChain->chainParameters.createParameterLayout(layout);
     fxChain->equalizer->equalizerParameters.createParameterLayout(layout);
     fxChain->filter->filterParameters.createParameterLayout(layout);
-    
+    fxChain->compressor->compressorParameters.createParameterLayout(layout);
+    fxChain->delay->delayParameters.createParameterLayout(layout);
+
     return layout;
 }
 

@@ -37,7 +37,11 @@ public:
     {
         delete(equalizer);
         delete(filter);
-        //delete all fx
+        delete(compressor);
+        delete(delay);
+        delete(reverb);
+        delete(chorus);
+        delete(phaser);
     }
 
     const juce::String getName() const override { return "Effect Chain"; }
@@ -97,11 +101,11 @@ public:
 
     FXEqualizer* equalizer = new FXEqualizer();
     FXFilter* filter = new FXFilter();
-    FXCompressor* compressor = nullptr;
-    FXDelay* delay = nullptr;
-    FXReverb* reverb = nullptr;
-    FXChorus* chorus = nullptr;
-    FXPhaser* phaser = nullptr;
+    FXCompressor* compressor = new FXCompressor();
+    FXDelay* delay = new FXDelay();
+    FXReverb* reverb = new FXReverb();
+    FXChorus* chorus = new FXChorus();
+    FXPhaser* phaser = new FXPhaser();
 private:
     juce::AudioProcessor* fxProcessorChain[FX_MAX_SLOTS] = {};
     bool bypassSlot[FX_MAX_SLOTS] = {};
@@ -129,18 +133,28 @@ private:
                 break;
             case 3:
                 fxProcessorChain[i] = compressor;
+                compressor->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+                compressor->prepareToPlay(getSampleRate(), getBlockSize());
                 break;
             case 4:
                 fxProcessorChain[i] = delay;
+                delay->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+                delay->prepareToPlay(getSampleRate(), getBlockSize());
                 break;
             case 5:
                 fxProcessorChain[i] = reverb;
+                reverb->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+                reverb->prepareToPlay(getSampleRate(), getBlockSize());
                 break;
             case 6:
                 fxProcessorChain[i] = chorus;
+                chorus->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+                chorus->prepareToPlay(getSampleRate(), getBlockSize());
                 break;
             case 7:
                 fxProcessorChain[i] = phaser;
+                phaser->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+                phaser->prepareToPlay(getSampleRate(), getBlockSize());
                 break;
             default:
                 break;

@@ -10,8 +10,10 @@
 
 #pragma once
 
-#include <JuceHeader.h>
 #include "FXProcessorBase.h"
+#include "FXReverbParameters.h"
+
+using Reverb = juce::dsp::Reverb;
 
 class FXReverb : public FXProcessorBase
 {
@@ -19,5 +21,5 @@ public:
     FXReverb() {}
     ~FXReverb() {}
 private:
-    
+    Reverb reverb;
 };

@@ -21,7 +21,10 @@ using PassFilter = juce::dsp::ProcessorChain<Filter, Filter>;
 class FXFilter : public FXProcessorBase
 {
 public:
-    FXFilter(){}
+    FXFilter()
+    {
+        dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
+    }
 
     ~FXFilter(){}
 
@@ -30,13 +33,18 @@ public:
     void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override
     {
         updateFilterParameters();
-        juce::dsp::ProcessSpec processSpec;
-        processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
-        processSpec.numChannels = 1;
-        processSpec.sampleRate = sampleRate;
+        juce::dsp::ProcessSpec filterSpec;
+        filterSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
+        filterSpec.numChannels = 1;
+        filterSpec.sampleRate = sampleRate;
+        leftChain.prepare(filterSpec);
+        rightChain.prepare(filterSpec);
 
-        leftChain.prepare(processSpec);
-        rightChain.prepare(processSpec);
+        juce::dsp::ProcessSpec dryWetSpec;
+        dryWetSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
+        dryWetSpec.numChannels = getNumOutputChannels();
+        dryWetSpec.sampleRate = sampleRate;
+        dryWetMixer.prepare(dryWetSpec);
     }
 
     void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override
@@ -48,8 +56,10 @@ public:
         juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
         juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
 
+        dryWetMixer.pushDrySamples(audioBlock);
         leftChain.process(leftContext);
         rightChain.process(rightContext);
+        dryWetMixer.mixWetSamples(audioBlock);
     }
 
     /// @brief Sets the new coefficients for the peak filters
@@ -57,6 +67,7 @@ public:
     {
         if(getSampleRate() > 0)
         {
+            dryWetMixer.setWetMixProportion(filterParameters.dryWetMix->get()/100); 
             float frequency = filterParameters.cutoffFrequency->get();
             juce::ReferenceCountedArray<Coefficients> coeffs;
             FilterSlope slope = static_cast<FilterSlope>(filterParameters.filterSlope->getIndex());
@@ -83,7 +94,6 @@ public:
     {
         apvts.addParameterListener("filterMix", &filterParameters);
         apvts.addParameterListener("filterCutoff", &filterParameters);
-        apvts.addParameterListener("filterResonance", &filterParameters);
         apvts.addParameterListener("filterType", &filterParameters);
         apvts.addParameterListener("filterSlope", &filterParameters);
     }
@@ -92,6 +102,7 @@ public:
 private:
     PassFilter leftChain;
     PassFilter rightChain;
+    juce::dsp::DryWetMixer<float> dryWetMixer;
 
     juce::ReferenceCountedArray<Coefficients> makeLowPassCoefficients(float frequency, int slope)
     {

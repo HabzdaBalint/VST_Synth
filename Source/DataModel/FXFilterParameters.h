@@ -33,7 +33,7 @@ struct FXFilterParameters : juce::AudioProcessorValueTreeState::Listener
     juce::StringArray typeChoices = {"Low-pass", "High-pass"};
     juce::StringArray slopeChoices = {"6dB/Oct", "12dB/Oct", "18dB/Oct", "24dB/Oct"};
 
-    juce::AudioParameterFloat* mix = nullptr;
+    juce::AudioParameterFloat* dryWetMix = nullptr;
     juce::AudioParameterFloat* cutoffFrequency = nullptr;
     juce::AudioParameterChoice* filterType = nullptr;
     juce::AudioParameterChoice* filterSlope = nullptr;
@@ -44,10 +44,10 @@ struct FXFilterParameters : juce::AudioProcessorValueTreeState::Listener
     {
         std::vector<std::unique_ptr<juce::RangedAudioParameter>> vector;
 
-        mix = new juce::AudioParameterFloat("filterMix",
-                                            "Mix",
-                                            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
-        vector.emplace_back(mix);
+        dryWetMix = new juce::AudioParameterFloat("filterMix",
+                                                  "Wet%",
+                                                  juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
+        vector.emplace_back(dryWetMix);
         
         filterType = new juce::AudioParameterChoice("filterType", "Filter Type", typeChoices, 0);
         vector.emplace_back(filterType);
