@@ -1,3 +1,13 @@
+/*
+==============================================================================
+
+    FXProcessorBase.h
+    Created: 13 Mar 2023 2:15:01pm
+    Author:  Habama10
+
+==============================================================================
+*/
+
 #pragma once
 
 #include <JuceHeader.h>
@@ -6,7 +16,7 @@ class FXProcessorBase : public juce::AudioProcessor
 {
 public:
     FXProcessorBase() : AudioProcessor(BusesProperties().withInput("Input", juce::AudioChannelSet::stereo())
-                                                           .withOutput("Output", juce::AudioChannelSet::stereo())) {}
+                                                        .withOutput("Output", juce::AudioChannelSet::stereo())) {}
 
     void prepareToPlay(double, int) override {}
     void releaseResources() override {}

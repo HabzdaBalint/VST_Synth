@@ -98,7 +98,7 @@ public:
         apvts.addParameterListener("filterSlope", &filterParameters);
     }
 
-    FXFilterParameters filterParameters{ [this] () { updateFilterParameters(); } };
+    FXFilterParameters filterParameters { [this] () { updateFilterParameters(); } };
 private:
     PassFilter leftChain;
     PassFilter rightChain;

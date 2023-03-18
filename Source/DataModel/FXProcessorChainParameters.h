@@ -12,7 +12,7 @@
 
 #include <JuceHeader.h>
 
-constexpr int FX_MAX_SLOTS = 5;
+constexpr int FX_MAX_SLOTS = 7;
 
 struct FXProcessorChainParameters : juce::AudioProcessorValueTreeState::Listener
 {
