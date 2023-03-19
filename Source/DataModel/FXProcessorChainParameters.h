@@ -12,13 +12,13 @@
 
 #include <JuceHeader.h>
 
-constexpr int FX_MAX_SLOTS = 7;
+constexpr int FX_MAX_SLOTS = 8;
 
 struct FXProcessorChainParameters : juce::AudioProcessorValueTreeState::Listener
 {
     FXProcessorChainParameters(std::function<void()> update) : update(update) {}
 
-    juce::StringArray choices = {"Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser"};
+    juce::StringArray choices = {"Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo"};
 
     juce::AudioParameterBool *bypassProcessor[FX_MAX_SLOTS] = {};
     juce::AudioParameterChoice *choiceProcessor[FX_MAX_SLOTS] = {};

@@ -51,7 +51,6 @@ public:
         dryWetMixer.mixWetSamples(audioBlock);
     }
 
-    /// @brief Sets the new coefficients for the peak filters
     void updateCompressorParameters()
     {
         if(getSampleRate() > 0)

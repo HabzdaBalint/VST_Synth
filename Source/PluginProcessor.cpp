@@ -32,6 +32,7 @@ VST_SynthAudioProcessor::VST_SynthAudioProcessor()
     fxChain->reverb->registerListeners(apvts);
     fxChain->chorus->registerListeners(apvts);
     fxChain->phaser->registerListeners(apvts);
+    fxChain->tremolo->registerListeners(apvts);
 }
 
 VST_SynthAudioProcessor::~VST_SynthAudioProcessor()
@@ -167,6 +168,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
     fxChain->reverb->reverbParameters.createParameterLayout(layout);
     fxChain->chorus->chorusParameters.createParameterLayout(layout);
     fxChain->phaser->phaserParameters.createParameterLayout(layout);
+    fxChain->tremolo->tremoloParameters.createParameterLayout(layout);
 
     return layout;
 }

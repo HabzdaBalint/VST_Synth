@@ -35,7 +35,7 @@ struct FXChorusParameters : public juce::AudioProcessorValueTreeState::Listener
 
         rate = new juce::AudioParameterFloat("chorusRate", 
                                              "Rate",
-                                             juce::NormalisableRange<float>(0.1, 30.f, 0.01), 10.f);
+                                             juce::NormalisableRange<float>(0.1, 25.f, 0.01), 10.f);
         vector.emplace_back(rate);
 
         delay = new juce::AudioParameterFloat("chorusDelay", 
@@ -50,7 +50,7 @@ struct FXChorusParameters : public juce::AudioProcessorValueTreeState::Listener
 
         feedback = new juce::AudioParameterFloat("chorusFeedback", 
                                                  "Feedback",
-                                                 juce::NormalisableRange<float>(-100.f, 100.f, 0.1), 20.f);
+                                                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 20.f);
         vector.emplace_back(feedback);
 
         layout.add(vector.begin(), vector.end());

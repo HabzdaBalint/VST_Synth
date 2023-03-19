@@ -41,6 +41,9 @@
         <FILE id="N6v6m4" name="FXReverb.h" compile="0" resource="0" file="Source/DataModel/FXReverb.h"/>
         <FILE id="EvbrIE" name="FXReverbParameters.h" compile="0" resource="0"
               file="Source/DataModel/FXReverbParameters.h"/>
+        <FILE id="DtbO9a" name="FXTremolo.h" compile="0" resource="0" file="Source/DataModel/FXTremolo.h"/>
+        <FILE id="KrDK2U" name="FXTremoloParameters.h" compile="0" resource="0"
+              file="Source/DataModel/FXTremoloParameters.h"/>
       </GROUP>
       <FILE id="XmiHcY" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
@@ -49,7 +52,27 @@
             file="Source/PluginProcessor.cpp"/>
       <FILE id="ecLO6z" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
-      <GROUP id="{98E83673-5F1A-279E-EB46-947F82C731E6}" name="View"/>
+      <GROUP id="{98E83673-5F1A-279E-EB46-947F82C731E6}" name="View">
+        <FILE id="MKB4HB" name="AdditiveSynthesizerEditor.h" compile="0" resource="0"
+              file="Source/View/AdditiveSynthesizerEditor.h"/>
+        <FILE id="SPAHXh" name="FXChorusEditor.h" compile="0" resource="0"
+              file="Source/View/FXChorusEditor.h"/>
+        <FILE id="GZ9qwa" name="FXCompressorEditor.h" compile="0" resource="0"
+              file="Source/View/FXCompressorEditor.h"/>
+        <FILE id="DtE2hq" name="FXDelayEditor.h" compile="0" resource="0" file="Source/View/FXDelayEditor.h"/>
+        <FILE id="t7V5Yh" name="FXEqualizerEditor.h" compile="0" resource="0"
+              file="Source/View/FXEqualizerEditor.h"/>
+        <FILE id="htg5LU" name="FXFilterEditor.h" compile="0" resource="0"
+              file="Source/View/FXFilterEditor.h"/>
+        <FILE id="gdgedt" name="FXPhaserEditor.h" compile="0" resource="0"
+              file="Source/View/FXPhaserEditor.h"/>
+        <FILE id="NKfRwY" name="FXProcessorChainEditor.h" compile="0" resource="0"
+              file="Source/View/FXProcessorChainEditor.h"/>
+        <FILE id="Y8qMtl" name="FXReverbEditor.h" compile="0" resource="0"
+              file="Source/View/FXReverbEditor.h"/>
+        <FILE id="MEX1cB" name="HarmonicsEditor.h" compile="0" resource="0"
+              file="Source/View/HarmonicsEditor.h"/>
+      </GROUP>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>

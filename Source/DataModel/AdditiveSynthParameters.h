@@ -59,7 +59,7 @@ struct AdditiveSynthParameters : juce::AudioProcessorValueTreeState::Listener
             // Generating parameters to represent the linear gain values of the partials
             partialGain[i] = new juce::AudioParameterFloat(getPartialGainParameterName(i),
                                                            namePrefix + "Gain",
-                                                           juce::NormalisableRange<float>(0.f, 1.f, 0.001), 0.f);   //todo reset to 0.f
+                                                           juce::NormalisableRange<float>(0.f, 1.f, 0.001), 0.f);
             vector.emplace_back(partialGain[i]);
 
             // Generating parameters to represent the phase of the partials. These are represented as multiples of 2*pi

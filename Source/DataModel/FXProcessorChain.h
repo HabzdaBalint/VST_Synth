@@ -20,6 +20,7 @@
 #include "FXReverb.h"
 #include "FXChorus.h"
 #include "FXPhaser.h"
+#include "FXTremolo.h"
 
 class FXProcessorChain : public juce::AudioProcessor
 {
@@ -42,6 +43,7 @@ public:
         delete(reverb);
         delete(chorus);
         delete(phaser);
+        delete(tremolo);
     }
 
     const juce::String getName() const override { return "Effect Chain"; }
@@ -96,8 +98,7 @@ public:
         }
     }
 
-    FXProcessorChainParameters chainParameters{[this]()
-                                               { updateGraph(); }};
+    FXProcessorChainParameters chainParameters{ [this] () { updateGraph(); } };
 
     FXEqualizer* equalizer = new FXEqualizer();
     FXFilter* filter = new FXFilter();
@@ -106,6 +107,7 @@ public:
     FXReverb* reverb = new FXReverb();
     FXChorus* chorus = new FXChorus();
     FXPhaser* phaser = new FXPhaser();
+    FXTremolo* tremolo = new FXTremolo();
 private:
     juce::AudioProcessor* fxProcessorChain[FX_MAX_SLOTS] = {};
     bool bypassSlot[FX_MAX_SLOTS] = {};
@@ -155,6 +157,11 @@ private:
                 fxProcessorChain[i] = phaser;
                 phaser->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
                 phaser->prepareToPlay(getSampleRate(), getBlockSize());
+                break;
+            case 8:
+                fxProcessorChain[i] = tremolo;
+                tremolo->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+                tremolo->prepareToPlay(getSampleRate(), getBlockSize());
                 break;
             default:
                 break;

@@ -18,7 +18,7 @@ struct FXDelayParameters : public juce::AudioProcessorValueTreeState::Listener
 {
     FXDelayParameters(std::function<void()> update) : update(update) {}
 
-    juce::AudioParameterFloat* dryWetMix;
+    juce::AudioParameterFloat* mix;
     juce::AudioParameterFloat* feedback;
     juce::AudioParameterFloat* time;
     juce::AudioParameterFloat* filterFrequency;
@@ -30,10 +30,10 @@ struct FXDelayParameters : public juce::AudioProcessorValueTreeState::Listener
     {
         std::vector<std::unique_ptr<juce::RangedAudioParameter>> vector;
 
-        dryWetMix = new juce::AudioParameterFloat("delayMix",
-                                                  "Wet%",
-                                                  juce::NormalisableRange<float>(0.f, 100.f, 0.1), 35.f);
-        vector.emplace_back(dryWetMix);
+        mix = new juce::AudioParameterFloat("delayMix",
+                                            "Wet%",
+                                            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 35.f);
+        vector.emplace_back(mix);
 
         feedback = new juce::AudioParameterFloat("delayFeedback",
                                                  "Feedback",
@@ -42,7 +42,7 @@ struct FXDelayParameters : public juce::AudioProcessorValueTreeState::Listener
 
         time = new juce::AudioParameterFloat("delayTime",
                                              "Time",
-                                             juce::NormalisableRange<float>(1.f, DELAY_MAXLENGTH, 0.1), 50.f);
+                                             juce::NormalisableRange<float>(1.f, DELAY_MAXLENGTH, 0.1), 250.f);
         vector.emplace_back(time);
 
         filterFrequency = new juce::AudioParameterFloat("delayFilterFrequency",

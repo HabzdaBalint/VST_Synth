@@ -76,12 +76,11 @@ public:
         dryWetMixer.mixWetSamples(audioBlock);
     }
 
-    /// @brief Sets the new coefficients for the peak filters
     void updateDelayParameters()
     {
         if(getSampleRate() > 0)
         {
-            dryWetMixer.setWetMixProportion(delayParameters.dryWetMix->get()/100);
+            dryWetMixer.setWetMixProportion(delayParameters.mix->get()/100);
             feedback = delayParameters.feedback->get()/100;
             delay.setDelay( (float)std::round( ( delayParameters.time->get() / 1000 ) * getSampleRate() ) );
             float freq = delayParameters.filterFrequency->get();

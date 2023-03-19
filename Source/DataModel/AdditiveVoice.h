@@ -127,6 +127,33 @@ public:
         }
     }
 
+private:
+    juce::AudioBuffer<float> generatedBuffer;
+    AdditiveSynthParametersAtomic* synthParametersAtomic;
+    
+    juce::Random rng;
+
+    juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap;
+
+    float velocityGain = 0;
+    float currentNote = 0;
+    float bypassPlaying = false;
+
+    float pitchWheelOffset = 0;
+
+    float fundamentalCurrentAngle[2] = { 0,0 };
+    float fundamentalAngleDelta = 0;
+    float fundamentalFrequency = 0;
+
+    float unisonCurrentAngles[2][10] = { { 0,0,0,0,0,0,0,0,0,0 }, { 0,0,0,0,0,0,0,0,0,0 } };
+    float unisonAngleDeltas[10] = { 0,0,0,0,0,0,0,0,0,0 };
+    float unisonFrequencyOffsets[5] = { 0,0,0,0,0 };
+
+    float highestCurrentFrequency = 0;
+    int mipMapIndex = 0;
+
+    juce::ADSR amplitudeADSR;
+
     /// @brief Used to randomise the starting phases of all generated waveforms
     void updatePhases()
     {
@@ -243,6 +270,8 @@ public:
     {
         juce::ADSR::Parameters params;
 
+        amplitudeADSR.setSampleRate(getSampleRate());
+
         params.attack = synthParametersAtomic->attack;
         params.decay = synthParametersAtomic->decay;
         params.sustain = synthParametersAtomic->sustain;
@@ -250,30 +279,4 @@ public:
 
         amplitudeADSR.setParameters(params);
     }
-
-    juce::ADSR amplitudeADSR;
-private:
-    juce::AudioBuffer<float> generatedBuffer;
-    AdditiveSynthParametersAtomic* synthParametersAtomic;
-    
-    juce::Random rng;
-
-    juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap;
-
-    float velocityGain = 0;
-    float currentNote = 0;
-    float bypassPlaying = false;
-
-    float pitchWheelOffset = 0;
-
-    float fundamentalCurrentAngle[2] = { 0,0 };
-    float fundamentalAngleDelta = 0;
-    float fundamentalFrequency = 0;
-
-    float unisonCurrentAngles[2][10] = { { 0,0,0,0,0,0,0,0,0,0 }, { 0,0,0,0,0,0,0,0,0,0 } };
-    float unisonAngleDeltas[10] = { 0,0,0,0,0,0,0,0,0,0 };
-    float unisonFrequencyOffsets[5] = { 0,0,0,0,0 };
-
-    float highestCurrentFrequency = 0;
-    int mipMapIndex = 0;
 };

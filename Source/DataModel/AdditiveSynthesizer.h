@@ -70,7 +70,6 @@ public:
             if (auto voice = dynamic_cast<AdditiveVoice *>(synth->getVoice(i)))
             {
                 voice->setCurrentPlaybackSampleRate(sampleRate);
-                voice->amplitudeADSR.setSampleRate(sampleRate);
             }
         }
 
@@ -112,7 +111,6 @@ public:
         synthParametersAtomic.sustain = synthParameters.sustain->get();
         synthParametersAtomic.release = synthParameters.release->get() / 1000;
 
-        juce::String paramId;
         for (size_t i = 0; i < HARMONIC_N; i++)
         {
             synthParametersAtomic.partialGain[i] = synthParameters.partialGain[i]->get();
@@ -158,8 +156,7 @@ public:
         apvts.addParameterListener("amplitudeADSRRelease", &synthParameters);
     }
 
-    AdditiveSynthParameters synthParameters{[this]()
-                                    { updateSynthParameters(); }};
+    AdditiveSynthParameters synthParameters{ [this] () { updateSynthParameters(); } };
 private:
     juce::Synthesiser* synth = new juce::Synthesiser();
     juce::dsp::Gain<float>* synthGain = new juce::dsp::Gain<float>();
@@ -183,5 +180,6 @@ private:
         return sample;
     }
 
+    //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AdditiveSynthesizer)
 };

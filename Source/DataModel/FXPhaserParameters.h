@@ -35,7 +35,7 @@ struct FXPhaserParameters : public juce::AudioProcessorValueTreeState::Listener
 
         rate = new juce::AudioParameterFloat("phaserRate", 
                                              "Rate",
-                                             juce::NormalisableRange<float>(0.1, 30.f, 0.01), 10.f);
+                                             juce::NormalisableRange<float>(0.1, 25.f, 0.01), 10.f);
         vector.emplace_back(rate);
 
         depth = new juce::AudioParameterFloat("phaserDepth", 
@@ -50,7 +50,7 @@ struct FXPhaserParameters : public juce::AudioProcessorValueTreeState::Listener
 
         feedback = new juce::AudioParameterFloat("phaserFeedback", 
                                                  "Feedback",
-                                                 juce::NormalisableRange<float>(-100.f, 100.f, 0.1), 40.f);
+                                                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 40.f);
         vector.emplace_back(feedback);
 
         layout.add(vector.begin(), vector.end());
