@@ -25,14 +25,6 @@ VST_SynthAudioProcessor::VST_SynthAudioProcessor()
 {
     additiveSynth->registerListeners(apvts);
     fxChain->registerListeners(apvts);
-    fxChain->equalizer->registerListeners(apvts);
-    fxChain->filter->registerListeners(apvts);
-    fxChain->compressor->registerListeners(apvts);
-    fxChain->delay->registerListeners(apvts);
-    fxChain->reverb->registerListeners(apvts);
-    fxChain->chorus->registerListeners(apvts);
-    fxChain->phaser->registerListeners(apvts);
-    fxChain->tremolo->registerListeners(apvts);
 }
 
 VST_SynthAudioProcessor::~VST_SynthAudioProcessor()
@@ -135,8 +127,8 @@ bool VST_SynthAudioProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor* VST_SynthAudioProcessor::createEditor()
 {
-    return new VST_SynthAudioProcessorEditor(*this);
-    //return new juce::GenericAudioProcessorEditor(*this);
+    //return new VST_SynthAudioProcessorEditor(*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -160,15 +152,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
     additiveSynth->synthParameters.createParameterLayout(layout);
-    fxChain->chainParameters.createParameterLayout(layout);
-    fxChain->equalizer->equalizerParameters.createParameterLayout(layout);
-    fxChain->filter->filterParameters.createParameterLayout(layout);
-    fxChain->compressor->compressorParameters.createParameterLayout(layout);
-    fxChain->delay->delayParameters.createParameterLayout(layout);
-    fxChain->reverb->reverbParameters.createParameterLayout(layout);
-    fxChain->chorus->chorusParameters.createParameterLayout(layout);
-    fxChain->phaser->phaserParameters.createParameterLayout(layout);
-    fxChain->tremolo->tremoloParameters.createParameterLayout(layout);
+    fxChain->createParameters(layout);
 
     return layout;
 }

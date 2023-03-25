@@ -96,6 +96,28 @@ public:
             apvts.addParameterListener(chainParameters.getFXBypassParameterName(i), &chainParameters);
             apvts.addParameterListener(chainParameters.getFXChoiceParameterName(i), &chainParameters);
         }
+
+        equalizer->registerListeners(apvts);
+        filter->registerListeners(apvts);
+        compressor->registerListeners(apvts);
+        delay->registerListeners(apvts);
+        reverb->registerListeners(apvts);
+        chorus->registerListeners(apvts);
+        phaser->registerListeners(apvts);
+        tremolo->registerListeners(apvts);
+    }
+
+    void createParameters(juce::AudioProcessorValueTreeState::ParameterLayout &layout)
+    {
+        chainParameters.createParameterLayout(layout);
+        equalizer->equalizerParameters.createParameterLayout(layout);
+        filter->filterParameters.createParameterLayout(layout);
+        compressor->compressorParameters.createParameterLayout(layout);
+        delay->delayParameters.createParameterLayout(layout);
+        reverb->reverbParameters.createParameterLayout(layout);
+        chorus->chorusParameters.createParameterLayout(layout);
+        phaser->phaserParameters.createParameterLayout(layout);
+        tremolo->tremoloParameters.createParameterLayout(layout);
     }
 
     FXProcessorChainParameters chainParameters{ [this] () { updateGraph(); } };
