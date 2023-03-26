@@ -51,29 +51,35 @@ public:
         dryWetMixer.mixWetSamples(audioBlock);
     }
 
-    void updateCompressorParameters()
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
     {
-        if(getSampleRate() > 0)
-        {
-            dryWetMixer.setWetMixProportion(compressorParameters.dryWetMix->get()/100);
-            compressor.setThreshold(compressorParameters.threshold->get());
-            compressor.setRatio(compressorParameters.ratio->get());
-            compressor.setAttack(compressorParameters.attack->get());
-            compressor.setRelease(compressorParameters.release->get());
-        }
+        this->apvts = &apvts;
+        registerListeners();
     }
 
-    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
+    void updateCompressorParameters()
     {
-        apvts.addParameterListener("compressorMix", &compressorParameters);
-        apvts.addParameterListener("compressorThreshold", &compressorParameters);
-        apvts.addParameterListener("compressorRatio", &compressorParameters);
-        apvts.addParameterListener("compressorAttack", &compressorParameters);
-        apvts.addParameterListener("compressorRelease", &compressorParameters);
+        dryWetMixer.setWetMixProportion(apvts->getRawParameterValue("compressorMix")->load()/100);
+        compressor.setThreshold(apvts->getRawParameterValue("compressorThreshold")->load());
+        compressor.setRatio(apvts->getRawParameterValue("compressorRatio")->load());
+        compressor.setAttack(apvts->getRawParameterValue("compressorAttack")->load());
+        compressor.setRelease(apvts->getRawParameterValue("compressorRelease")->load());
     }
 
     FXCompressorParameters compressorParameters{ [this] () { updateCompressorParameters(); } };
 private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Compressor Parameters", compressorParameters.createParameterLayout() };;
+
     DryWetMixer dryWetMixer;
     Compressor compressor;
+
+    void registerListeners()
+    {
+        apvts->addParameterListener("compressorMix", &compressorParameters);
+        apvts->addParameterListener("compressorThreshold", &compressorParameters);
+        apvts->addParameterListener("compressorRatio", &compressorParameters);
+        apvts->addParameterListener("compressorAttack", &compressorParameters);
+        apvts->addParameterListener("compressorRelease", &compressorParameters);
+    }
 };

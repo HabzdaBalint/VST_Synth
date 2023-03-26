@@ -62,15 +62,23 @@ public:
         dryWetMixer.mixWetSamples(audioBlock);
     }
 
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
+    {
+        this->apvts = &apvts;
+        registerListeners();
+    }
+
     void updateFilterParameters()
     {
         if(getSampleRate() > 0)
         {
-            dryWetMixer.setWetMixProportion(filterParameters.dryWetMix->get()/100); 
-            float frequency = filterParameters.cutoffFrequency->get();
+            dryWetMixer.setWetMixProportion(apvts->getRawParameterValue("filterMix")->load()/100); 
+            float frequency = apvts->getRawParameterValue("filterCutoff")->load();
+
             juce::ReferenceCountedArray<Coefficients> coeffs;
-            FilterSlope slope = static_cast<FilterSlope>(filterParameters.filterSlope->getIndex());
-            FilterType type = static_cast<FilterType>(filterParameters.filterType->getIndex());
+
+            FilterType type = static_cast<FilterType>(dynamic_cast<juce::AudioParameterChoice*>(apvts->getParameter("filterType"))->getIndex());
+            FilterSlope slope = static_cast<FilterSlope>(dynamic_cast<juce::AudioParameterChoice*>(apvts->getParameter("filterSlope"))->getIndex());
 
             switch (type)
             {
@@ -89,19 +97,22 @@ public:
         }
     }
 
-    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
-    {
-        apvts.addParameterListener("filterMix", &filterParameters);
-        apvts.addParameterListener("filterCutoff", &filterParameters);
-        apvts.addParameterListener("filterType", &filterParameters);
-        apvts.addParameterListener("filterSlope", &filterParameters);
-    }
-
     FXFilterParameters filterParameters { [this] () { updateFilterParameters(); } };
 private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Filter Parameters", filterParameters.createParameterLayout() };;
+
     PassFilter leftChain;
     PassFilter rightChain;
     juce::dsp::DryWetMixer<float> dryWetMixer;
+
+    void registerListeners()
+    {
+        apvts->addParameterListener("filterMix", &filterParameters);
+        apvts->addParameterListener("filterCutoff", &filterParameters);
+        apvts->addParameterListener("filterType", &filterParameters);
+        apvts->addParameterListener("filterSlope", &filterParameters);
+    }
 
     juce::ReferenceCountedArray<Coefficients> makeLowPassCoefficients(float frequency, int slope)
     {

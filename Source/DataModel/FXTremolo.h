@@ -73,25 +73,26 @@ public:
         updateAngles();
     }
 
-    void updateTremoloParameters()
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
     {
-        dryWetMixer.setWetMixProportion(tremoloParameters.mix->get()/100);
-        depth = tremoloParameters.depth->get()/100;
-        rate = tremoloParameters.rate->get();
-        isAutoPan = tremoloParameters.isAutoPan->get();
-        updateAngles();
+        this->apvts = &apvts;
+        registerListeners();
     }
 
-    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
+    void updateTremoloParameters()
     {
-        apvts.addParameterListener("tremoloMix", &tremoloParameters);
-        apvts.addParameterListener("tremoloDepth", &tremoloParameters);
-        apvts.addParameterListener("tremoloRate", &tremoloParameters);
-        apvts.addParameterListener("tremoloAutoPan", &tremoloParameters);
+        dryWetMixer.setWetMixProportion(apvts->getRawParameterValue("tremoloMix")->load()/100);
+        depth = apvts->getRawParameterValue("tremoloDepth")->load()/100;
+        rate = apvts->getRawParameterValue("tremoloRate")->load();
+        isAutoPan = apvts->getRawParameterValue("tremoloAutoPan")->load();
+        updateAngles();
     }
 
     FXTremoloParameters tremoloParameters = { [this] () { updateTremoloParameters(); } };
 private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Tremolo Parameters", tremoloParameters.createParameterLayout() };;
+
     DryWetMixer dryWetMixer;
 
     float depth = 0;
@@ -100,6 +101,14 @@ private:
 
     float currentAngle = 0;
     float angleDelta = 0;
+
+    void registerListeners()
+    {
+        apvts->addParameterListener("tremoloMix", &tremoloParameters);
+        apvts->addParameterListener("tremoloDepth", &tremoloParameters);
+        apvts->addParameterListener("tremoloRate", &tremoloParameters);
+        apvts->addParameterListener("tremoloAutoPan", &tremoloParameters);
+    }
 
     void updateAngles()
     {

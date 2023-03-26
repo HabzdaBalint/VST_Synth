@@ -44,25 +44,34 @@ public:
         phaser.process(context);
     }
 
-    void updatePhaserParameters()
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
     {
-        phaser.setMix(phaserParameters.mix->get()/100);
-        phaser.setRate(phaserParameters.rate->get());
-        phaser.setDepth(phaserParameters.depth->get()/100);
-        phaser.setCentreFrequency(phaserParameters.frequency->get());
-        phaser.setFeedback(phaserParameters.feedback->get()/100);
+        this->apvts = &apvts;
+        registerListeners();
     }
 
-    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
+    void updatePhaserParameters()
     {
-        apvts.addParameterListener("phaserMix", &phaserParameters);
-        apvts.addParameterListener("phaserRate", &phaserParameters);
-        apvts.addParameterListener("phaserDepth", &phaserParameters);
-        apvts.addParameterListener("phaserFrequency", &phaserParameters);
-        apvts.addParameterListener("phaserFeedback", &phaserParameters);
+        phaser.setMix(apvts->getRawParameterValue("phaserMix")->load()/100);
+        phaser.setRate(apvts->getRawParameterValue("phaserRate")->load());
+        phaser.setDepth(apvts->getRawParameterValue("phaserDepth")->load()/100);
+        phaser.setCentreFrequency(apvts->getRawParameterValue("phaserFrequency")->load());
+        phaser.setFeedback(apvts->getRawParameterValue("phaserFeedback")->load()/100);
     }
 
     FXPhaserParameters phaserParameters = { [this] () { updatePhaserParameters(); } };
 private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Phaser Parameters", phaserParameters.createParameterLayout() };;
+
     Phaser phaser;
+
+    void registerListeners()
+    {
+        apvts->addParameterListener("phaserMix", &phaserParameters);
+        apvts->addParameterListener("phaserRate", &phaserParameters);
+        apvts->addParameterListener("phaserDepth", &phaserParameters);
+        apvts->addParameterListener("phaserFrequency", &phaserParameters);
+        apvts->addParameterListener("phaserFeedback", &phaserParameters);
+    }
 };

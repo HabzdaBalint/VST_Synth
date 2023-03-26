@@ -19,27 +19,28 @@ public:
     AdditiveSynthesizer();
     ~AdditiveSynthesizer();
 
-    const juce::String getName() const override;
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
+    const juce::String getName() const { return "Additive Synthesizer"; }
+    bool acceptsMidi() const { return true; }
+    bool producesMidi() const { return false; }
+
     juce::AudioProcessorEditor* createEditor();
-    bool hasEditor() const override;
-    int getNumPrograms() override;
-    int getCurrentProgram() override;
-    void setCurrentProgram(int) override;
-    const juce::String getProgramName(int) override;
-    void changeProgramName(int, const juce::String &) override;
+    bool hasEditor() const { return true; }
 
-    void getStateInformation(juce::MemoryBlock& destData) override;
-    void setStateInformation(const void* data, int sizeInBytes) override;
+    int getNumPrograms() { return 1; }
+    int getCurrentProgram() { return 0; }
+    void setCurrentProgram(int) {}
+    const juce::String getProgramName(int) { return {}; }
+    void changeProgramName(int, const juce::String &) {}
 
-    double getTailLengthSeconds() const override;
+    void getStateInformation(juce::MemoryBlock& destData) {}
+    void setStateInformation(const void* data, int sizeInBytes) {}
+    double getTailLengthSeconds() const { return 0; }
 
     void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override;
     void releaseResources() override;
     void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override;
 
-    void registerListeners(juce::AudioProcessorValueTreeState&);
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts);
 
     /// @brief Generates a sample of the waveform defined by the parameters of the synthesizer. Used for maintaining the lookup table. This function could also be used for accurate rendering, with any number of harmonics, if time is not a constraint
     /// @param angle The angle at which the sample is generated (in radians)
@@ -47,13 +48,18 @@ public:
     /// @return The generated sample
     const float WaveTableFormula(float angle, int harmonics);
 
-    AdditiveSynthParameters synthParameters{ [this] () { updateSynthParameters(); } };
+    AdditiveSynthParameters synthParameters { [this] () { updateSynthParameters(); } };
 private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Synthesizer Parameters", synthParameters.createParameterLayout() };;
+
     juce::Synthesiser* synth = new juce::Synthesiser();
     juce::dsp::Gain<float>* synthGain = new juce::dsp::Gain<float>();
     AdditiveSynthParametersAtomic synthParametersAtomic;
 
     juce::Array<juce::dsp::LookupTableTransform<float> *> mipMap;
+
+    void registerListeners();
 
     /// @brief Updates atomic parameters
     void updateSynthParameters();

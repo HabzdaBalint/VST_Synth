@@ -44,27 +44,36 @@ public:
         reverb.process(context);
     }
 
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
+    {
+        this->apvts = &apvts;
+        registerListeners();
+    }
+
     void updateReverbParameters()
     {
         Reverb::Parameters newParams;
-        newParams.wetLevel = reverbParameters.wetLevel->get()/100;
-        newParams.dryLevel = reverbParameters.dryLevel->get()/100;
-        newParams.roomSize = reverbParameters.roomSize->get()/100;
-        newParams.damping = reverbParameters.damping->get()/100;
-        newParams.width = reverbParameters.width->get()/100;
+        newParams.wetLevel = apvts->getRawParameterValue("reverbWet")->load()/100;
+        newParams.dryLevel = apvts->getRawParameterValue("reverbDry")->load()/100;
+        newParams.roomSize = apvts->getRawParameterValue("reverbRoom")->load()/100;
+        newParams.damping = apvts->getRawParameterValue("reverbDamping")->load()/100;
+        newParams.width = apvts->getRawParameterValue("reverbWidth")->load()/100;
         reverb.setParameters(newParams);
-    }
-
-    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
-    {
-        apvts.addParameterListener("reverbWet", &reverbParameters);
-        apvts.addParameterListener("reverbDry", &reverbParameters);
-        apvts.addParameterListener("reverbRoom", &reverbParameters);
-        apvts.addParameterListener("reverbDamping", &reverbParameters);
-        apvts.addParameterListener("reverbWidth", &reverbParameters);
     }
 
     FXReverbParameters reverbParameters = { [this] () { updateReverbParameters(); } };
 private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Reverb Parameters", reverbParameters.createParameterLayout() };;
+
     Reverb reverb;
+
+    void registerListeners()
+    {
+        apvts->addParameterListener("reverbWet", &reverbParameters);
+        apvts->addParameterListener("reverbDry", &reverbParameters);
+        apvts->addParameterListener("reverbRoom", &reverbParameters);
+        apvts->addParameterListener("reverbDamping", &reverbParameters);
+        apvts->addParameterListener("reverbWidth", &reverbParameters);
+    }
 };

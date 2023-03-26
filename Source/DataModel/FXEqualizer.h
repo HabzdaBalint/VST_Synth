@@ -70,32 +70,41 @@ public:
         }
     }
 
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
+    {
+        this->apvts = &apvts;
+        registerListeners();
+    }
+
     /// @brief Sets the new coefficients for the peak filters
     void updateEqualizerParameters()
     {
-        if(getSampleRate()>0)
+        if(getSampleRate() > 0)
         {            
             for (int i = 0; i < 10; i++)
             {
-                float gain = equalizerParameters.bandGain[i]->get();
+                float gain = apvts->getRawParameterValue(equalizerParameters.getBandGainParameterName(i))->load();
                 leftFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
                 rightFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
             }
         }
     }
 
-    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
+    FXEqualizerParameters equalizerParameters{ [this] () { updateEqualizerParameters(); } };
+private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Equalizer Parameters", equalizerParameters.createParameterLayout() };;
+
+    Filter* leftFilters[10] = {};
+    Filter* rightFilters[10] = {};
+
+    void registerListeners()
     {
         for (size_t i = 0; i < 10; i++)
         {
-            apvts.addParameterListener(equalizerParameters.getBandGainParameterName(i), &equalizerParameters);
+            apvts->addParameterListener(equalizerParameters.getBandGainParameterName(i), &equalizerParameters);
         }
     }
-
-    FXEqualizerParameters equalizerParameters{ [this] () { updateEqualizerParameters(); } };
-private:
-    Filter* leftFilters[10] = {};
-    Filter* rightFilters[10] = {};
 
     /// @brief Scales the peak filter's Q to it's gain. Q starts at 1 at 0dB gain and goes up linearly to 4 at +/-12dB
     /// @param gain The gain level (in dB) to use for scaling

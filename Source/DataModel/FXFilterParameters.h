@@ -33,36 +33,31 @@ struct FXFilterParameters : juce::AudioProcessorValueTreeState::Listener
     juce::StringArray typeChoices = {"Low-pass", "High-pass"};
     juce::StringArray slopeChoices = {"6dB/Oct", "12dB/Oct", "18dB/Oct", "24dB/Oct"};
 
-    juce::AudioParameterFloat* dryWetMix = nullptr;
-    juce::AudioParameterFloat* cutoffFrequency = nullptr;
-    juce::AudioParameterChoice* filterType = nullptr;
-    juce::AudioParameterChoice* filterSlope = nullptr;
-
     std::function<void()> update = nullptr;
 
-    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout &layout)
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
-        std::vector<std::unique_ptr<juce::RangedAudioParameter>> vector;
+        std::unique_ptr<juce::AudioProcessorParameterGroup> filterGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("filterGroup", "Filter", "|"));
 
-        dryWetMix = new juce::AudioParameterFloat("filterMix",
+        auto dryWetMix = std::make_unique<juce::AudioParameterFloat>("filterMix",
                                                   "Wet%",
                                                   juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
-        vector.emplace_back(dryWetMix);
+        filterGroup.get()->addChild(std::move(dryWetMix));
         
-        filterType = new juce::AudioParameterChoice("filterType", "Filter Type", typeChoices, 0);
-        vector.emplace_back(filterType);
+        auto filterType = std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type", typeChoices, 0);
+        filterGroup.get()->addChild(std::move(filterType));
 
-        filterSlope = new juce::AudioParameterChoice("filterSlope", "Filter Slope", slopeChoices, 0);
-        vector.emplace_back(filterSlope);
+        auto filterSlope = std::make_unique<juce::AudioParameterChoice>("filterSlope", "Filter Slope", slopeChoices, 0);
+        filterGroup.get()->addChild(std::move(filterSlope));
 
-        cutoffFrequency = new juce::AudioParameterFloat("filterCutoff",
+        auto cutoffFrequency = std::make_unique<juce::AudioParameterFloat>("filterCutoff",
                                                         "Cutoff Frequency",
                                                         juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.3), 500.f);
-        vector.emplace_back(cutoffFrequency);
+        filterGroup.get()->addChild(std::move(cutoffFrequency));
 
-        layout.add(vector.begin(), vector.end());
+        return filterGroup;
     }
-
 
     void parameterChanged(const juce::String &parameterID, float newValue) override
     {

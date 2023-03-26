@@ -16,44 +16,39 @@ struct FXCompressorParameters : juce::AudioProcessorValueTreeState::Listener
 {
     FXCompressorParameters(std::function<void()> update) : update(update) {}
 
-    juce::AudioParameterFloat* dryWetMix;
-    juce::AudioParameterFloat* threshold;
-    juce::AudioParameterFloat* ratio;
-    juce::AudioParameterFloat* attack;
-    juce::AudioParameterFloat* release;
-
     std::function<void()> update = nullptr;
 
-    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout &layout)
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
-        std::vector<std::unique_ptr<juce::RangedAudioParameter>> vector;
+        std::unique_ptr<juce::AudioProcessorParameterGroup> compressorGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("compressorGroup", "Compressor", "|"));
 
-        dryWetMix = new juce::AudioParameterFloat("compressorMix",
+        auto dryWetMix = std::make_unique<juce::AudioParameterFloat>("compressorMix",
                                                   "Wet%",
                                                   juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
-        vector.emplace_back(dryWetMix);
+        compressorGroup.get()->addChild(std::move(dryWetMix));
 
-        threshold = new juce::AudioParameterFloat("compressorThreshold",
+        auto threshold = std::make_unique<juce::AudioParameterFloat>("compressorThreshold",
                                                   "Threshold",
                                                   juce::NormalisableRange<float>(-60.f, 0.f, 0.01), -18.f);
-        vector.emplace_back(threshold);
+        compressorGroup.get()->addChild(std::move(threshold));
 
-        ratio = new juce::AudioParameterFloat("compressorRatio",
+        auto ratio = std::make_unique<juce::AudioParameterFloat>("compressorRatio",
                                               "Ratio",
                                               juce::NormalisableRange<float>(1.f, 100.f, 0.01), 4.f);
-        vector.emplace_back(ratio);
+        compressorGroup.get()->addChild(std::move(ratio));
 
-        attack = new juce::AudioParameterFloat("compressorAttack",
+        auto attack = std::make_unique<juce::AudioParameterFloat>("compressorAttack",
                                                "Attack",
                                                juce::NormalisableRange<float>(0.01, 250.f, 0.01), 0.5);
-        vector.emplace_back(attack);
+        compressorGroup.get()->addChild(std::move(attack));
 
-        release = new juce::AudioParameterFloat("compressorRelease",
+        auto release = std::make_unique<juce::AudioParameterFloat>("compressorRelease",
                                                 "Release",
                                                 juce::NormalisableRange<float>(10.f, 1000.f, 0.1), 250.f);
-        vector.emplace_back(release);
+        compressorGroup.get()->addChild(std::move(release));
 
-        layout.add(vector.begin(), vector.end());
+        return compressorGroup;
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override

@@ -36,6 +36,8 @@
               file="Source/DataModel/FXPhaserParameters.h"/>
         <FILE id="OcR59b" name="FXProcessorBase.h" compile="0" resource="0"
               file="Source/DataModel/FXProcessorBase.h"/>
+        <FILE id="LPQ7PK" name="FXProcessorChain.cpp" compile="1" resource="0"
+              file="Source/DataModel/FXProcessorChain.cpp"/>
         <FILE id="yFIkJ5" name="FXProcessorChain.h" compile="0" resource="0"
               file="Source/DataModel/FXProcessorChain.h"/>
         <FILE id="nIFADD" name="FXProcessorChainParameters.h" compile="0" resource="0"

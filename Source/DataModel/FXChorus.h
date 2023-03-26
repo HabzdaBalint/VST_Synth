@@ -44,25 +44,34 @@ public:
         chorus.process(context);
     }
 
-    void updateChorusParameters()
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
     {
-        chorus.setMix(chorusParameters.mix->get()/100);
-        chorus.setRate(chorusParameters.rate->get());
-        chorus.setCentreDelay(chorusParameters.delay->get());
-        chorus.setDepth(chorusParameters.depth->get()/100);
-        chorus.setFeedback(chorusParameters.feedback->get()/100);
+        this->apvts = &apvts;
+        registerListeners();
     }
 
-    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
+    void updateChorusParameters()
     {
-        apvts.addParameterListener("chorusMix", &chorusParameters);
-        apvts.addParameterListener("chorusRate", &chorusParameters);
-        apvts.addParameterListener("chorusDelay", &chorusParameters);
-        apvts.addParameterListener("chorusDepth", &chorusParameters);
-        apvts.addParameterListener("chorusFeedback", &chorusParameters);
+        chorus.setMix(apvts->getRawParameterValue("chorusMix")->load()/100);
+        chorus.setMix(apvts->getRawParameterValue("chorusRate")->load());
+        chorus.setMix(apvts->getRawParameterValue("chorusDelay")->load());
+        chorus.setMix(apvts->getRawParameterValue("chorusDepth")->load()/100);
+        chorus.setMix(apvts->getRawParameterValue("chorusFeedback")->load()/100);
     }
 
     FXChorusParameters chorusParameters = { [this] () { updateChorusParameters(); } };
 private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Chorus Parameters", chorusParameters.createParameterLayout() };;
+
     Chorus chorus;
+    
+    void registerListeners()
+    {
+        apvts->addParameterListener("chorusMix", &chorusParameters);
+        apvts->addParameterListener("chorusRate", &chorusParameters);
+        apvts->addParameterListener("chorusDelay", &chorusParameters);
+        apvts->addParameterListener("chorusDepth", &chorusParameters);
+        apvts->addParameterListener("chorusFeedback", &chorusParameters);
+    }
 };

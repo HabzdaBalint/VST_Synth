@@ -22,8 +22,8 @@ VST_SynthAudioProcessor::VST_SynthAudioProcessor()
                        )
 #endif
 {
-    additiveSynth->registerListeners(apvts);
-    fxChain->registerListeners(apvts);
+    additiveSynth->connectApvts(apvts);
+    fxChain->connectApvts(apvts);
 }
 
 VST_SynthAudioProcessor::~VST_SynthAudioProcessor()
@@ -126,8 +126,8 @@ bool VST_SynthAudioProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor* VST_SynthAudioProcessor::createEditor()
 {
-    return new VST_SynthAudioProcessorEditor(*this);
-    //return new juce::GenericAudioProcessorEditor(*this);
+    //return new VST_SynthAudioProcessorEditor(*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -148,12 +148,13 @@ void VST_SynthAudioProcessor::setStateInformation (const void* data, int sizeInB
 
 juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::createParameterLayout()
 {
-    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> layout;
 
-    additiveSynth->synthParameters.createParameterLayout(layout);
+    layout.push_back(additiveSynth->synthParameters.createParameterLayout());
+
     fxChain->createParameters(layout);
 
-    return layout;
+    return { layout.begin(), layout.end() };
 }
 
 //==============================================================================

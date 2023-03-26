@@ -15,7 +15,8 @@
 #include "AdditiveVoice.h"
 #include "../View/AdditiveSynthesizerEditor.h"
 
-AdditiveSynthesizer::AdditiveSynthesizer() : AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo()))
+AdditiveSynthesizer::AdditiveSynthesizer()
+                    : AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo()))
 {
     for (size_t i = 0; i < LOOKUP_SIZE; i++)
     {
@@ -42,27 +43,10 @@ AdditiveSynthesizer::~AdditiveSynthesizer()
     delete(synth);
 }
 
-const juce::String AdditiveSynthesizer::getName() const { return "Additive Synthesizer"; }
-
-bool AdditiveSynthesizer::acceptsMidi() const { return true; }
-bool AdditiveSynthesizer::producesMidi() const { return false; }
-
 juce::AudioProcessorEditor* AdditiveSynthesizer::createEditor()
 {
     return new AdditiveSynthesizerEditor(*this);
 }
-
-bool AdditiveSynthesizer::hasEditor() const { return true; }
-
-int AdditiveSynthesizer::getNumPrograms() { return 1; }
-int AdditiveSynthesizer::getCurrentProgram() { return 0; }
-void AdditiveSynthesizer::setCurrentProgram(int) {}
-const juce::String AdditiveSynthesizer::getProgramName(int) { return {}; }
-void AdditiveSynthesizer::changeProgramName(int, const juce::String &) {}
-
-void AdditiveSynthesizer::getStateInformation(juce::MemoryBlock& destData) {}
-void AdditiveSynthesizer::setStateInformation(const void* data, int sizeInBytes) {}
-double AdditiveSynthesizer::getTailLengthSeconds() const { return 0; }
 
 void AdditiveSynthesizer::prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock)
 {
@@ -92,31 +76,38 @@ void AdditiveSynthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::M
     synthGain->process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
 }
 
+void AdditiveSynthesizer::connectApvts(juce::AudioProcessorValueTreeState& apvts)
+{
+    this->apvts = &apvts;
+    registerListeners();
+}
+
 void AdditiveSynthesizer::updateSynthParameters()
 {
-    synthGain->setGainDecibels(synthParameters.synthGain->get());
-    synthParametersAtomic.octaveTuning = synthParameters.octaveTuning->get();
-    synthParametersAtomic.semitoneTuning = synthParameters.semitoneTuning->get();
-    synthParametersAtomic.fineTuningCents = synthParameters.fineTuningCents->get();
+    synthGain->setGainDecibels(apvts->getRawParameterValue("synthGain")->load());
 
-    synthParametersAtomic.pitchWheelRange = synthParameters.pitchWheelRange->get();
+    synthParametersAtomic.octaveTuning = apvts->getRawParameterValue("oscillatorOctaves")->load();
+    synthParametersAtomic.semitoneTuning = apvts->getRawParameterValue("oscillatorSemitones")->load();
+    synthParametersAtomic.fineTuningCents = apvts->getRawParameterValue("oscillatorFine")->load();
 
-    synthParametersAtomic.globalPhseStart = synthParameters.globalPhseStart->get();
-    synthParametersAtomic.randomPhaseRange = synthParameters.randomPhaseRange->get();
+    synthParametersAtomic.pitchWheelRange = apvts->getRawParameterValue("pitchWheelRange")->load();
 
-    synthParametersAtomic.unisonPairCount = synthParameters.unisonPairCount->get();
-    synthParametersAtomic.unisonGain = synthParameters.unisonGain->get();
-    synthParametersAtomic.unisonDetune = synthParameters.unisonDetune->get();
+    synthParametersAtomic.globalPhseStart = apvts->getRawParameterValue("globalPhase")->load();
+    synthParametersAtomic.randomPhaseRange = apvts->getRawParameterValue("globalPhaseRNG")->load();
 
-    synthParametersAtomic.attack = synthParameters.attack->get() / 1000;
-    synthParametersAtomic.decay = synthParameters.decay->get() / 1000;
-    synthParametersAtomic.sustain = synthParameters.sustain->get();
-    synthParametersAtomic.release = synthParameters.release->get() / 1000;
+    synthParametersAtomic.unisonPairCount = apvts->getRawParameterValue("unisonCount")->load();
+    synthParametersAtomic.unisonGain = apvts->getRawParameterValue("unisonGain")->load();
+    synthParametersAtomic.unisonDetune = apvts->getRawParameterValue("unisonDetune")->load();
+
+    synthParametersAtomic.attack = apvts->getRawParameterValue("amplitudeADSRAttack")->load() / 1000;
+    synthParametersAtomic.decay = apvts->getRawParameterValue("amplitudeADSRDecay")->load() / 1000;
+    synthParametersAtomic.sustain = apvts->getRawParameterValue("amplitudeADSRSustain")->load();
+    synthParametersAtomic.release = apvts->getRawParameterValue("amplitudeADSRRelease")->load() / 1000;
 
     for (size_t i = 0; i < HARMONIC_N; i++)
     {
-        synthParametersAtomic.partialGain[i] = synthParameters.partialGain[i]->get();
-        synthParametersAtomic.partialPhase[i] = synthParameters.partialPhase[i]->get();
+        synthParametersAtomic.partialGain[i] = apvts->getRawParameterValue(synthParameters.getPartialGainParameterName(i))->load();
+        synthParametersAtomic.partialPhase[i] = apvts->getRawParameterValue(synthParameters.getPartialPhaseParameterName(i))->load();
     }
 
     AdditiveSynthesizer::updateLookupTable();
@@ -132,28 +123,28 @@ void AdditiveSynthesizer::updateLookupTable()
     }
 }
 
-void AdditiveSynthesizer::registerListeners(juce::AudioProcessorValueTreeState &apvts)
+void AdditiveSynthesizer::registerListeners()
 {
-    apvts.addParameterListener("synthGain", &synthParameters);
+    apvts->addParameterListener("synthGain", &synthParameters);
 
     for (size_t i = 0; i < HARMONIC_N; i++)
     {
-        apvts.addParameterListener(synthParameters.getPartialGainParameterName(i), &synthParameters);
-        apvts.addParameterListener(synthParameters.getPartialPhaseParameterName(i), &synthParameters);
+        apvts->addParameterListener(synthParameters.getPartialGainParameterName(i), &synthParameters);
+        apvts->addParameterListener(synthParameters.getPartialPhaseParameterName(i), &synthParameters);
     }
-    apvts.addParameterListener("oscillatorOctaves", &synthParameters);
-    apvts.addParameterListener("oscillatorSemitones", &synthParameters);
-    apvts.addParameterListener("oscillatorFine", &synthParameters);
-    apvts.addParameterListener("pitchWheelRange", &synthParameters);
-    apvts.addParameterListener("globalPhase", &synthParameters);
-    apvts.addParameterListener("globalPhaseRNG", &synthParameters);
-    apvts.addParameterListener("unisonCount", &synthParameters);
-    apvts.addParameterListener("unisonDetune", &synthParameters);
-    apvts.addParameterListener("unisonGain", &synthParameters);
-    apvts.addParameterListener("amplitudeADSRAttack", &synthParameters);
-    apvts.addParameterListener("amplitudeADSRDecay", &synthParameters);
-    apvts.addParameterListener("amplitudeADSRSustain", &synthParameters);
-    apvts.addParameterListener("amplitudeADSRRelease", &synthParameters);
+    apvts->addParameterListener("oscillatorOctaves", &synthParameters);
+    apvts->addParameterListener("oscillatorSemitones", &synthParameters);
+    apvts->addParameterListener("oscillatorFine", &synthParameters);
+    apvts->addParameterListener("pitchWheelRange", &synthParameters);
+    apvts->addParameterListener("globalPhase", &synthParameters);
+    apvts->addParameterListener("globalPhaseRNG", &synthParameters);
+    apvts->addParameterListener("unisonCount", &synthParameters);
+    apvts->addParameterListener("unisonDetune", &synthParameters);
+    apvts->addParameterListener("unisonGain", &synthParameters);
+    apvts->addParameterListener("amplitudeADSRAttack", &synthParameters);
+    apvts->addParameterListener("amplitudeADSRDecay", &synthParameters);
+    apvts->addParameterListener("amplitudeADSRSustain", &synthParameters);
+    apvts->addParameterListener("amplitudeADSRRelease", &synthParameters);
 
     synthParameters.update();
 }

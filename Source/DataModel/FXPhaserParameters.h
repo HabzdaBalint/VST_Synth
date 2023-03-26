@@ -16,44 +16,39 @@ struct FXPhaserParameters : public juce::AudioProcessorValueTreeState::Listener
 {
     FXPhaserParameters(std::function<void()> update) : update(update) {}
 
-    juce::AudioParameterFloat* mix = nullptr;
-    juce::AudioParameterFloat* rate = nullptr;
-    juce::AudioParameterFloat* depth = nullptr;
-    juce::AudioParameterFloat* frequency = nullptr;
-    juce::AudioParameterFloat* feedback  = nullptr; 
-
     std::function<void()> update = nullptr;
 
-    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout &layout)
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
-        std::vector<std::unique_ptr<juce::RangedAudioParameter>> vector;
+        std::unique_ptr<juce::AudioProcessorParameterGroup> phaserGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("phaserGroup", "Phaser", "|"));
 
-        mix = new juce::AudioParameterFloat("phaserMix", 
+        auto mix = std::make_unique<juce::AudioParameterFloat>("phaserMix", 
                                             "Wet%",
                                             juce::NormalisableRange<float>(0.f, 100.f, 0.1), 35.f);
-        vector.emplace_back(mix);
+        phaserGroup.get()->addChild(std::move(mix));
 
-        rate = new juce::AudioParameterFloat("phaserRate", 
+        auto rate = std::make_unique<juce::AudioParameterFloat>("phaserRate", 
                                              "Rate",
                                              juce::NormalisableRange<float>(0.1, 25.f, 0.01), 10.f);
-        vector.emplace_back(rate);
+        phaserGroup.get()->addChild(std::move(rate));
 
-        depth = new juce::AudioParameterFloat("phaserDepth", 
+        auto depth = std::make_unique<juce::AudioParameterFloat>("phaserDepth", 
                                               "Depth",
                                               juce::NormalisableRange<float>(0.f, 100.f, 0.1), 30.f);
-        vector.emplace_back(depth);
+        phaserGroup.get()->addChild(std::move(depth));
 
-        frequency = new juce::AudioParameterFloat("phaserFrequency", 
+        auto frequency = std::make_unique<juce::AudioParameterFloat>("phaserFrequency", 
                                                   "Frequency",
                                                   juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.3), 500.f);
-        vector.emplace_back(frequency);
+        phaserGroup.get()->addChild(std::move(frequency));
 
-        feedback = new juce::AudioParameterFloat("phaserFeedback", 
+        auto feedback = std::make_unique<juce::AudioParameterFloat>("phaserFeedback", 
                                                  "Feedback",
                                                  juce::NormalisableRange<float>(0.f, 100.f, 0.1), 40.f);
-        vector.emplace_back(feedback);
+        phaserGroup.get()->addChild(std::move(feedback));
 
-        layout.add(vector.begin(), vector.end());
+        return phaserGroup;
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override

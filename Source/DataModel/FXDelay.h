@@ -76,34 +76,44 @@ public:
         dryWetMixer.mixWetSamples(audioBlock);
     }
 
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
+    {
+        this->apvts = &apvts;
+        registerListeners();
+    }
+
     void updateDelayParameters()
     {
         if(getSampleRate() > 0)
         {
-            dryWetMixer.setWetMixProportion(delayParameters.mix->get()/100);
-            feedback = delayParameters.feedback->get()/100;
-            delay.setDelay( (float)std::round( ( delayParameters.time->get() / 1000 ) * getSampleRate() ) );
-            float freq = delayParameters.filterFrequency->get();
-            float q = delayParameters.filterQ->get();
+            dryWetMixer.setWetMixProportion(apvts->getRawParameterValue("delayMix")->load()/100);
+            feedback = apvts->getRawParameterValue("delayFeedback")->load()/100;
+            delay.setDelay( (float)std::round( ( apvts->getRawParameterValue("delayTime")->load() / 1000 ) * getSampleRate() ) );
+            float freq = apvts->getRawParameterValue("delayFilterFrequency")->load();
+            float q = apvts->getRawParameterValue("delayFilterQ")->load();
+
             filter[0].coefficients = Coefficients::makeBandPass(getSampleRate(), freq, q);
             filter[1].coefficients = Coefficients::makeBandPass(getSampleRate(), freq, q);
         }
     }
 
-    void registerListeners(juce::AudioProcessorValueTreeState &apvts)
-    {
-        apvts.addParameterListener("delayMix", &delayParameters);
-        apvts.addParameterListener("delayFeedback", &delayParameters);
-        apvts.addParameterListener("delayTime", &delayParameters);
-        apvts.addParameterListener("delayFilterFrequency", &delayParameters);
-        apvts.addParameterListener("delayFilterQ", &delayParameters);
-    }
-
     FXDelayParameters delayParameters{ [this] () { updateDelayParameters(); } };
 private:
+    juce::AudioProcessorValueTreeState* apvts;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Delay Parameters", delayParameters.createParameterLayout() };;
+
     DryWetMixer dryWetMixer;
     Delay delay;
     Filter filter[2];
 
     float feedback = 0;
+
+    void registerListeners()
+    {
+        apvts->addParameterListener("delayMix", &delayParameters);
+        apvts->addParameterListener("delayFeedback", &delayParameters);
+        apvts->addParameterListener("delayTime", &delayParameters);
+        apvts->addParameterListener("delayFilterFrequency", &delayParameters);
+        apvts->addParameterListener("delayFilterQ", &delayParameters);
+    }
 };

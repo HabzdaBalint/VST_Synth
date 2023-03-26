@@ -16,38 +16,34 @@ struct FXTremoloParameters : public juce::AudioProcessorValueTreeState::Listener
 {
     FXTremoloParameters(std::function<void()> update) : update(update) {}
 
-    juce::AudioParameterFloat* mix = nullptr;
-    juce::AudioParameterFloat* depth = nullptr;
-    juce::AudioParameterFloat* rate = nullptr;
-    juce::AudioParameterBool* isAutoPan = nullptr;
-
     std::function<void()> update = nullptr;
 
-    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout &layout)
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
-        std::vector<std::unique_ptr<juce::RangedAudioParameter>> vector;
+        std::unique_ptr<juce::AudioProcessorParameterGroup> tremoloGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("tremoloGroup", "Tremolo", "|"));
 
-        mix = new juce::AudioParameterFloat("tremoloMix", 
+        auto mix = std::make_unique<juce::AudioParameterFloat>("tremoloMix", 
                                             "Wet%",
                                             juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
-        vector.emplace_back(mix);
+        tremoloGroup.get()->addChild(std::move(mix));
 
-        depth = new juce::AudioParameterFloat("tremoloDepth", 
+        auto depth = std::make_unique<juce::AudioParameterFloat>("tremoloDepth", 
                                               "Depth",
                                               juce::NormalisableRange<float>(0.f, 100.f, 0.1), 50.f);
-        vector.emplace_back(depth);
+        tremoloGroup.get()->addChild(std::move(depth));
 
-        rate = new juce::AudioParameterFloat("tremoloRate", 
+        auto rate = std::make_unique<juce::AudioParameterFloat>("tremoloRate", 
                                              "Rate",
                                              juce::NormalisableRange<float>(0.1, 15.f, 0.01), 10.f);
-        vector.emplace_back(rate);
+        tremoloGroup.get()->addChild(std::move(rate));
 
-        isAutoPan = new juce::AudioParameterBool("tremoloAutoPan", 
+        auto isAutoPan = std::make_unique<juce::AudioParameterBool>("tremoloAutoPan", 
                                                  "Auto-Pan",
                                                  false);
-        vector.emplace_back(isAutoPan);
+        tremoloGroup.get()->addChild(std::move(isAutoPan));
 
-        layout.add(vector.begin(), vector.end());
+        return tremoloGroup;
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override

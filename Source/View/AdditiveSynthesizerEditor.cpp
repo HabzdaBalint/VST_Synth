@@ -15,12 +15,13 @@
 AdditiveSynthesizerEditor::AdditiveSynthesizerEditor(AdditiveSynthesizer& p)
     : juce::AudioProcessorEditor(&p), audioProcessor(p)
 {
-    /*const auto& parameters = juce::AudioProcessorParameterGroup
-    for (size_t i = 0; i < HARMONIC_N; i++)
+    const auto& parameters = audioProcessor.getParameters();    //todo change to get synth group
+    for(auto param : parameters)
     {
+        param->addListener(this);
+    }
 
-    }*/
-    
+    startTimerHz(60);
 }
 
 AdditiveSynthesizerEditor::~AdditiveSynthesizerEditor()

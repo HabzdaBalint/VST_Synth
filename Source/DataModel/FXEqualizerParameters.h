@@ -16,23 +16,22 @@ struct FXEqualizerParameters : juce::AudioProcessorValueTreeState::Listener
 {
     FXEqualizerParameters(std::function<void()> update) : update(update) {}
 
-    juce::AudioParameterFloat *bandGain[10] = {};
-
     std::function<void()> update = nullptr;
 
-    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout &layout)
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
-        std::vector<std::unique_ptr<juce::RangedAudioParameter>> vector;
+        std::unique_ptr<juce::AudioProcessorParameterGroup> eqGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("eqGroup", "Equalizer", "|"));
 
         for (size_t i = 0; i < 10; i++)
         {
-            bandGain[i] = new juce::AudioParameterFloat(getBandGainParameterName(i),
-                                                        getBandFrequencyLabel(i),
-                                                        juce::NormalisableRange<float>(-12.f, 12.f, 0.1), 0.f);
-            vector.emplace_back(bandGain[i]);            
+            auto bandGain = std::make_unique<juce::AudioParameterFloat>(getBandGainParameterName(i),
+                                                            getBandFrequencyLabel(i),
+                                                            juce::NormalisableRange<float>(-12.f, 12.f, 0.1), 0.f);
+            eqGroup.get()->addChild(std::move(bandGain));
         }
         
-        layout.add(vector.begin(), vector.end());
+        return eqGroup;
     }
 
     
