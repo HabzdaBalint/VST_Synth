@@ -9,6 +9,8 @@
     <GROUP id="{275637AC-08AF-D899-4B9D-E950976BC3EF}" name="Source">
       <GROUP id="{C59C8F0C-E530-D1E2-F43E-1365982B8990}" name="DataModel">
         <FILE id="qztplg" name="AdditiveSound.h" compile="0" resource="0" file="Source/DataModel/AdditiveSound.h"/>
+        <FILE id="Nrcl4L" name="AdditiveSynthesizer.cpp" compile="1" resource="0"
+              file="Source/DataModel/AdditiveSynthesizer.cpp"/>
         <FILE id="Ff5Km8" name="AdditiveSynthesizer.h" compile="0" resource="0"
               file="Source/DataModel/AdditiveSynthesizer.h"/>
         <FILE id="WThaRZ" name="AdditiveSynthParameters.h" compile="0" resource="0"
@@ -53,6 +55,8 @@
       <FILE id="ecLO6z" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
       <GROUP id="{98E83673-5F1A-279E-EB46-947F82C731E6}" name="View">
+        <FILE id="lbTeCF" name="AdditiveSynthesizerEditor.cpp" compile="1"
+              resource="0" file="Source/View/AdditiveSynthesizerEditor.cpp"/>
         <FILE id="MKB4HB" name="AdditiveSynthesizerEditor.h" compile="0" resource="0"
               file="Source/View/AdditiveSynthesizerEditor.h"/>
         <FILE id="SPAHXh" name="FXChorusEditor.h" compile="0" resource="0"

@@ -15,14 +15,15 @@ VST_SynthAudioProcessorEditor::VST_SynthAudioProcessorEditor (VST_SynthAudioProc
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    addAndMakeVisible(keyboardComponent);
-
-    addAndMakeVisible(tabbedComponent);
+    setLookAndFeel(&lnf);
 
     setSize (700, 500);
     setResizable(false, false);
 
-    setLookAndFeel(&lnf);
+    addAndMakeVisible(keyboardComponent);
+    keyboardComponent.setLookAndFeel(&lnf);
+
+    addAndMakeVisible(tabbedComponent);
 }
 
 VST_SynthAudioProcessorEditor::~VST_SynthAudioProcessorEditor()
@@ -51,14 +52,18 @@ void VST_SynthAudioProcessorEditor::resized()
 
 //===================================================================================================================
 
-VST_SynthTabbedComponent::VST_SynthTabbedComponent(VST_SynthAudioProcessor& p)
+VST_SynthTabbedComponent::VST_SynthTabbedComponent(VST_SynthAudioProcessor& p, juce::LookAndFeel_V4* lnf)
     : audioProcessor (p),
       TabbedComponent(juce::TabbedButtonBar::TabsAtTop)
 {
+    setLookAndFeel(lnf);
+
     auto color = getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId);
 
-    addTab("Synth", color, audioProcessor.additiveSynth->createEditor(), false, 0);
-    addTab("FX", color, audioProcessor.fxChain->createEditor(), false, 1);
+    addTab("Synth", color, audioProcessor.additiveSynth->createEditor(), true, 0);
+    //getTabContentComponent(0)->setLookAndFeel(lnf);
+    addTab("FX", color, audioProcessor.fxChain->createEditor(), true, 1);
+    //getTabContentComponent(1)->setLookAndFeel(lnf);
 }
 
 VST_SynthTabbedComponent::~VST_SynthTabbedComponent() {}

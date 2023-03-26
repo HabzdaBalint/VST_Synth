@@ -9,7 +9,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
 //==============================================================================
 VST_SynthAudioProcessor::VST_SynthAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -127,8 +126,8 @@ bool VST_SynthAudioProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor* VST_SynthAudioProcessor::createEditor()
 {
-    //return new VST_SynthAudioProcessorEditor(*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new VST_SynthAudioProcessorEditor(*this);
+    //return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
