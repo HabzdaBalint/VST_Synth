@@ -45,7 +45,7 @@ AdditiveSynthesizer::~AdditiveSynthesizer()
 
 juce::AudioProcessorEditor* AdditiveSynthesizer::createEditor()
 {
-    return new AdditiveSynthesizerEditor(*this);
+    return new AdditiveSynthesizerEditor(*this, apvts);
 }
 
 void AdditiveSynthesizer::prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock)
@@ -79,6 +79,7 @@ void AdditiveSynthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::M
 void AdditiveSynthesizer::connectApvts(juce::AudioProcessorValueTreeState& apvts)
 {
     this->apvts = &apvts;
+
     registerListeners();
 }
 
@@ -147,6 +148,11 @@ void AdditiveSynthesizer::registerListeners()
     apvts->addParameterListener("amplitudeADSRRelease", &synthParameters);
 
     synthParameters.update();
+}
+
+void AdditiveSynthesizer::handleAsyncUpdate()
+{
+    AdditiveSynthesizer::updateSynthParameters();
 }
 
 const float AdditiveSynthesizer::WaveTableFormula(float angle, int harmonics)

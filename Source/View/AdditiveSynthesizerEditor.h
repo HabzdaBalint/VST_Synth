@@ -18,7 +18,7 @@ class AdditiveSynthesizerEditor : public juce::AudioProcessorEditor,
                                   public juce::AudioProcessorParameter::Listener
 {
 public:
-    AdditiveSynthesizerEditor(AdditiveSynthesizer&);
+    AdditiveSynthesizerEditor(AdditiveSynthesizer&, juce::AudioProcessorValueTreeState*);
 
     ~AdditiveSynthesizerEditor() override;
 
@@ -32,10 +32,11 @@ public:
 
 private:
     AdditiveSynthesizer& audioProcessor;
+    juce::AudioProcessorValueTreeState* apvts;
 
     juce::Path waveformPath;
 
-    juce::Atomic<bool> parameterChanged {false};
+    juce::Atomic<bool> parameterChanged {true};
 
     void redrawPath();
 

@@ -60,10 +60,17 @@ VST_SynthTabbedComponent::VST_SynthTabbedComponent(VST_SynthAudioProcessor& p, j
 
     auto color = getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId);
 
-    addTab("Synth", color, audioProcessor.additiveSynth->createEditor(), true, 0);
+    synthComponent = audioProcessor.additiveSynth->createEditor();
+    fxComponent = audioProcessor.fxChain->createEditor();
+
+    addTab("Synth", color, synthComponent, false, 0);
     //getTabContentComponent(0)->setLookAndFeel(lnf);
-    addTab("FX", color, audioProcessor.fxChain->createEditor(), true, 1);
+    addTab("FX", color, fxComponent, false, 1);
     //getTabContentComponent(1)->setLookAndFeel(lnf);
 }
 
-VST_SynthTabbedComponent::~VST_SynthTabbedComponent() {}
+VST_SynthTabbedComponent::~VST_SynthTabbedComponent()
+{
+    delete(synthComponent);
+    delete(fxComponent);
+}

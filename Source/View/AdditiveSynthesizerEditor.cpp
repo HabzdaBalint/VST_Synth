@@ -12,20 +12,29 @@
 
 #include "AdditiveSynthesizerEditor.h"
 
-AdditiveSynthesizerEditor::AdditiveSynthesizerEditor(AdditiveSynthesizer& p)
-    : juce::AudioProcessorEditor(&p), audioProcessor(p)
+AdditiveSynthesizerEditor::AdditiveSynthesizerEditor(AdditiveSynthesizer& p, juce::AudioProcessorValueTreeState* apvts) :
+                      juce::AudioProcessorEditor(&p),
+                      audioProcessor(p),
+                      apvts(apvts)
 {
-    const auto& parameters = audioProcessor.getParameters();    //todo change to get synth group
-    for(auto param : parameters)
+    for (size_t i = 0; i < HARMONIC_N; i++)
     {
-        param->addListener(this);
+        apvts->getParameter(audioProcessor.synthParameters.getPartialGainParameterName(i))->addListener(this);
+        apvts->getParameter(audioProcessor.synthParameters.getPartialPhaseParameterName(i))->addListener(this);
     }
 
     startTimerHz(60);
+
+    redrawPath();
 }
 
 AdditiveSynthesizerEditor::~AdditiveSynthesizerEditor()
 {
+    for (size_t i = 0; i < HARMONIC_N; i++)
+    {
+        apvts->getParameter(audioProcessor.synthParameters.getPartialGainParameterName(i))->removeListener(this);
+        apvts->getParameter(audioProcessor.synthParameters.getPartialPhaseParameterName(i))->removeListener(this);
+    }
     setLookAndFeel(nullptr);
 }
 

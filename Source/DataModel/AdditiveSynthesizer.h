@@ -13,7 +13,9 @@
 #include <JuceHeader.h>
 #include "AdditiveSynthParameters.h"
 
-class AdditiveSynthesizer : public juce::AudioProcessor
+class AdditiveSynthesizer : public juce::AudioProcessor,
+                            public juce::AsyncUpdater
+
 {
 public:
     AdditiveSynthesizer();
@@ -48,10 +50,10 @@ public:
     /// @return The generated sample
     const float WaveTableFormula(float angle, int harmonics);
 
-    AdditiveSynthParameters synthParameters { [this] () { updateSynthParameters(); } };
+    AdditiveSynthParameters synthParameters { [this] () { triggerAsyncUpdate(); } };
 private:
     juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Synthesizer Parameters", synthParameters.createParameterLayout() };;
+    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Synthesizer Parameters", synthParameters.createParameterLayout() };
 
     juce::Synthesiser* synth = new juce::Synthesiser();
     juce::dsp::Gain<float>* synthGain = new juce::dsp::Gain<float>();
@@ -60,6 +62,8 @@ private:
     juce::Array<juce::dsp::LookupTableTransform<float> *> mipMap;
 
     void registerListeners();
+
+    void handleAsyncUpdate() override;
 
     /// @brief Updates atomic parameters
     void updateSynthParameters();

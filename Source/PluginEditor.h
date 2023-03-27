@@ -19,9 +19,11 @@ public:
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
+    juce::AudioProcessorEditor* synthComponent = nullptr;
+    juce::AudioProcessorEditor* fxComponent = nullptr; 
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VST_SynthTabbedComponent)
 };
-
 
 
 class VST_SynthAudioProcessorEditor  : public juce::AudioProcessorEditor
