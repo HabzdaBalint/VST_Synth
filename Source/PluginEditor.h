@@ -10,17 +10,26 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "View/OscillatorEditor.h"
+#include "View/FXProcessorChainEditor.h"
+
+constexpr int WIDTH_MAIN_WINDOW = 700;
+constexpr int HEIGHT_MAIN_WINDOW = 550;
+constexpr int HEIGHT_KEYBOARD = 80;
 
 class VST_SynthTabbedComponent : public juce::TabbedComponent
 {
 public:
-    VST_SynthTabbedComponent(VST_SynthAudioProcessor&, juce::LookAndFeel_V4*);
+    VST_SynthTabbedComponent(VST_SynthAudioProcessor&);
     ~VST_SynthTabbedComponent() override;
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    juce::AudioProcessorEditor* synthComponent = nullptr;
-    juce::AudioProcessorEditor* fxComponent = nullptr; 
+    OscillatorEditor oscillatorComponent = {audioProcessor}; 
+    //SynthEditor synthComponent {audioProcessor};
+    //FXChainEditor fxChainComponent {audioProcessor};
+
+    void lookAndFeelChanged() override;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VST_SynthTabbedComponent)
 };
@@ -42,10 +51,10 @@ private:
 
     juce::LookAndFeel_V4 lnf = juce::LookAndFeel_V4(juce::LookAndFeel_V4::getMidnightColourScheme());
 
-    VST_SynthTabbedComponent tabbedComponent { audioProcessor, &lnf };
+    VST_SynthTabbedComponent tabbedComponent {audioProcessor};
 
     juce::MidiKeyboardState keyboardState;
-    juce::MidiKeyboardComponent keyboardComponent { keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard };
+    juce::MidiKeyboardComponent keyboardComponent {keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard};
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VST_SynthAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VST_SynthAudioProcessorEditor)
 };

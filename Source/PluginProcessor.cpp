@@ -150,7 +150,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
 {
     std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> layout;
 
-    layout.push_back(additiveSynth->synthParameters.createParameterLayout());
+    layout.push_back(additiveSynth->createParameterLayout());
 
     fxChain->createParameters(layout);
 

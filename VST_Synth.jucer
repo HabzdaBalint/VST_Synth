@@ -57,10 +57,6 @@
       <FILE id="ecLO6z" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
       <GROUP id="{98E83673-5F1A-279E-EB46-947F82C731E6}" name="View">
-        <FILE id="lbTeCF" name="AdditiveSynthesizerEditor.cpp" compile="1"
-              resource="0" file="Source/View/AdditiveSynthesizerEditor.cpp"/>
-        <FILE id="MKB4HB" name="AdditiveSynthesizerEditor.h" compile="0" resource="0"
-              file="Source/View/AdditiveSynthesizerEditor.h"/>
         <FILE id="SPAHXh" name="FXChorusEditor.h" compile="0" resource="0"
               file="Source/View/FXChorusEditor.h"/>
         <FILE id="GZ9qwa" name="FXCompressorEditor.h" compile="0" resource="0"
@@ -78,6 +74,12 @@
               file="Source/View/FXReverbEditor.h"/>
         <FILE id="MEX1cB" name="HarmonicsEditor.h" compile="0" resource="0"
               file="Source/View/HarmonicsEditor.h"/>
+        <FILE id="DgpgPS" name="OscillatorEditor.cpp" compile="1" resource="0"
+              file="Source/View/OscillatorEditor.cpp"/>
+        <FILE id="ir8nGu" name="OscillatorEditor.h" compile="0" resource="0"
+              file="Source/View/OscillatorEditor.h"/>
+        <FILE id="PJh0NE" name="VST_SynthLookAndFeel.h" compile="0" resource="0"
+              file="Source/View/VST_SynthLookAndFeel.h"/>
       </GROUP>
     </GROUP>
   </MAINGROUP>
