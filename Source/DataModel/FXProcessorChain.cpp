@@ -191,10 +191,5 @@ void FXProcessorChain::updateGraph()
 
 void FXProcessorChain::parameterChanged(const juce::String &parameterID, float newValue)
 {
-    triggerAsyncUpdate();
-}
-
-void FXProcessorChain::handleAsyncUpdate()
-{
     updateGraph();
 }

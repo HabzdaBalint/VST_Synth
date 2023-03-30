@@ -18,11 +18,11 @@ VST_SynthAudioProcessorEditor::VST_SynthAudioProcessorEditor (VST_SynthAudioProc
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
 
-    setSize (WIDTH_MAIN_WINDOW, HEIGHT_MAIN_WINDOW);
-    setResizable(false, false);
-
-    addAndMakeVisible(tabbedComponent);
-    addAndMakeVisible(keyboardComponent);
+    setSize(WIDTH_MAIN_WINDOW_PX, HEIGHT_MAIN_WINDOW_PX);
+    setResizable(true, false);
+    setResizeLimits(WIDTH_MAIN_WINDOW_PX, HEIGHT_MAIN_WINDOW_PX, 1.3 * WIDTH_MAIN_WINDOW_PX, 1.3 * HEIGHT_MAIN_WINDOW_PX);
+    addAndMakeVisible(*tabbedComponent);
+    addAndMakeVisible(*keyboardComponent);
 
     setLookAndFeel(&lnf);
 }
@@ -36,19 +36,17 @@ void VST_SynthAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    //g.setColour (juce::Colours::white);
-    //g.setFont (15.0f);
-    //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void VST_SynthAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    keyboardComponent.setBounds(0, getBounds().getBottom() - HEIGHT_KEYBOARD, WIDTH_MAIN_WINDOW, HEIGHT_KEYBOARD);
+    auto bounds = getLocalBounds().removeFromBottom(HEIGHT_KEYBOARD_PX);;
+    keyboardComponent->setBounds(bounds);
 
-    tabbedComponent.setBounds(0, 0, WIDTH_MAIN_WINDOW, HEIGHT_MAIN_WINDOW-HEIGHT_KEYBOARD);
+    bounds = getLocalBounds().removeFromTop(getLocalBounds().getHeight() - HEIGHT_KEYBOARD_PX);
+    tabbedComponent->setBounds(bounds);
 }
 
 //===================================================================================================================
@@ -59,9 +57,9 @@ VST_SynthTabbedComponent::VST_SynthTabbedComponent(VST_SynthAudioProcessor& p)
 {
     auto color = getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId);
 
-    addTab("Oscillator", color, &oscillatorComponent, true);
-    addTab("Synth", color, nullptr /*&synthComponent*/, true);  //todo
-    addTab("FX", color, nullptr /*&fxChainComponent*/, true);
+    addTab("Oscillator", color, new OscillatorEditor(p), true);
+    addTab("Synthesizer", color, new SynthEditor(p), true);  
+    addTab("Effects", color, nullptr /*&new FXProcessorChainEditor(p)*/, true); //todo
 }
 
 VST_SynthTabbedComponent::~VST_SynthTabbedComponent() {}

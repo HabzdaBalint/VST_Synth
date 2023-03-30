@@ -14,46 +14,36 @@
 
 OscillatorEditor::OscillatorEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
 {
-    addAndMakeVisible(waveformViewer);
-    waveformEditorViewport.setViewedComponent(&waveformEditor, false);
-    addAndMakeVisible(waveformEditorViewport);
+    addAndMakeVisible(*waveformViewer);
+    waveformEditorViewport->setViewedComponent(new WaveformEditor(p), true);
+    addAndMakeVisible(*waveformEditorViewport);
 }
 
 OscillatorEditor::~OscillatorEditor() {}
 
 void OscillatorEditor::paint (juce::Graphics& g)
 {
-    auto bounds = waveformViewer.getBounds();
+    auto bounds = waveformViewer->getBounds();
     g.setColour(getLookAndFeel().findColour(juce::GroupComponent::outlineColourId));
     g.drawRect(bounds, 1.f);
 
-    bounds = waveformEditorViewport.getBounds();
+    bounds = waveformEditorViewport->getBounds();
     g.drawRect(bounds, 1.f);
 }
 
 void OscillatorEditor::resized()
 {
-    auto bounds = getLocalBounds();
-    bounds.reduce(PADDING, PADDING);
-    bounds.removeFromBottom(HEIGHT_WAVEFORM_EDITOR);
-    waveformViewer.setBounds(bounds);
+    auto bounds = getLocalBounds().removeFromTop(getLocalBounds().getHeight() * HEIGHT_WAVEFORM_VIEWER_RELATIVE);
+    bounds.reduce(PADDING_PX, PADDING_PX);
+    waveformViewer->setBounds(bounds);
 
-    // waveformViewer.setBoundsInset();
+    bounds = getLocalBounds().removeFromBottom(getLocalBounds().getHeight() * HEIGHT_WAVEFORM_EDITOR_RELATIVE);
+    bounds.reduce(PADDING_PX, PADDING_PX);
+    waveformEditorViewport->setBounds(bounds);
 
-    // juce::BorderSize<int> border;
-    // border.setBottom(PADDING);
-    // border.setLeft(PADDING);
-    // border.setRight(PADDING);
-    // border.setTop(PADDING);
-
-    bounds = getLocalBounds();
-    bounds.reduce(PADDING, PADDING);
-    bounds.removeFromTop(bounds.getHeight() - HEIGHT_WAVEFORM_EDITOR);
-    waveformEditorViewport.setBounds(bounds);
-
-    bounds = waveformEditorViewport.getViewedComponent()->getBounds();
-    bounds.setHeight(waveformEditorViewport.getLocalBounds().getHeight() - 8);
-    waveformEditorViewport.getViewedComponent()->setBounds(bounds);
+    bounds = waveformEditorViewport->getViewedComponent()->getBounds();
+    bounds.setHeight(waveformEditorViewport->getLocalBounds().getHeight() - 8);
+    waveformEditorViewport->getViewedComponent()->setBounds(bounds);
 }
 
 //=========================================================================================================
@@ -82,11 +72,20 @@ WaveformViewer::~WaveformViewer()
 
 void WaveformViewer::paint (juce::Graphics& g)
 {
+    auto bounds = getLocalBounds().removeFromTop(getLocalBounds().getHeight() / 2);
+    juce::Line<float> line(bounds.getBottomLeft().toFloat(), bounds.getBottomRight().toFloat());
+    g.setColour(findColour(juce::GroupComponent::outlineColourId));
+    g.drawLine(line, 1.5);
+
     g.setColour(findColour(juce::Slider::textBoxTextColourId));
     g.strokePath(waveformPath, juce::PathStrokeType(1.5));
 }
 
-void WaveformViewer::resized() {}
+void WaveformViewer::resized()
+{
+    redrawPath();
+    repaint();
+}
 
 void WaveformViewer::parameterValueChanged (int parameterIndex, float newValue)
 {
@@ -131,13 +130,13 @@ void WaveformViewer::redrawPath()
     if (zeroCount != amplitudes.size())
     {
         auto bounds = getLocalBounds();
-        bounds.reduce(PADDING, PADDING);
+        bounds.reduce(0, PADDING_PX);
 
         waveformPath.scaleToFit(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), false);
     }
     else
     {
-        //todo: draw a straight line in the middle
+        waveformPath.clear();
     }
 }
 
@@ -152,7 +151,7 @@ WaveformEditor::WaveformEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
     }
     
     auto bounds = getLocalBounds();
-    bounds.setWidth(HARMONIC_N * WIDTH_PARTIAL_SLIDERS);
+    bounds.setWidth(HARMONIC_N * WIDTH_PARTIAL_SLIDERS_PX);
     setBounds(bounds);
 }
 
@@ -172,8 +171,8 @@ void WaveformEditor::resized()
     for (size_t i = 0; i < HARMONIC_N; i++)
     {
         auto bounds = getLocalBounds();
-        bounds.setWidth(WIDTH_PARTIAL_SLIDERS);
-        bounds.setX(i * WIDTH_PARTIAL_SLIDERS);
+        bounds.setWidth(WIDTH_PARTIAL_SLIDERS_PX);
+        bounds.setX(i * WIDTH_PARTIAL_SLIDERS_PX);
         partialSliders[i]->setBounds(bounds);
     }
 }
@@ -182,39 +181,32 @@ void WaveformEditor::resized()
 
 PartialSliders::PartialSliders(VST_SynthAudioProcessor& p, int idx) : audioProcessor(p), partialIndex(idx)
 {
-    gainSlider = new juce::Slider(juce::Slider::SliderStyle::LinearBarVertical,
+    gainSlider = std::make_unique<juce::Slider>(juce::Slider::SliderStyle::LinearBarVertical,
                                   juce::Slider::TextEntryBoxPosition::TextBoxBelow);
-    gainSliderAttachment = new juce::AudioProcessorValueTreeState::SliderAttachment(audioProcessor.apvts,
+    gainSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts,
                                                         audioProcessor.additiveSynth->getPartialGainParameterName(partialIndex),
                                                         *gainSlider);
     gainSlider->setScrollWheelEnabled(false);
     gainSlider->setTextValueSuffix("%");
     gainSlider->setTextBoxIsEditable(false);
-    addAndMakeVisible(gainSlider);
+    addAndMakeVisible(*gainSlider);
 
-    phaseSlider = new juce::Slider(juce::Slider::SliderStyle::LinearBar,
+    phaseSlider = std::make_unique<juce::Slider>(juce::Slider::SliderStyle::LinearBar,
                                    juce::Slider::TextEntryBoxPosition::TextBoxBelow);
-    phaseSliderAttachment = new juce::AudioProcessorValueTreeState::SliderAttachment(audioProcessor.apvts,
+    phaseSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts,
                                                         audioProcessor.additiveSynth->getPartialPhaseParameterName(partialIndex),
                                                         *phaseSlider);    
     phaseSlider->setScrollWheelEnabled(false);
     phaseSlider->setTextValueSuffix("%");
     phaseSlider->setTextBoxIsEditable(false);
-    addAndMakeVisible(phaseSlider);
+    addAndMakeVisible(*phaseSlider);
 }
 
-PartialSliders::~PartialSliders()
-{
-    delete(gainSliderAttachment);
-    delete(phaseSliderAttachment);
-    delete(gainSlider);
-    delete(phaseSlider);
-}
+PartialSliders::~PartialSliders() {}
 
 void PartialSliders::paint(juce::Graphics& g)
 {
-    auto bounds = getLocalBounds();
-    bounds.removeFromTop(HEIGHT_PARTIAL_GAIN + HEIGHT_PARTIAL_PHASE);
+    auto bounds = getLocalBounds().removeFromBottom( HEIGHT_PARTIAL_NUMBER_PX );
 
     g.setColour(findColour(juce::Slider::textBoxTextColourId));
     g.setFont(15.0f);
@@ -226,12 +218,9 @@ void PartialSliders::paint(juce::Graphics& g)
 
 void PartialSliders::resized()
 {
-    auto bounds = getLocalBounds();
-    bounds.removeFromBottom(bounds.getHeight() - HEIGHT_PARTIAL_GAIN);
+    auto bounds = getLocalBounds().removeFromTop( getLocalBounds().getHeight() - ( HEIGHT_PARTIAL_NUMBER_PX + HEIGHT_PARTIAL_PHASE_PX ) );
     gainSlider->setBounds(bounds);
 
-    bounds = getLocalBounds();
-    bounds.removeFromTop(HEIGHT_PARTIAL_GAIN);
-    bounds.removeFromBottom(bounds.getHeight() - HEIGHT_PARTIAL_PHASE);
+    bounds = getLocalBounds().removeFromTop( gainSlider->getBounds().getHeight() + HEIGHT_PARTIAL_PHASE_PX ).removeFromBottom( HEIGHT_PARTIAL_PHASE_PX );
     phaseSlider->setBounds(bounds);
 }

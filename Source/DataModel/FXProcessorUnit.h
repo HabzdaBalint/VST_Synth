@@ -13,7 +13,6 @@
 #include <JuceHeader.h>
 
 class FXProcessorUnit : public juce::AudioProcessor,
-                        public juce::AsyncUpdater,
                         public juce::AudioProcessorValueTreeState::Listener
 {
 public:

@@ -86,13 +86,18 @@ public:
     std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> eqGroup (
-            std::make_unique<juce::AudioProcessorParameterGroup>("eqGroup", "Equalizer", "|"));
+            std::make_unique<juce::AudioProcessorParameterGroup>(
+                "eqGroup", 
+                "Equalizer", 
+                "|"));
 
         for (size_t i = 0; i < 10; i++)
         {
-            auto bandGain = std::make_unique<juce::AudioParameterFloat>(getBandGainParameterName(i),
-                                                            getBandFrequencyLabel(i),
-                                                            juce::NormalisableRange<float>(-12.f, 12.f, 0.1), 0.f);
+            auto bandGain = std::make_unique<juce::AudioParameterFloat>(
+                getBandGainParameterName(i),
+                getBandFrequencyLabel(i),
+                juce::NormalisableRange<float>(-12.f, 12.f, 0.1), 
+                0.f);
             eqGroup.get()->addChild(std::move(bandGain));
         }
         
@@ -149,11 +154,6 @@ private:
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override
-    {
-        triggerAsyncUpdate();
-    }
-    
-    void handleAsyncUpdate() override 
     {
         updateEqualizerParameters();
     }

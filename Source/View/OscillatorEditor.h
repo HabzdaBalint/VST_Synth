@@ -12,16 +12,12 @@
 
 #include <JuceHeader.h>
 #include "../PluginProcessor.h"
+#include "EditorParameters.h"
 
-constexpr int HEIGHT_WAVEFORM_EDITOR = 200;
-constexpr int PADDING = 4;
-constexpr int HEIGHT_PARTIAL_GAIN = 120;
-constexpr int HEIGHT_PARTIAL_PHASE = 45;
-constexpr int WIDTH_PARTIAL_SLIDERS = 45;
 
 class WaveformViewer : public juce::Component,
-    public juce::Timer,
-    public juce::AudioProcessorParameter::Listener
+                       public juce::Timer,
+                       public juce::AudioProcessorParameter::Listener
 {
 public:
     WaveformViewer(VST_SynthAudioProcessor&);
@@ -40,7 +36,7 @@ private:
 
     juce::Path waveformPath;
 
-    juce::Atomic<bool> parameterChanged{ true };
+    juce::Atomic<bool> parameterChanged { false };
 
     void redrawPath();
 
@@ -62,11 +58,11 @@ private:
 
     int partialIndex;
 
-    juce::Slider* gainSlider;
-    juce::Slider* phaseSlider;
+    std::unique_ptr<juce::Slider> gainSlider;
+    std::unique_ptr<juce::Slider> phaseSlider;
 
-    juce::AudioProcessorValueTreeState::SliderAttachment* gainSliderAttachment;
-    juce::AudioProcessorValueTreeState::SliderAttachment* phaseSliderAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainSliderAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaseSliderAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PartialSliders)
 };
@@ -105,9 +101,8 @@ public:
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    WaveformViewer waveformViewer {audioProcessor};
-    WaveformEditor waveformEditor {audioProcessor};
-    juce::Viewport waveformEditorViewport;
+    std::unique_ptr<WaveformViewer> waveformViewer = std::make_unique<WaveformViewer>(audioProcessor);
+    std::unique_ptr<juce::Viewport> waveformEditorViewport = std::make_unique<juce::Viewport>();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscillatorEditor)
 };

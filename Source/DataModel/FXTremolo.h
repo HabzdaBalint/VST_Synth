@@ -30,7 +30,7 @@ public:
     {
         juce::dsp::ProcessSpec processSpec;
         processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
-        processSpec.numChannels = getNumOutputChannels();
+        processSpec.numChannels = getTotalNumOutputChannels();
         processSpec.sampleRate = sampleRate;
         dryWetMixer.prepare(processSpec);
 
@@ -83,26 +83,36 @@ public:
     std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> tremoloGroup (
-            std::make_unique<juce::AudioProcessorParameterGroup>("tremoloGroup", "Tremolo", "|"));
+            std::make_unique<juce::AudioProcessorParameterGroup>(
+                "tremoloGroup", 
+                "Tremolo", 
+                "|"));
 
-        auto mix = std::make_unique<juce::AudioParameterFloat>("tremoloMix", 
-                                            "Wet%",
-                                            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
+        auto mix = std::make_unique<juce::AudioParameterFloat>(
+            "tremoloMix", 
+            "Wet%",
+            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
+            100.f);
         tremoloGroup.get()->addChild(std::move(mix));
 
-        auto depth = std::make_unique<juce::AudioParameterFloat>("tremoloDepth", 
-                                              "Depth",
-                                              juce::NormalisableRange<float>(0.f, 100.f, 0.1), 50.f);
+        auto depth = std::make_unique<juce::AudioParameterFloat>(
+            "tremoloDepth", 
+            "Depth",
+            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
+            50.f);
         tremoloGroup.get()->addChild(std::move(depth));
 
-        auto rate = std::make_unique<juce::AudioParameterFloat>("tremoloRate", 
-                                             "Rate",
-                                             juce::NormalisableRange<float>(0.1, 15.f, 0.01), 5.f);
+        auto rate = std::make_unique<juce::AudioParameterFloat>(
+            "tremoloRate", 
+            "Rate",
+            juce::NormalisableRange<float>(0.1, 15.f, 0.01, 0.35), 
+            2.f);
         tremoloGroup.get()->addChild(std::move(rate));
 
-        auto isAutoPan = std::make_unique<juce::AudioParameterBool>("tremoloAutoPan", 
-                                                 "Auto-Pan",
-                                                 false);
+        auto isAutoPan = std::make_unique<juce::AudioParameterBool>(
+            "tremoloAutoPan", 
+            "Auto-Pan",
+            false);
         tremoloGroup.get()->addChild(std::move(isAutoPan));
 
         return tremoloGroup;
@@ -134,11 +144,6 @@ private:
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override
-    {
-        triggerAsyncUpdate();
-    }
-    
-    void handleAsyncUpdate() override 
     {
         updateTremoloParameters();
     }

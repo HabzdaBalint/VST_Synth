@@ -55,7 +55,7 @@ public:
 
         juce::dsp::ProcessSpec dryWetSpec;
         dryWetSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
-        dryWetSpec.numChannels = getNumOutputChannels();
+        dryWetSpec.numChannels = getTotalNumOutputChannels();
         dryWetSpec.sampleRate = sampleRate;
         dryWetMixer.prepare(dryWetSpec);
     }
@@ -109,20 +109,32 @@ public:
         std::unique_ptr<juce::AudioProcessorParameterGroup> filterGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>("filterGroup", "Filter", "|"));
 
-        auto dryWetMix = std::make_unique<juce::AudioParameterFloat>("filterMix",
-                                                  "Wet%",
-                                                  juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
+        auto dryWetMix = std::make_unique<juce::AudioParameterFloat>(
+            "filterMix",
+            "Wet%",
+            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
+            100.f);
         filterGroup.get()->addChild(std::move(dryWetMix));
         
-        auto filterType = std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type", typeChoices, 0);
+        auto filterType = std::make_unique<juce::AudioParameterChoice>(
+            "filterType", 
+            "Filter Type", 
+            typeChoices, 
+            0);
         filterGroup.get()->addChild(std::move(filterType));
 
-        auto filterSlope = std::make_unique<juce::AudioParameterChoice>("filterSlope", "Filter Slope", slopeChoices, 0);
+        auto filterSlope = std::make_unique<juce::AudioParameterChoice>(
+            "filterSlope",
+            "Filter Slope", 
+            slopeChoices, 
+            0);
         filterGroup.get()->addChild(std::move(filterSlope));
 
-        auto cutoffFrequency = std::make_unique<juce::AudioParameterFloat>("filterCutoff",
-                                                        "Cutoff Frequency",
-                                                        juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.3), 500.f);
+        auto cutoffFrequency = std::make_unique<juce::AudioParameterFloat>(
+            "filterCutoff",
+            "Cutoff Frequency",
+            juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.25), 
+            500.f);
         filterGroup.get()->addChild(std::move(cutoffFrequency));
 
         return filterGroup;
@@ -193,11 +205,6 @@ private:
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override
-    {
-        triggerAsyncUpdate();
-    }
-    
-    void handleAsyncUpdate() override 
     {
         updateFilterParameters();
     }

@@ -23,7 +23,6 @@
 constexpr int FX_MAX_SLOTS = 8;//todo probably remove
 
 class FXProcessorChain : public juce::AudioProcessor,
-                         juce::AsyncUpdater,
                          juce::AudioProcessorValueTreeState::Listener
 {
 public:
@@ -96,8 +95,6 @@ private:
     bool bypassSlot[FX_MAX_SLOTS] = {};
 
     void parameterChanged(const juce::String &parameterID, float newValue) override;
-
-    void handleAsyncUpdate() override;
 
     void updateGraph();
 

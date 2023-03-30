@@ -14,8 +14,8 @@
 #include "AdditiveSynthParameters.h"
 
 class AdditiveSynthesizer : public juce::AudioProcessor,
-                            juce::AsyncUpdater,
-                            juce::AudioProcessorValueTreeState::Listener
+                            juce::AudioProcessorValueTreeState::Listener,
+                            juce::Timer
 {
 public:
     AdditiveSynthesizer();
@@ -50,12 +50,6 @@ public:
     /// @return unique pointer to the group
     std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout();
 
-    /// @brief Generates a sample of the waveform defined by the parameters of the synthesizer. Used for maintaining the lookup table. This function could also be used for accurate rendering, with any number of harmonics, if time is not a constraint
-    /// @param angle The angle at which the sample is generated (in radians)
-    /// @param harmonics The number of harmonics that are included in the calculation of the sample. Use lower numbers to avoid aliasing
-    /// @return The generated sample
-    const float WaveTableFormula(float angle, int harmonics);
-
     /// @brief Used for making the parameter ids of the the partials' gain parameters consistent
     /// @param index The index of the harmonic
     /// @return A consistent parameter id
@@ -65,6 +59,14 @@ public:
     /// @param index The index of the harmonic
     /// @return A consistent parameter id
     juce::String getPartialPhaseParameterName(size_t index);
+
+    /// @brief Generates a sample of the waveform defined by the parameters of the synthesizer. Used for maintaining the lookup table. This function could also be used for accurate rendering, with any number of harmonics, if time is not a constraint
+    /// @param angle The angle at which the sample is generated (in radians)
+    /// @param harmonics The number of harmonics that are included in the calculation of the sample. Use lower numbers to avoid aliasing
+    /// @return The generated sample
+    const float WaveTableFormula(float angle, int harmonics);
+
+    void timerCallback() override;
 
 private:
     juce::AudioProcessorValueTreeState* apvts;
@@ -76,11 +78,11 @@ private:
 
     juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
 
+    juce::Atomic<bool> needUpdate { false };
+
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 
     void registerListeners();
-
-    void handleAsyncUpdate() override;
 
     /// @brief Updates atomic parameters
     void updateSynthParameters();
