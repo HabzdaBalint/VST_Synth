@@ -34,13 +34,8 @@ AdditiveSynthesizer::AdditiveSynthesizer()
 
 AdditiveSynthesizer::~AdditiveSynthesizer()
 {
-    for (size_t i = 0; i < mipMap.size(); i++)
-    {
-        delete (mipMap[i]);
-    }
-    mipMap.removeRange(0, mipMap.size());
-    delete(synthGain);
-    delete(synth);
+    synth->clearVoices();
+    synth->clearSounds();
 }
 
 void AdditiveSynthesizer::prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock)
@@ -60,8 +55,6 @@ void AdditiveSynthesizer::prepareToPlay(double sampleRate, int maximumExpectedSa
     processSpec.sampleRate = sampleRate;
     synthGain->prepare(processSpec);
 }
-
-void AdditiveSynthesizer::releaseResources() {}
 
 void AdditiveSynthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages)
 {
@@ -106,7 +99,7 @@ void AdditiveSynthesizer::updateSynthParameters()
         synthParametersAtomic.partialPhase[i] = apvts->getRawParameterValue(getPartialPhaseParameterName(i))->load() / 100;
     }
 
-    AdditiveSynthesizer::updateLookupTable();
+    updateLookupTable();
 }
 
 void AdditiveSynthesizer::updateLookupTable()
@@ -141,6 +134,11 @@ void AdditiveSynthesizer::registerListeners()
     apvts->addParameterListener("amplitudeADSRSustain", this);
     apvts->addParameterListener("amplitudeADSRRelease", this);
 
+    updateSynthParameters();
+}
+
+void AdditiveSynthesizer::parameterChanged(const juce::String &parameterID, float newValue)
+{
     triggerAsyncUpdate();
 }
 
@@ -282,9 +280,4 @@ juce::String AdditiveSynthesizer::getPartialGainParameterName(size_t index)
 juce::String AdditiveSynthesizer::getPartialPhaseParameterName(size_t index)
 {
     return "partial" + juce::String(index) + "phase";
-}
-
-void AdditiveSynthesizer::parameterChanged(const juce::String &parameterID, float newValue)
-{
-    triggerAsyncUpdate();
 }

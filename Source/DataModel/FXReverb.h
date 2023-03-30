@@ -10,12 +10,11 @@
 
 #pragma once
 
-#include "FXProcessorBase.h"
-#include "FXReverbParameters.h"
+#include "FXProcessorUnit.h"
 
 using Reverb = juce::dsp::Reverb;
 
-class FXReverb : public FXProcessorBase
+class FXReverb : public FXProcessorUnit
 {
 public:
     FXReverb() {}
@@ -44,12 +43,6 @@ public:
         reverb.process(context);
     }
 
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
-    {
-        this->apvts = &apvts;
-        registerListeners();
-    }
-
     void updateReverbParameters()
     {
         Reverb::Parameters newParams;
@@ -61,19 +54,56 @@ public:
         reverb.setParameters(newParams);
     }
 
-    FXReverbParameters reverbParameters = { [this] () { updateReverbParameters(); } };
-private:
-    juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Reverb Parameters", reverbParameters.createParameterLayout() };;
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    {
+        std::unique_ptr<juce::AudioProcessorParameterGroup> reverbGroup (
+                    std::make_unique<juce::AudioProcessorParameterGroup>("reverbGroup", "Reverb", "|"));
+        auto wetLevel = std::make_unique<juce::AudioParameterFloat>("reverbWet", 
+                                                 "Wet%",
+                                                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 35.f);
+        reverbGroup.get()->addChild(std::move(wetLevel));
 
+        auto dryLevel = std::make_unique<juce::AudioParameterFloat>("reverbDry", 
+                                                 "Dry%",
+                                                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
+        reverbGroup.get()->addChild(std::move(dryLevel));
+
+        auto roomSize = std::make_unique<juce::AudioParameterFloat>("reverbRoom", 
+                                                 "Room Size",
+                                                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 50.f);
+        reverbGroup.get()->addChild(std::move(roomSize));
+
+        auto damping = std::make_unique<juce::AudioParameterFloat>("reverbDamping", 
+                                                "Damping",
+                                                juce::NormalisableRange<float>(0.f, 100.f, 0.1), 50.f);
+        reverbGroup.get()->addChild(std::move(damping));
+
+        auto width = std::make_unique<juce::AudioParameterFloat>("reverbWidth", 
+                                              "Width",
+                                              juce::NormalisableRange<float>(0.f, 100.f, 0.1), 50.f);
+        reverbGroup.get()->addChild(std::move(width));
+
+        return reverbGroup;
+    }    
+private:
     Reverb reverb;
 
-    void registerListeners()
+    void registerListeners() override
     {
-        apvts->addParameterListener("reverbWet", &reverbParameters);
-        apvts->addParameterListener("reverbDry", &reverbParameters);
-        apvts->addParameterListener("reverbRoom", &reverbParameters);
-        apvts->addParameterListener("reverbDamping", &reverbParameters);
-        apvts->addParameterListener("reverbWidth", &reverbParameters);
+        apvts->addParameterListener("reverbWet", this);
+        apvts->addParameterListener("reverbDry", this);
+        apvts->addParameterListener("reverbRoom", this);
+        apvts->addParameterListener("reverbDamping", this);
+        apvts->addParameterListener("reverbWidth", this);
+    }
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override
+    {
+        triggerAsyncUpdate();
+    }
+    
+    void handleAsyncUpdate() override 
+    {
+        updateReverbParameters();
     }
 };

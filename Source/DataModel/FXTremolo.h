@@ -10,12 +10,11 @@
 
 #pragma once
 
-#include "FXProcessorBase.h"
-#include "FXTremoloParameters.h"
+#include "FXProcessorUnit.h"
 
 using DryWetMixer = juce::dsp::DryWetMixer<float>;
 
-class FXTremolo : public FXProcessorBase
+class FXTremolo : public FXProcessorUnit
 {
 public:
     FXTremolo()
@@ -50,6 +49,8 @@ public:
         auto *leftBufferPointer = buffer.getWritePointer(0);
         auto *rightBufferPointer = buffer.getWritePointer(1);
 
+        updateAngles();
+
         for (size_t sample = 0; sample < buffer.getNumSamples(); sample++)
         {
             amplitudeMultiplier = sin(currentAngle);
@@ -69,14 +70,6 @@ public:
         }
 
         dryWetMixer.mixWetSamples(audioBlock);
-
-        updateAngles();
-    }
-
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
-    {
-        this->apvts = &apvts;
-        registerListeners();
     }
 
     void updateTremoloParameters()
@@ -85,14 +78,37 @@ public:
         depth = apvts->getRawParameterValue("tremoloDepth")->load()/100;
         rate = apvts->getRawParameterValue("tremoloRate")->load();
         isAutoPan = apvts->getRawParameterValue("tremoloAutoPan")->load();
-        updateAngles();
     }
 
-    FXTremoloParameters tremoloParameters = { [this] () { updateTremoloParameters(); } };
-private:
-    juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Tremolo Parameters", tremoloParameters.createParameterLayout() };;
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    {
+        std::unique_ptr<juce::AudioProcessorParameterGroup> tremoloGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("tremoloGroup", "Tremolo", "|"));
 
+        auto mix = std::make_unique<juce::AudioParameterFloat>("tremoloMix", 
+                                            "Wet%",
+                                            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
+        tremoloGroup.get()->addChild(std::move(mix));
+
+        auto depth = std::make_unique<juce::AudioParameterFloat>("tremoloDepth", 
+                                              "Depth",
+                                              juce::NormalisableRange<float>(0.f, 100.f, 0.1), 50.f);
+        tremoloGroup.get()->addChild(std::move(depth));
+
+        auto rate = std::make_unique<juce::AudioParameterFloat>("tremoloRate", 
+                                             "Rate",
+                                             juce::NormalisableRange<float>(0.1, 15.f, 0.01), 5.f);
+        tremoloGroup.get()->addChild(std::move(rate));
+
+        auto isAutoPan = std::make_unique<juce::AudioParameterBool>("tremoloAutoPan", 
+                                                 "Auto-Pan",
+                                                 false);
+        tremoloGroup.get()->addChild(std::move(isAutoPan));
+
+        return tremoloGroup;
+    }
+    
+private:
     DryWetMixer dryWetMixer;
 
     float depth = 0;
@@ -102,12 +118,12 @@ private:
     float currentAngle = 0;
     float angleDelta = 0;
 
-    void registerListeners()
+    void registerListeners() override
     {
-        apvts->addParameterListener("tremoloMix", &tremoloParameters);
-        apvts->addParameterListener("tremoloDepth", &tremoloParameters);
-        apvts->addParameterListener("tremoloRate", &tremoloParameters);
-        apvts->addParameterListener("tremoloAutoPan", &tremoloParameters);
+        apvts->addParameterListener("tremoloMix", this);
+        apvts->addParameterListener("tremoloDepth", this);
+        apvts->addParameterListener("tremoloRate", this);
+        apvts->addParameterListener("tremoloAutoPan", this);
     }
 
     void updateAngles()
@@ -115,5 +131,15 @@ private:
         auto sampleRate = getSampleRate();
         float cyclesPerSample = rate/sampleRate;
         angleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
+    }
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override
+    {
+        triggerAsyncUpdate();
+    }
+    
+    void handleAsyncUpdate() override 
+    {
+        updateTremoloParameters();
     }
 };

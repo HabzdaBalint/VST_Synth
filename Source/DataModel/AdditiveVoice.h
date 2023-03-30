@@ -15,7 +15,7 @@
 class AdditiveVoice : public juce::SynthesiserVoice
 {
 public:
-    AdditiveVoice(AdditiveSynthParametersAtomic& synthParamsAtomic, juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap) :
+    AdditiveVoice(AdditiveSynthParametersAtomic& synthParamsAtomic, juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap) :
         synthParametersAtomic(&synthParamsAtomic),
         mipMap(mipMap) {}
 
@@ -36,7 +36,6 @@ public:
 
         updateFrequencies();
         updateAngles();
-
     }
 
     void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* sound, int currentPitchWheelPosition) override
@@ -70,13 +69,13 @@ public:
     /// @param startSample The starting sample within the buffer
     /// @param numSamples Length of the buffer
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override
-    {   //No point in updating variables and generating 0 value samples if velocity is 0 or if the voice is not in use
-        if( isVoiceActive() && (!bypassPlaying || velocityGain > 0.f) )
+    {   //No point in updating variables and calculating samples if velocity is 0 or if the voice is not in use
+        if( isVoiceActive() && ( !bypassPlaying || velocityGain != 0.f ) )
         {
-            /*render buffer, apply gain*/
             generatedBuffer.clear();
             generatedBuffer.setSize(2, numSamples, false, false, true);
 
+            /*render buffer, apply gain*/
             for (size_t channel = 0; channel < 2; channel++)
             {
                 auto* bufferPointer = generatedBuffer.getWritePointer(channel, 0);
@@ -133,7 +132,7 @@ private:
     
     juce::Random rng;
 
-    juce::Array<juce::dsp::LookupTableTransform<float>*>& mipMap;
+    juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap;
 
     float velocityGain = 0;
     float currentNote = 0;
@@ -219,7 +218,7 @@ private:
         }
     }
 
-    /// @brief Checks the highest possible overtone the current highest generated frequency can safely generate without aliasing on the current samplerate and selects the right lookup table with the correct number of overtones. If nothing can be safely generated without aliasing, bypassPlaying is set to true
+    /// @brief Checks the highest possible overtone the current highest generated frequency (including the up-tuned unison waveforms) that can safely be generated without aliasing at the current sample-rate and selects the right lookup table with the correct number of overtones. Playback is skipped entirely if such a look-up table doesn't exist
     void findMipMapToUse()
     {
         float highestGeneratedOvertone = getSampleRate();
@@ -229,8 +228,9 @@ private:
             mipMapIndex++;
             highestGeneratedOvertone = highestCurrentFrequency * (HARMONIC_N / pow(2, mipMapIndex));
         }
+
         if(mipMapIndex >= LOOKUP_SIZE)
-        {
+        {   //The lowest usable frequency exceeds or equals the Nyquist frequency. None of the generated signal would be valid data at this point
             bypassPlaying = true;
         }
         else

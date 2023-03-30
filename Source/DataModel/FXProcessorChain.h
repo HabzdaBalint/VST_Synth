@@ -11,7 +11,6 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "FXProcessorChainParameters.h"
 #include "FXEqualizer.h"
 #include "FXFilter.h"
 #include "FXCompressor.h"
@@ -21,7 +20,11 @@
 #include "FXPhaser.h"
 #include "FXTremolo.h"
 
-class FXProcessorChain : public juce::AudioProcessor
+constexpr int FX_MAX_SLOTS = 8;//todo probably remove
+
+class FXProcessorChain : public juce::AudioProcessor,
+                         juce::AsyncUpdater,
+                         juce::AudioProcessorValueTreeState::Listener
 {
 public:
     FXProcessorChain();
@@ -55,7 +58,26 @@ public:
     void registerListeners();
     void createParameters(std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> &layout);
 
-    FXProcessorChainParameters chainParameters{ [this] () { updateGraph(); } };
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout();
+
+    /// @brief Used for making the parameter ids of the the FX slots' bypass parameters consistent
+    /// @param index The index of the effect
+    /// @return A consistent parameter id
+    juce::String getFXBypassParameterName(size_t index)
+    {
+        return "bypass" + juce::String(index);
+    }
+
+    /// @brief Used for making the parameter ids of the the FX slots' choice parameters consistent
+    /// @param index The index of the effect
+    /// @return A consistent parameter id
+    juce::String getFXChoiceParameterName(size_t index)
+    {
+        return "fxSlot" + juce::String(index);
+    }
+
+    //todo: only have one owned array of unique processor objects instead of an instance of all of them. make it modifiable and organizable with functions
+    juce::OwnedArray<juce::AudioProcessor> processors;
 
     FXEqualizer* equalizer = new FXEqualizer();
     FXFilter* filter = new FXFilter();
@@ -67,13 +89,18 @@ public:
     FXTremolo* tremolo = new FXTremolo();
 private:
     juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Effects Chain Parameters", chainParameters.createParameterLayout() };;
+
+    const juce::StringArray choices = {"Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo"};
 
     juce::AudioProcessor* fxProcessorChain[FX_MAX_SLOTS] = {};
     bool bypassSlot[FX_MAX_SLOTS] = {};
 
+    void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+    void handleAsyncUpdate() override;
+
     void updateGraph();
-    
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXProcessorChain)
 };

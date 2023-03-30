@@ -17,37 +17,19 @@
               file="Source/DataModel/AdditiveSynthParameters.h"/>
         <FILE id="yGnygp" name="AdditiveVoice.h" compile="0" resource="0" file="Source/DataModel/AdditiveVoice.h"/>
         <FILE id="zSkJXM" name="FXChorus.h" compile="0" resource="0" file="Source/DataModel/FXChorus.h"/>
-        <FILE id="ttRRou" name="FXChorusParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXChorusParameters.h"/>
         <FILE id="PwA8By" name="FXCompressor.h" compile="0" resource="0" file="Source/DataModel/FXCompressor.h"/>
-        <FILE id="wYVfMz" name="FXCompressorParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXCompressorParameters.h"/>
         <FILE id="kyX53B" name="FXDelay.h" compile="0" resource="0" file="Source/DataModel/FXDelay.h"/>
-        <FILE id="bmmten" name="FXDelayParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXDelayParameters.h"/>
         <FILE id="dpaGDf" name="FXEqualizer.h" compile="0" resource="0" file="Source/DataModel/FXEqualizer.h"/>
-        <FILE id="UTt0IE" name="FXEqualizerParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXEqualizerParameters.h"/>
         <FILE id="ii3Kwb" name="FXFilter.h" compile="0" resource="0" file="Source/DataModel/FXFilter.h"/>
-        <FILE id="fgKJtM" name="FXFilterParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXFilterParameters.h"/>
         <FILE id="tOjoZm" name="FXPhaser.h" compile="0" resource="0" file="Source/DataModel/FXPhaser.h"/>
-        <FILE id="RSwENb" name="FXPhaserParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXPhaserParameters.h"/>
-        <FILE id="OcR59b" name="FXProcessorBase.h" compile="0" resource="0"
-              file="Source/DataModel/FXProcessorBase.h"/>
+        <FILE id="OcR59b" name="FXProcessorUnit.h" compile="0" resource="0"
+              file="Source/DataModel/FXProcessorUnit.h"/>
         <FILE id="LPQ7PK" name="FXProcessorChain.cpp" compile="1" resource="0"
               file="Source/DataModel/FXProcessorChain.cpp"/>
         <FILE id="yFIkJ5" name="FXProcessorChain.h" compile="0" resource="0"
               file="Source/DataModel/FXProcessorChain.h"/>
-        <FILE id="nIFADD" name="FXProcessorChainParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXProcessorChainParameters.h"/>
         <FILE id="N6v6m4" name="FXReverb.h" compile="0" resource="0" file="Source/DataModel/FXReverb.h"/>
-        <FILE id="EvbrIE" name="FXReverbParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXReverbParameters.h"/>
         <FILE id="DtbO9a" name="FXTremolo.h" compile="0" resource="0" file="Source/DataModel/FXTremolo.h"/>
-        <FILE id="KrDK2U" name="FXTremoloParameters.h" compile="0" resource="0"
-              file="Source/DataModel/FXTremoloParameters.h"/>
       </GROUP>
       <FILE id="XmiHcY" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>

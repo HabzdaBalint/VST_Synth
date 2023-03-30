@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    FXProcessorBase.h
+    FXProcessorUnit.h
     Created: 13 Mar 2023 2:15:01pm
     Author:  Habama10
 
@@ -12,10 +12,12 @@
 
 #include <JuceHeader.h>
 
-class FXProcessorBase : public juce::AudioProcessor
+class FXProcessorUnit : public juce::AudioProcessor,
+                        public juce::AsyncUpdater,
+                        public juce::AudioProcessorValueTreeState::Listener
 {
 public:
-    FXProcessorBase() : AudioProcessor(BusesProperties().withInput("Input", juce::AudioChannelSet::stereo())
+    FXProcessorUnit() : AudioProcessor(BusesProperties().withInput("Input", juce::AudioChannelSet::stereo())
                                                         .withOutput("Output", juce::AudioChannelSet::stereo())) {}
 
     void prepareToPlay(double, int) override {}
@@ -39,6 +41,17 @@ public:
     void getStateInformation(juce::MemoryBlock&) override {}
     void setStateInformation(const void*, int) override {}
 
+    virtual std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() = 0;
+    virtual void registerListeners() = 0;
+
+    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
+    {
+        this->apvts = &apvts;
+        registerListeners();
+    }
+
+protected:
+    juce::AudioProcessorValueTreeState* apvts;    
 private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXProcessorBase)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXProcessorUnit)
 };

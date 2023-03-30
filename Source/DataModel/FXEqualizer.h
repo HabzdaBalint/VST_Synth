@@ -10,13 +10,12 @@
 
 #pragma once
 
-#include "FXProcessorBase.h"
-#include "FXEqualizerParameters.h"
+#include "FXProcessorUnit.h"
 
 using Filter = juce::dsp::IIR::Filter<float>;
 using Coefficients = juce::dsp::IIR::Coefficients<float>;
 
-class FXEqualizer : public FXProcessorBase
+class FXEqualizer : public FXProcessorUnit
 {
 public:
     FXEqualizer()
@@ -70,12 +69,6 @@ public:
         }
     }
 
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
-    {
-        this->apvts = &apvts;
-        registerListeners();
-    }
-
     /// @brief Sets the new coefficients for the peak filters
     void updateEqualizerParameters()
     {
@@ -83,26 +76,66 @@ public:
         {            
             for (int i = 0; i < 10; i++)
             {
-                float gain = apvts->getRawParameterValue(equalizerParameters.getBandGainParameterName(i))->load();
+                float gain = apvts->getRawParameterValue(getBandGainParameterName(i))->load();
                 leftFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
                 rightFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
             }
         }
     }
 
-    FXEqualizerParameters equalizerParameters{ [this] () { updateEqualizerParameters(); } };
-private:
-    juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Equalizer Parameters", equalizerParameters.createParameterLayout() };;
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    {
+        std::unique_ptr<juce::AudioProcessorParameterGroup> eqGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("eqGroup", "Equalizer", "|"));
 
+        for (size_t i = 0; i < 10; i++)
+        {
+            auto bandGain = std::make_unique<juce::AudioParameterFloat>(getBandGainParameterName(i),
+                                                            getBandFrequencyLabel(i),
+                                                            juce::NormalisableRange<float>(-12.f, 12.f, 0.1), 0.f);
+            eqGroup.get()->addChild(std::move(bandGain));
+        }
+        
+        return eqGroup;
+    }
+
+    /// @brief Used for making the parameter ids of the the bands' gain parameters consistent
+    /// @param index The index of the band
+    /// @return A consistent parameter id
+    juce::String getBandGainParameterName(size_t index)
+    {
+        return "band" + juce::String(index) + "gain";
+    }
+
+    /// @brief Used for getting usable frequency numbers from a bands' index
+    /// @param index The index of the band
+    /// @return A string containing the frequency the band is responsible for
+    juce::String getBandFrequencyLabel(size_t index)
+    {
+        float frequency = 31.25 * pow(2, index);
+        juce::String suffix;
+        if(frequency >= 1000)
+        {
+            suffix = "kHz";
+            frequency /= 1000;
+        }
+        else
+        {
+            suffix = "Hz";
+        }
+        juce::String label(frequency, 0, false);
+        return label + suffix;
+    }
+
+private:
     Filter* leftFilters[10] = {};
     Filter* rightFilters[10] = {};
 
-    void registerListeners()
+    void registerListeners() override
     {
         for (size_t i = 0; i < 10; i++)
         {
-            apvts->addParameterListener(equalizerParameters.getBandGainParameterName(i), &equalizerParameters);
+            apvts->addParameterListener(getBandGainParameterName(i), this);
         }
     }
 
@@ -113,5 +146,15 @@ private:
     {
         float q = ((3 * std::abs(gain)) / 12) + 1;
         return q;
+    }
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override
+    {
+        triggerAsyncUpdate();
+    }
+    
+    void handleAsyncUpdate() override 
+    {
+        updateEqualizerParameters();
     }
 };

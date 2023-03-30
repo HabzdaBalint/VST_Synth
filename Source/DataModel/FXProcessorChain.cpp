@@ -37,7 +37,7 @@ FXProcessorChain::~FXProcessorChain()
 juce::AudioProcessorEditor* FXProcessorChain::createEditor() 
 {
     return nullptr;
-} // todo return the fx chain's editor object
+}
 
 double FXProcessorChain::getTailLengthSeconds() const
 {
@@ -69,27 +69,46 @@ void FXProcessorChain::processBlock(juce::AudioSampleBuffer &buffer, juce::MidiB
 
 void FXProcessorChain::registerListeners()
 {
-    chainParameters.update();
+    updateGraph();
 
     for (size_t i = 0; i < FX_MAX_SLOTS; i++)
     {
-        apvts->addParameterListener(chainParameters.getFXBypassParameterName(i), &chainParameters);
-        apvts->addParameterListener(chainParameters.getFXChoiceParameterName(i), &chainParameters);
+        apvts->addParameterListener(getFXBypassParameterName(i), this);
+        apvts->addParameterListener(getFXChoiceParameterName(i), this);
     }
 }
 
 void FXProcessorChain::createParameters(std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> &layout)
 {
-    layout.push_back(chainParameters.createParameterLayout());
+    layout.push_back(createParameterLayout());
 
-    layout.push_back(equalizer->equalizerParameters.createParameterLayout());
-    layout.push_back(filter->filterParameters.createParameterLayout());
-    layout.push_back(compressor->compressorParameters.createParameterLayout());
-    layout.push_back(delay->delayParameters.createParameterLayout());
-    layout.push_back(reverb->reverbParameters.createParameterLayout());
-    layout.push_back(chorus->chorusParameters.createParameterLayout());
-    layout.push_back(phaser->phaserParameters.createParameterLayout());
-    layout.push_back(tremolo->tremoloParameters.createParameterLayout());
+    layout.push_back(equalizer->createParameterLayout());
+    layout.push_back(filter->createParameterLayout());
+    layout.push_back(compressor->createParameterLayout());
+    layout.push_back(delay->createParameterLayout());
+    layout.push_back(reverb->createParameterLayout());
+    layout.push_back(chorus->createParameterLayout());
+    layout.push_back(phaser->createParameterLayout());
+    layout.push_back(tremolo->createParameterLayout());
+}
+
+std::unique_ptr<juce::AudioProcessorParameterGroup> FXProcessorChain::createParameterLayout()
+{
+    std::unique_ptr<juce::AudioProcessorParameterGroup> fxGroup (
+        std::make_unique<juce::AudioProcessorParameterGroup>("fxGroup", "Effects", "|"));
+
+    for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+    {
+        //Bypasses for each loaded Effect
+        auto bypassProcessor = std::make_unique<juce::AudioParameterBool>(getFXBypassParameterName(i), "Bypass " + juce::String(i+1) , false);
+        fxGroup.get()->addChild(std::move(bypassProcessor));
+        
+        //Choices for each loaded Effect
+        auto choiceProcessor = std::make_unique<juce::AudioParameterChoice>(getFXChoiceParameterName(i), "FX Slot " + juce::String(i+1), choices, 0);
+        fxGroup.get()->addChild(std::move(choiceProcessor));
+    }
+
+    return fxGroup;
 }
 
 void FXProcessorChain::connectApvts(juce::AudioProcessorValueTreeState& apvts)
@@ -111,7 +130,7 @@ void FXProcessorChain::updateGraph()
 {
     for (size_t i = 0; i < FX_MAX_SLOTS; i++)
     {
-        juce::AudioParameterChoice* choice = dynamic_cast<juce::AudioParameterChoice*>(apvts->getParameter(chainParameters.getFXChoiceParameterName(i)));
+        juce::AudioParameterChoice* choice = dynamic_cast<juce::AudioParameterChoice*>(apvts->getParameter(getFXChoiceParameterName(i)));
 
         switch (choice->getIndex())
         {
@@ -165,7 +184,17 @@ void FXProcessorChain::updateGraph()
 
     for (size_t i = 0; i < FX_MAX_SLOTS; i++)
     {
-        juce::AudioParameterBool* bypass = dynamic_cast<juce::AudioParameterBool*>(apvts->getParameter(chainParameters.getFXBypassParameterName(i)));
+        juce::AudioParameterBool* bypass = dynamic_cast<juce::AudioParameterBool*>(apvts->getParameter(getFXBypassParameterName(i)));
         bypassSlot[i] = bypass->get();
     }
+}
+
+void FXProcessorChain::parameterChanged(const juce::String &parameterID, float newValue)
+{
+    triggerAsyncUpdate();
+}
+
+void FXProcessorChain::handleAsyncUpdate()
+{
+    updateGraph();
 }

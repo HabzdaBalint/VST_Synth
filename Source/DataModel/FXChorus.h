@@ -10,12 +10,11 @@
 
 #pragma once
 
-#include "FXProcessorBase.h"
-#include "FXChorusParameters.h"
+#include "FXProcessorUnit.h"
 
 using Chorus = juce::dsp::Chorus<float>;
 
-class FXChorus : public FXProcessorBase
+class FXChorus : public FXProcessorUnit
 {
 public:
     FXChorus() {}
@@ -44,12 +43,6 @@ public:
         chorus.process(context);
     }
 
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
-    {
-        this->apvts = &apvts;
-        registerListeners();
-    }
-
     void updateChorusParameters()
     {
         chorus.setMix(apvts->getRawParameterValue("chorusMix")->load()/100);
@@ -59,19 +52,58 @@ public:
         chorus.setMix(apvts->getRawParameterValue("chorusFeedback")->load()/100);
     }
 
-    FXChorusParameters chorusParameters = { [this] () { updateChorusParameters(); } };
-private:
-    juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Chorus Parameters", chorusParameters.createParameterLayout() };;
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    {
+        std::unique_ptr<juce::AudioProcessorParameterGroup> chorusGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("chorusGroup", "Chorus", "|"));
 
+        auto mix = std::make_unique<juce::AudioParameterFloat>("chorusMix", 
+                                            "Wet%",
+                                            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 35.f);
+        chorusGroup.get()->addChild(std::move(mix));
+
+        auto rate = std::make_unique<juce::AudioParameterFloat>("chorusRate", 
+                                             "Rate",
+                                             juce::NormalisableRange<float>(0.1, 25.f, 0.01), 10.f);
+        chorusGroup.get()->addChild(std::move(rate));
+
+        auto delay = std::make_unique<juce::AudioParameterFloat>("chorusDelay", 
+                                              "Delay",
+                                              juce::NormalisableRange<float>(1.f, 100.f, 0.1), 50.f);
+        chorusGroup.get()->addChild(std::move(delay));
+
+        auto depth = std::make_unique<juce::AudioParameterFloat>("chorusDepth", 
+                                              "Depth",
+                                              juce::NormalisableRange<float>(0.f, 100.f, 0.1), 30.f);
+        chorusGroup.get()->addChild(std::move(depth));
+
+        auto feedback = std::make_unique<juce::AudioParameterFloat>("chorusFeedback", 
+                                                 "Feedback",
+                                                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 20.f);
+        chorusGroup.get()->addChild(std::move(feedback));
+
+        return chorusGroup;
+    }
+
+private:
     Chorus chorus;
     
-    void registerListeners()
+    void registerListeners() override
     {
-        apvts->addParameterListener("chorusMix", &chorusParameters);
-        apvts->addParameterListener("chorusRate", &chorusParameters);
-        apvts->addParameterListener("chorusDelay", &chorusParameters);
-        apvts->addParameterListener("chorusDepth", &chorusParameters);
-        apvts->addParameterListener("chorusFeedback", &chorusParameters);
+        apvts->addParameterListener("chorusMix", this);
+        apvts->addParameterListener("chorusRate", this);
+        apvts->addParameterListener("chorusDelay", this);
+        apvts->addParameterListener("chorusDepth", this);
+        apvts->addParameterListener("chorusFeedback", this);
+    }
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override
+    {
+        triggerAsyncUpdate();
+    }
+    
+    void handleAsyncUpdate() override 
+    {
+        updateChorusParameters();
     }
 };

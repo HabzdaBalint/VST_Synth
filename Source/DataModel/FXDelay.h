@@ -10,14 +10,16 @@
 
 #pragma once
 
-#include "FXProcessorBase.h"
-#include "FXDelayParameters.h"
+#include "FXProcessorUnit.h"
 
 using Delay = juce::dsp::DelayLine<float>;
 using Filter = juce::dsp::IIR::Filter<float>;
 using Coefficients = juce::dsp::IIR::Coefficients<float>;
+using DryWetMixer = juce::dsp::DryWetMixer<float>;
 
-class FXDelay : public FXProcessorBase
+constexpr float DELAY_MAXLENGTH = 1000.f;
+
+class FXDelay : public FXProcessorUnit
 {
 public:
     FXDelay()
@@ -76,12 +78,6 @@ public:
         dryWetMixer.mixWetSamples(audioBlock);
     }
 
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
-    {
-        this->apvts = &apvts;
-        registerListeners();
-    }
-
     void updateDelayParameters()
     {
         if(getSampleRate() > 0)
@@ -97,23 +93,62 @@ public:
         }
     }
 
-    FXDelayParameters delayParameters{ [this] () { updateDelayParameters(); } };
-private:
-    juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Delay Parameters", delayParameters.createParameterLayout() };;
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    {
+        std::unique_ptr<juce::AudioProcessorParameterGroup> delayGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("delayGroup", "Delay", "|"));
 
+        auto mix = std::make_unique<juce::AudioParameterFloat>("delayMix",
+                                            "Wet%",
+                                            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 35.f);                                
+        delayGroup.get()->addChild(std::move(mix));
+
+        auto feedback = std::make_unique<juce::AudioParameterFloat>("delayFeedback",
+                                                 "Feedback",
+                                                 juce::NormalisableRange<float>(0.f, 100.f, 1.f), 40.f);
+        delayGroup.get()->addChild(std::move(feedback));
+
+        auto time = std::make_unique<juce::AudioParameterFloat>("delayTime",
+                                             "Time",
+                                             juce::NormalisableRange<float>(1.f, DELAY_MAXLENGTH, 0.1), 250.f);
+        delayGroup.get()->addChild(std::move(time));
+        
+        auto filterFrequency = std::make_unique<juce::AudioParameterFloat>("delayFilterFrequency",
+                                                        "Center Frequency",
+                                                        juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.3), 500.f);
+        delayGroup.get()->addChild(std::move(filterFrequency));
+        
+        auto filterQ = std::make_unique<juce::AudioParameterFloat>("delayFilterQ",
+                                                "Q",
+                                                juce::NormalisableRange<float>(0.05, 5.f, 0.001), 0.5);
+        delayGroup.get()->addChild(std::move(filterQ));
+        
+        return delayGroup;
+    }
+
+private:
     DryWetMixer dryWetMixer;
     Delay delay;
     Filter filter[2];
 
     float feedback = 0;
 
-    void registerListeners()
+    void registerListeners() override
     {
-        apvts->addParameterListener("delayMix", &delayParameters);
-        apvts->addParameterListener("delayFeedback", &delayParameters);
-        apvts->addParameterListener("delayTime", &delayParameters);
-        apvts->addParameterListener("delayFilterFrequency", &delayParameters);
-        apvts->addParameterListener("delayFilterQ", &delayParameters);
+        apvts->addParameterListener("delayMix", this);
+        apvts->addParameterListener("delayFeedback", this);
+        apvts->addParameterListener("delayTime", this);
+        apvts->addParameterListener("delayFilterFrequency", this);
+        apvts->addParameterListener("delayFilterQ", this);
+    }
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override
+    {
+        triggerAsyncUpdate();
+    }
+    
+    void handleAsyncUpdate() override 
+    {
+        updateDelayParameters();
     }
 };

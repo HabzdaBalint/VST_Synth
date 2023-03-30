@@ -36,10 +36,10 @@ public:
 
     void getStateInformation(juce::MemoryBlock& destData) override {}
     void setStateInformation(const void* data, int sizeInBytes) override {}
-    double getTailLengthSeconds() const override { return 0; }
+    double getTailLengthSeconds() const override { return synthParametersAtomic.release/1000; }
 
     void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override;
-    void releaseResources() override;
+    void releaseResources() override {};
     void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override;
 
     /// @brief Connects the parameter audio processor value tree state to this processor
@@ -68,13 +68,13 @@ public:
 
 private:
     juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Synthesizer Parameters", createParameterLayout() };
 
-    juce::Synthesiser* synth = new juce::Synthesiser();
-    juce::dsp::Gain<float>* synthGain = new juce::dsp::Gain<float>();
+    std::unique_ptr<juce::Synthesiser> synth = std::make_unique<juce::Synthesiser>();
+    std::unique_ptr<juce::dsp::Gain<float>> synthGain = std::make_unique<juce::dsp::Gain<float>>();
+
     AdditiveSynthParametersAtomic synthParametersAtomic;
 
-    juce::Array<juce::dsp::LookupTableTransform<float> *> mipMap;
+    juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
 
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 

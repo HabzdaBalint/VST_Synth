@@ -10,12 +10,11 @@
 
 #pragma once
 
-#include "FXProcessorBase.h"
-#include "FXPhaserParameters.h"
+#include "FXProcessorUnit.h"
 
 using Phaser = juce::dsp::Phaser<float>;
 
-class FXPhaser : public FXProcessorBase
+class FXPhaser : public FXProcessorUnit
 {
 public:
     FXPhaser() {}
@@ -44,12 +43,6 @@ public:
         phaser.process(context);
     }
 
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
-    {
-        this->apvts = &apvts;
-        registerListeners();
-    }
-
     void updatePhaserParameters()
     {
         phaser.setMix(apvts->getRawParameterValue("phaserMix")->load()/100);
@@ -59,19 +52,57 @@ public:
         phaser.setFeedback(apvts->getRawParameterValue("phaserFeedback")->load()/100);
     }
 
-    FXPhaserParameters phaserParameters = { [this] () { updatePhaserParameters(); } };
-private:
-    juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Phaser Parameters", phaserParameters.createParameterLayout() };;
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    {
+        std::unique_ptr<juce::AudioProcessorParameterGroup> phaserGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("phaserGroup", "Phaser", "|"));
 
+        auto mix = std::make_unique<juce::AudioParameterFloat>("phaserMix", 
+                                            "Wet%",
+                                            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 35.f);
+        phaserGroup.get()->addChild(std::move(mix));
+
+        auto rate = std::make_unique<juce::AudioParameterFloat>("phaserRate", 
+                                             "Rate",
+                                             juce::NormalisableRange<float>(0.1, 25.f, 0.01), 10.f);
+        phaserGroup.get()->addChild(std::move(rate));
+
+        auto depth = std::make_unique<juce::AudioParameterFloat>("phaserDepth", 
+                                              "Depth",
+                                              juce::NormalisableRange<float>(0.f, 100.f, 0.1), 30.f);
+        phaserGroup.get()->addChild(std::move(depth));
+
+        auto frequency = std::make_unique<juce::AudioParameterFloat>("phaserFrequency", 
+                                                  "Frequency",
+                                                  juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.3), 500.f);
+        phaserGroup.get()->addChild(std::move(frequency));
+
+        auto feedback = std::make_unique<juce::AudioParameterFloat>("phaserFeedback", 
+                                                 "Feedback",
+                                                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 40.f);
+        phaserGroup.get()->addChild(std::move(feedback));
+
+        return phaserGroup;
+    }
+private:
     Phaser phaser;
 
-    void registerListeners()
+    void registerListeners() override
     {
-        apvts->addParameterListener("phaserMix", &phaserParameters);
-        apvts->addParameterListener("phaserRate", &phaserParameters);
-        apvts->addParameterListener("phaserDepth", &phaserParameters);
-        apvts->addParameterListener("phaserFrequency", &phaserParameters);
-        apvts->addParameterListener("phaserFeedback", &phaserParameters);
+        apvts->addParameterListener("phaserMix", this);
+        apvts->addParameterListener("phaserRate", this);
+        apvts->addParameterListener("phaserDepth", this);
+        apvts->addParameterListener("phaserFrequency", this);
+        apvts->addParameterListener("phaserFeedback", this);
+    }
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override
+    {
+        triggerAsyncUpdate();
+    }
+    
+    void handleAsyncUpdate() override 
+    {
+        updatePhaserParameters();
     }
 };

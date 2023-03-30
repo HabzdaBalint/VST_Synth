@@ -126,8 +126,8 @@ bool VST_SynthAudioProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor* VST_SynthAudioProcessor::createEditor()
 {
-    return new VST_SynthAudioProcessorEditor(*this);
-    //return new juce::GenericAudioProcessorEditor(*this);
+    //return new VST_SynthAudioProcessorEditor(*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================

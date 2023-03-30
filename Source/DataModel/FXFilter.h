@@ -10,15 +10,28 @@
 
 #pragma once
 
-#include "FXProcessorBase.h"
-#include "FXFilterParameters.h"
+#include "FXProcessorUnit.h"
 
 using Filter = juce::dsp::IIR::Filter<float>;
 using Coefficients = juce::dsp::IIR::Coefficients<float>;
 using FilterDesign = juce::dsp::FilterDesign<float>;
 using PassFilter = juce::dsp::ProcessorChain<Filter, Filter>;
 
-class FXFilter : public FXProcessorBase
+enum FilterSlope
+{
+    s6dBOct,
+    s12dBOct,
+    s18dBOct,
+    s24dBOct
+};
+
+enum FilterType
+{
+    lowPass,
+    highPass
+};
+
+class FXFilter : public FXProcessorUnit
 {
 public:
     FXFilter()
@@ -62,12 +75,6 @@ public:
         dryWetMixer.mixWetSamples(audioBlock);
     }
 
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
-    {
-        this->apvts = &apvts;
-        registerListeners();
-    }
-
     void updateFilterParameters()
     {
         if(getSampleRate() > 0)
@@ -97,21 +104,44 @@ public:
         }
     }
 
-    FXFilterParameters filterParameters { [this] () { updateFilterParameters(); } };
-private:
-    juce::AudioProcessorValueTreeState* apvts;
-    juce::AudioProcessorValueTreeState localapvts = { *this, nullptr, "Filter Parameters", filterParameters.createParameterLayout() };;
+    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    {
+        std::unique_ptr<juce::AudioProcessorParameterGroup> filterGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("filterGroup", "Filter", "|"));
 
+        auto dryWetMix = std::make_unique<juce::AudioParameterFloat>("filterMix",
+                                                  "Wet%",
+                                                  juce::NormalisableRange<float>(0.f, 100.f, 0.1), 100.f);
+        filterGroup.get()->addChild(std::move(dryWetMix));
+        
+        auto filterType = std::make_unique<juce::AudioParameterChoice>("filterType", "Filter Type", typeChoices, 0);
+        filterGroup.get()->addChild(std::move(filterType));
+
+        auto filterSlope = std::make_unique<juce::AudioParameterChoice>("filterSlope", "Filter Slope", slopeChoices, 0);
+        filterGroup.get()->addChild(std::move(filterSlope));
+
+        auto cutoffFrequency = std::make_unique<juce::AudioParameterFloat>("filterCutoff",
+                                                        "Cutoff Frequency",
+                                                        juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.3), 500.f);
+        filterGroup.get()->addChild(std::move(cutoffFrequency));
+
+        return filterGroup;
+    }
+
+private:
     PassFilter leftChain;
     PassFilter rightChain;
     juce::dsp::DryWetMixer<float> dryWetMixer;
 
-    void registerListeners()
+    const juce::StringArray typeChoices = {"Low-pass", "High-pass"};
+    const juce::StringArray slopeChoices = {"6dB/Oct", "12dB/Oct", "18dB/Oct", "24dB/Oct"};
+
+    void registerListeners() override
     {
-        apvts->addParameterListener("filterMix", &filterParameters);
-        apvts->addParameterListener("filterCutoff", &filterParameters);
-        apvts->addParameterListener("filterType", &filterParameters);
-        apvts->addParameterListener("filterSlope", &filterParameters);
+        apvts->addParameterListener("filterMix", this);
+        apvts->addParameterListener("filterCutoff", this);
+        apvts->addParameterListener("filterType", this);
+        apvts->addParameterListener("filterSlope", this);
     }
 
     juce::ReferenceCountedArray<Coefficients> makeLowPassCoefficients(float frequency, int slope)
@@ -160,5 +190,15 @@ private:
     void updateCoefficients(juce::ReferenceCountedObjectPtr<Coefficients> &oldCoefficients, const juce::ReferenceCountedObjectPtr<Coefficients> &newCoefficients)
     {
         *oldCoefficients = *newCoefficients;
+    }
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override
+    {
+        triggerAsyncUpdate();
+    }
+    
+    void handleAsyncUpdate() override 
+    {
+        updateFilterParameters();
     }
 };
