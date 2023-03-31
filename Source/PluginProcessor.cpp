@@ -81,8 +81,14 @@ void VST_SynthAudioProcessor::changeProgramName (int index, const juce::String& 
 void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     additiveSynth->prepareToPlay(sampleRate, samplesPerBlock);
-    fxChain->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
     fxChain->prepareToPlay(sampleRate, samplesPerBlock);
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        synthRMS[i].reset(sampleRate, 0.5);
+        synthRMS[i].setCurrentAndTargetValue(-90.f);
+        atomicSynthRMS[i].set(-90.f);
+    }
 }
 
 void VST_SynthAudioProcessor::releaseResources() {}
@@ -112,11 +118,27 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+    auto numSamples = buffer.getNumSamples();
 
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    for (size_t i = totalNumInputChannels; i < totalNumOutputChannels; i++)
+        buffer.clear (i, 0, numSamples);
 
     additiveSynth->processBlock(buffer, midiMessages);
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        synthRMS[i].skip(numSamples);
+        auto value = juce::Decibels::gainToDecibels(buffer.getRMSLevel(i, 0, numSamples));
+        if(value > synthRMS[i].getCurrentValue())
+        {
+            synthRMS[i].setCurrentAndTargetValue(value);
+        }
+        else
+        {
+            synthRMS[i].setTargetValue(value);
+        }
+        atomicSynthRMS[i].set(synthRMS[i].getCurrentValue());
+    }
 
     fxChain->processBlock(buffer, midiMessages);
 }

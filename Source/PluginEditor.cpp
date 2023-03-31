@@ -19,11 +19,11 @@ VST_SynthAudioProcessorEditor::VST_SynthAudioProcessorEditor (VST_SynthAudioProc
     // editor's size to whatever you need it to be.
 
     setSize(WIDTH_MAIN_WINDOW_PX, HEIGHT_MAIN_WINDOW_PX);
-    setResizable(true, false);
+    setResizable(false, true);
     setResizeLimits(WIDTH_MAIN_WINDOW_PX, HEIGHT_MAIN_WINDOW_PX, 1.3 * WIDTH_MAIN_WINDOW_PX, 1.3 * HEIGHT_MAIN_WINDOW_PX);
     addAndMakeVisible(*tabbedComponent);
     addAndMakeVisible(*keyboardComponent);
-
+    
     setLookAndFeel(&lnf);
 }
 

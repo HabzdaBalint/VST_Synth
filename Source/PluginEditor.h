@@ -11,9 +11,9 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "View/EditorParameters.h"
-#include "View/OscillatorEditor.h"
-#include "View/SynthEditor.h"
-#include "View/FXProcessorChainEditor.h"
+#include "View/Oscillator/OscillatorEditor.h"
+#include "View/Synthesizer/SynthEditor.h"
+#include "View/Effects/FXProcessorChainEditor.h"
 
 class VST_SynthTabbedComponent : public juce::TabbedComponent
 {
@@ -48,8 +48,7 @@ private:
 
     std::unique_ptr<VST_SynthTabbedComponent> tabbedComponent = std::make_unique<VST_SynthTabbedComponent>(audioProcessor);
 
-    juce::MidiKeyboardState keyboardState;
-    std::unique_ptr<MIDIKeyboard> keyboardComponent = std::make_unique<MIDIKeyboard>(keyboardState, MIDIKeyboard::horizontalKeyboard);
+    std::unique_ptr<MIDIKeyboard> keyboardComponent = std::make_unique<MIDIKeyboard>(audioProcessor.keyboardState, MIDIKeyboard::horizontalKeyboard);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VST_SynthAudioProcessorEditor)
 };

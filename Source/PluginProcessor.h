@@ -64,6 +64,11 @@ public:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Audio Parameters", createParameterLayout() };
 
+    juce::LinearSmoothedValue<float> synthRMS[2];
+    juce::Atomic<float> atomicSynthRMS[2];
+
+    juce::MidiKeyboardState keyboardState;
+
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VST_SynthAudioProcessor)

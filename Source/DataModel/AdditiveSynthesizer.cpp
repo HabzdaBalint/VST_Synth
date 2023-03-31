@@ -13,7 +13,6 @@
 #include "AdditiveSynthesizer.h"
 #include "AdditiveSound.h"
 #include "AdditiveVoice.h"
-#include "../View/OscillatorEditor.h"
 
 AdditiveSynthesizer::AdditiveSynthesizer()
                     : AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo()))
@@ -62,7 +61,7 @@ void AdditiveSynthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::M
 {
     synth->renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
-    juce::dsp::AudioBlock<float> audioBlock{buffer};
+    juce::dsp::AudioBlock<float> audioBlock { buffer };
     synthGain->process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
 }
 

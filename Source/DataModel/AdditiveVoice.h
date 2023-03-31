@@ -120,7 +120,6 @@ public:
                 }
             }
 
-            updateADSRParams();
             updateFrequencies();
             updateAngles();
         }
