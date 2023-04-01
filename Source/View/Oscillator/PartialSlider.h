@@ -17,7 +17,7 @@
 class PartialSlider : public juce::Component
 {
 public:
-    PartialSlider(VST_SynthAudioProcessor& p, int idx) : audioProcessor(p), partialIndex(idx)
+    PartialSlider(VST_SynthAudioProcessor& p, int partialIndex) : audioProcessor(p), partialIndex(partialIndex)
     {
         gainSlider = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::LinearBarVertical,
@@ -42,29 +42,33 @@ public:
         phaseSlider->setTextValueSuffix("%");
         phaseSlider->setTextBoxIsEditable(false);
         addAndMakeVisible(*phaseSlider);
+
+        partialNumber.setText("#" + juce::String(partialIndex + 1), juce::NotificationType::dontSendNotification);
+        partialNumber.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(partialNumber);
     }
 
-    ~PartialSlider() override {};
+    ~PartialSlider() override {}
 
     void paint(juce::Graphics& g) override
     {
-        auto bounds = getLocalBounds().removeFromBottom( HEIGHT_PARTIAL_NUMBER_PX );
-
-        g.setColour(findColour(juce::Slider::textBoxTextColourId));
-        g.setFont(15.0f);
-        g.drawFittedText("#" + juce::String(partialIndex + 1), bounds, juce::Justification::centred, 1);
-
+        auto bounds = partialNumber.getBounds();
         g.setColour(findColour(juce::GroupComponent::outlineColourId));
         g.drawRect(bounds, 1.f);
     }
 
     void resized() override
     {
-        auto bounds = getLocalBounds().removeFromTop( getLocalBounds().getHeight() - ( HEIGHT_PARTIAL_NUMBER_PX + HEIGHT_PARTIAL_PHASE_PX ) );
-        gainSlider->setBounds(bounds);
+        using TrackInfo = juce::Grid::TrackInfo;
+        using Fr = juce::Grid::Fr;
+        using Px = juce::Grid::Px;
 
-        bounds = getLocalBounds().removeFromTop( gainSlider->getBounds().getHeight() + HEIGHT_PARTIAL_PHASE_PX ).removeFromBottom( HEIGHT_PARTIAL_PHASE_PX );
-        phaseSlider->setBounds(bounds);
+        juce::Grid partialGrid;
+        partialGrid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( HEIGHT_PARTIAL_NUMBER_PX ) ) };
+        partialGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+        partialGrid.items = { juce::GridItem( *gainSlider ), juce::GridItem( *phaseSlider ), juce::GridItem( partialNumber ) };
+
+        partialGrid.performLayout(getLocalBounds());
     }
     
 private:
@@ -74,6 +78,8 @@ private:
 
     std::unique_ptr<juce::Slider> gainSlider;
     std::unique_ptr<juce::Slider> phaseSlider;
+
+    juce::Label partialNumber;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainSliderAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaseSliderAttachment;

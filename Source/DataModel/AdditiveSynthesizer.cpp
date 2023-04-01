@@ -81,7 +81,7 @@ void AdditiveSynthesizer::updateSynthParameters()
     synthParametersAtomic.pitchWheelRange = apvts->getRawParameterValue("pitchWheelRange")->load();
 
     synthParametersAtomic.globalPhseStart = apvts->getRawParameterValue("globalPhase")->load() / 100;
-    synthParametersAtomic.randomPhaseRange = apvts->getRawParameterValue("globalPhaseRNG")->load() / 100;
+    synthParametersAtomic.randomPhaseRange = apvts->getRawParameterValue("randomPhaseRange")->load() / 100;
 
     synthParametersAtomic.unisonPairCount = apvts->getRawParameterValue("unisonCount")->load();
     synthParametersAtomic.unisonGain = apvts->getRawParameterValue("unisonGain")->load() / 100;
@@ -155,7 +155,7 @@ void AdditiveSynthesizer::registerListeners()
     apvts->addParameterListener("oscillatorFine", this);
     apvts->addParameterListener("pitchWheelRange", this);
     apvts->addParameterListener("globalPhase", this);
-    apvts->addParameterListener("globalPhaseRNG", this);
+    apvts->addParameterListener("randomPhaseRange", this);
     apvts->addParameterListener("unisonCount", this);
     apvts->addParameterListener("unisonDetune", this);
     apvts->addParameterListener("unisonGain", this);
@@ -211,7 +211,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     //Tuning of the generated notes in octaves
     auto octaveTuning = std::make_unique<juce::AudioParameterFloat>(
         "oscillatorOctaves",
-        "Octaves",
+        "Octave Tuning",
         juce::NormalisableRange<float>(-2.f, 2.f, 1.f), 
         0.f);
     synthGroup.get()->addChild(std::move(octaveTuning));
@@ -219,7 +219,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     //Tuning of the generated notes in semitones
     auto semitoneTuning = std::make_unique<juce::AudioParameterFloat>(
         "oscillatorSemitones",
-        "Semitones",
+        "Semitone Tuning",
         juce::NormalisableRange<float>(-12.f, 12.f, 1.f), 
         0.f);
     synthGroup.get()->addChild(std::move(semitoneTuning));
@@ -235,7 +235,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     //Pitch Wheel range in semitones
     auto pitchWheelRange = std::make_unique<juce::AudioParameterFloat>(
         "pitchWheelRange",
-        "Pitch Wheel Semitones",
+        "Pitch Wheel Range",
         juce::NormalisableRange<float>(0.f, 12.f, 1.f), 
         2.f);
     synthGroup.get()->addChild(std::move(pitchWheelRange));
@@ -250,7 +250,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
 
     //Sets the maximum range for phase randomization on sounds and unison. as a percentage value of 2 * pi radians ( random range is [0..globalPhaseRNG] )
     auto randomPhaseRange = std::make_unique<juce::AudioParameterFloat>(
-        "globalPhaseRNG",
+        "randomPhaseRange",
         "Phase Randomness",
         juce::NormalisableRange<float>(0.f, 99.f, 1.f), 
         0.f);
@@ -284,7 +284,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     auto attack = std::make_unique<juce::AudioParameterFloat>(
         "amplitudeADSRAttack",
         "A",
-        juce::NormalisableRange<float>(0.f, 16000.f, 0.1, 0.3), 
+        juce::NormalisableRange<float>(0.f, 8000.f, 0.1, 0.45), 
         0.5);
     synthGroup.get()->addChild(std::move(attack));
 
@@ -292,7 +292,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     auto decay = std::make_unique<juce::AudioParameterFloat>(
         "amplitudeADSRDecay",
         "D",
-        juce::NormalisableRange<float>(0.f, 16000.f, 0.1, 0.3), 
+        juce::NormalisableRange<float>(0.f, 8000.f, 0.1, 0.45), 
         1000.f);
     synthGroup.get()->addChild(std::move(decay));
 
@@ -308,7 +308,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     auto release = std::make_unique<juce::AudioParameterFloat>(
         "amplitudeADSRRelease",
         "R",
-        juce::NormalisableRange<float>(0.f, 16000.f, 0.1, 0.3), 
+        juce::NormalisableRange<float>(0.f, 8000.f, 0.1, 0.45), 
         50.f);
     synthGroup.get()->addChild(std::move(release));
 

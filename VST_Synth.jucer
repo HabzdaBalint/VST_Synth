@@ -58,13 +58,20 @@
               file="Source/View/Oscillator/WaveformViewer.h"/>
       </GROUP>
       <GROUP id="{EA596713-99D1-CB52-7D52-ACAF1665347F}" name="Synthesizer">
+        <FILE id="bx2yYr" name="ADSRComponent.h" compile="0" resource="0" file="Source/View/Synthesizer/ADSRComponent.h"/>
         <FILE id="yyvWel" name="GainKnob.h" compile="0" resource="0" file="Source/View/Synthesizer/GainKnob.h"/>
         <FILE id="TvCyXJ" name="LevelMeter.h" compile="0" resource="0" file="Source/View/Synthesizer/LevelMeter.h"/>
         <FILE id="Th0B4w" name="LevelMeterGrid.h" compile="0" resource="0"
               file="Source/View/Synthesizer/LevelMeterGrid.h"/>
+        <FILE id="AaXyNr" name="PhaseComponent.h" compile="0" resource="0"
+              file="Source/View/Synthesizer/PhaseComponent.h"/>
         <FILE id="cSjanm" name="SynthEditor.h" compile="0" resource="0" file="Source/View/Synthesizer/SynthEditor.h"/>
         <FILE id="DideWR" name="SynthGainComponent.h" compile="0" resource="0"
               file="Source/View/Synthesizer/SynthGainComponent.h"/>
+        <FILE id="urlw24" name="TuningComponent.h" compile="0" resource="0"
+              file="Source/View/Synthesizer/TuningComponent.h"/>
+        <FILE id="RtekCK" name="UnisonComponent.h" compile="0" resource="0"
+              file="Source/View/Synthesizer/UnisonComponent.h"/>
       </GROUP>
       <FILE id="seMlII" name="EditorParameters.h" compile="0" resource="0"
             file="Source/View/EditorParameters.h"/>

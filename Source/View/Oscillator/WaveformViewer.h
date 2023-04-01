@@ -59,9 +59,12 @@ public:
 
     void paint (juce::Graphics& g) override
     {
-        auto bounds = getLocalBounds().removeFromTop(getLocalBounds().getHeight() / 2);
-        juce::Line<float> line(bounds.getBottomLeft().toFloat(), bounds.getBottomRight().toFloat());
+        auto bounds = getLocalBounds();
         g.setColour(findColour(juce::GroupComponent::outlineColourId));
+        g.drawRect(bounds, 1.f);
+
+        bounds = getLocalBounds().removeFromTop(getLocalBounds().getHeight() / 2);
+        juce::Line<float> line(bounds.getBottomLeft().toFloat(), bounds.getBottomRight().toFloat());
         g.drawLine(line, 1.5);
 
         g.setColour(findColour(juce::Slider::textBoxTextColourId));

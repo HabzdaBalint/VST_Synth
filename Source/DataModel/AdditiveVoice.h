@@ -70,7 +70,7 @@ public:
     /// @param numSamples Length of the buffer
     void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override
     {   //No point in updating variables and calculating samples if velocity is 0 or if the voice is not in use
-        if( isVoiceActive() && ( !bypassPlaying || velocityGain != 0.f ) )
+        if( isVoiceActive() && !bypassPlaying && velocityGain != 0.f )
         {
             generatedBuffer.clear();
             generatedBuffer.setSize(2, numSamples, false, false, true);
@@ -135,7 +135,7 @@ private:
 
     float velocityGain = 0;
     float currentNote = 0;
-    float bypassPlaying = false;
+    bool bypassPlaying = false;
 
     float pitchWheelOffset = 0;
 
@@ -244,7 +244,6 @@ private:
         generatedBuffer.clear();
         velocityGain = 0;
         currentNote = 0;
-        bypassPlaying = false;
 
         pitchWheelOffset = 0;
 

@@ -32,17 +32,14 @@ public:
         if(level < -90.f)
             level = -90.f;
 
-        auto bounds = getLocalBounds().toFloat()
-                            .removeFromTop( ( channelIndex + 1 ) * getLocalBounds().getHeight() / 2)
-                            .removeFromBottom( getLocalBounds().getHeight() / 2 );
+        auto bounds = getLocalBounds().toFloat();
         bounds.reduce(PADDING_PX, PADDING_PX);
-
         g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        g.fillRoundedRectangle(bounds, 2.f);
+        g.fillRoundedRectangle(bounds, 4.f);
 
         auto scaledValue = juce::jmap(level, -90.f, 6.f, 0.f, bounds.getWidth());
         g.setColour(findColour(juce::Slider::textBoxTextColourId));
-        g.fillRoundedRectangle(bounds.removeFromLeft(scaledValue), 5.f);
+        g.fillRoundedRectangle(bounds.removeFromLeft(scaledValue), 4.f);
     }
 
     void resized() override

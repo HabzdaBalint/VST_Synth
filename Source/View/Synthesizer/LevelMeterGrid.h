@@ -31,14 +31,13 @@ public:
 
     ~LevelMeterGrid() override {}
 
-    void paint(juce::Graphics& g) override
-    {
-    }
+    void paint(juce::Graphics& g) override {}
 
     void resized() override
     {
         using TrackInfo = juce::Grid::TrackInfo;
         using Fr = juce::Grid::Fr;
+        using Px = juce::Grid::Px;
 
         juce::Grid metersGrid;
         metersGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
@@ -47,6 +46,11 @@ public:
             metersGrid.templateRows.add( TrackInfo( Fr( 1 ) ) );
             metersGrid.items.add( juce::GridItem(item) );
         }
+
+        metersGrid.setGap( Px( PADDING_PX ) );
+        auto bounds = getLocalBounds();
+        bounds.reduce(PADDING_PX, PADDING_PX);
+        metersGrid.performLayout(bounds);
     }
     
 private:

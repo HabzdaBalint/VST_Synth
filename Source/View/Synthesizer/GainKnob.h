@@ -20,7 +20,7 @@ public:
     GainKnob(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         gainKnob = std::make_unique<juce::Slider>(
-            juce::Slider::SliderStyle::Rotary,
+            juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         gainKnobAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
@@ -30,6 +30,10 @@ public:
         gainKnob->setTextValueSuffix(" dB");
         gainKnob->setTextBoxIsEditable(true);
         addAndMakeVisible(*gainKnob);
+
+        gainLabel.setText("Gain", juce::NotificationType::dontSendNotification);
+        gainLabel.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(gainLabel);
     }
 
     ~GainKnob() override {}
@@ -38,9 +42,19 @@ public:
 
     void resized() override
     {
+        using TrackInfo = juce::Grid::TrackInfo;
+        using Fr = juce::Grid::Fr;
+        using Px = juce::Grid::Px;
+
+        juce::Grid gainKnobGrid;
+        gainKnobGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( HEIGHT_GAIN_KNOB_PX ) ), TrackInfo( Px( 20 ) ), TrackInfo( Fr( 1 ) ) };
+        gainKnobGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+        gainKnobGrid.items = { juce::GridItem( nullptr ), juce::GridItem( *gainKnob ), juce::GridItem( gainLabel ), juce::GridItem( nullptr ) };
+
+        gainKnobGrid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
-        gainKnob->setBounds(bounds);
+        gainKnobGrid.performLayout(bounds);
     }
     
 private:
@@ -48,6 +62,8 @@ private:
 
     std::unique_ptr<juce::Slider> gainKnob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainKnobAttachment;
+
+    juce::Label gainLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GainKnob)
 };
