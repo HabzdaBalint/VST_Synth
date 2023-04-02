@@ -19,7 +19,7 @@
 #include "PhaseComponent.h"
 #include "UnisonComponent.h"
 #include "ADSRComponent.h"
-#include "SynthGainComponent.h"
+#include "Gain/SynthGainComponent.h"
 
 class SynthEditor : public juce::Component
 {
@@ -34,15 +34,9 @@ public:
         addAndMakeVisible(*synthGainComponent);
     }
 
-    ~SynthEditor() override
-    {
+    ~SynthEditor() override {}
 
-    }
-
-    void paint(juce::Graphics& g) override
-    {
-
-    }
+    void paint(juce::Graphics& g) override {}
 
     void resized() override
     {

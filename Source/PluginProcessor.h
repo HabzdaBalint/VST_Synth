@@ -58,6 +58,9 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
+    //std::unique_ptr<AdditiveSynthesizer> additiveSynth = std::make_unique<AdditiveSynthesizer>();
+    //std::unique_ptr<FXProcessorChain> fxChain = std::make_unique<FXProcessorChain>();
+
     AdditiveSynthesizer *additiveSynth = new AdditiveSynthesizer();
     FXProcessorChain *fxChain = new FXProcessorChain();
 

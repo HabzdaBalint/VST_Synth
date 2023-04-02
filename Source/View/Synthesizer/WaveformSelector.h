@@ -29,6 +29,7 @@ public:
             menu.addCustomItem(2, std::make_unique<WaveformTriangle>(p, 120, 50, "Triangle"), nullptr, "Triangle");
             menu.addCustomItem(3, std::make_unique<WaveformSquare>(p, 120, 50, "Square"), nullptr, "Square");
             menu.addCustomItem(4, std::make_unique<WaveformSawtooth>(p, 120, 50, "Sawtooth"), nullptr, "Sawtooth");
+            menu.addCustomItem(4, std::make_unique<WaveformSawSquare>(p, 120, 50, "SawSquare"), nullptr, "SawSquare");
 
             auto& lnf = getLookAndFeel();
             menu.setLookAndFeel(&lnf);

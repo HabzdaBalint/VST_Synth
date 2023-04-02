@@ -84,10 +84,7 @@ public:
         addAndMakeVisible(releaseLabel);
     }
 
-    ~ADSRComponent() override
-    {
-
-    }
+    ~ADSRComponent() override {}
 
     void paint(juce::Graphics& g) override
     {

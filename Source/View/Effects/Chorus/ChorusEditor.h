@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    FXChorusEditor.h
+    ChorusEditor.h
     Created: 18 Mar 2023 8:33:47pm
     Author:  Habama10
 

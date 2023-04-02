@@ -17,21 +17,21 @@ constexpr int HARMONIC_N = 256;                         //The number of harmonic
 const int LOOKUP_POINTS = HARMONIC_N * 32;              //The number of calculated points in the lookup table
 const int LOOKUP_SIZE = ceil(log2(HARMONIC_N) + 1);     //The number of mipmaps that need to be generated to avoid aliasing at a given harmonic count
 
-struct AdditiveSynthParametersAtomic
+struct AdditiveSynthParameters
 {
-    std::atomic<float> octaveTuning = 0;
-    std::atomic<float> semitoneTuning = 0;
-    std::atomic<float> fineTuningCents = 0;
+    float octaveTuning = 0;
+    float semitoneTuning = 0;
+    float fineTuningCents = 0;
     std::atomic<float> partialGain[HARMONIC_N] = {};
     std::atomic<float> partialPhase[HARMONIC_N] = {};
-    std::atomic<float> globalPhseStart = 0;
-    std::atomic<float> randomPhaseRange = 0;
-    std::atomic<float> unisonPairCount = 0;
-    std::atomic<float> unisonDetune = 0;
-    std::atomic<float> unisonGain = 0;
-    std::atomic<float> pitchWheelRange = 0;
-    std::atomic<float> attack = 0;
-    std::atomic<float> decay = 0;
-    std::atomic<float> sustain = 0;
-    std::atomic<float> release = 0;
+    float globalPhseStart = 0;
+    float randomPhaseRange = 0;
+    float unisonPairCount = 0;
+    float unisonDetune = 0;
+    float unisonGain = 0;
+    float pitchWheelRange = 0;
+    float attack = 0;
+    float decay = 0;
+    float sustain = 0;
+    float release = 0;
 };

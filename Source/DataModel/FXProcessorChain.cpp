@@ -69,13 +69,12 @@ void FXProcessorChain::processBlock(juce::AudioSampleBuffer &buffer, juce::MidiB
 
 void FXProcessorChain::registerListeners()
 {
-    updateGraph();
-
     for (size_t i = 0; i < FX_MAX_SLOTS; i++)
     {
         apvts->addParameterListener(getFXBypassParameterName(i), this);
         apvts->addParameterListener(getFXChoiceParameterName(i), this);
     }
+    updateGraph();
 }
 
 void FXProcessorChain::createParameters(std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> &layout)

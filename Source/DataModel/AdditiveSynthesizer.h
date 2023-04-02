@@ -13,9 +13,23 @@
 #include <JuceHeader.h>
 #include "AdditiveSynthParameters.h"
 
+struct LUTUpdater : juce::Thread
+{
+    LUTUpdater(std::function<void()> func) :
+        juce::Thread("LUT Updater"),
+        func(std::move(func))
+    {}
+
+    void run() override
+    {
+        func();
+    }
+private:
+    std::function<void()> func;
+};
+
 class AdditiveSynthesizer : public juce::AudioProcessor,
-                            juce::AudioProcessorValueTreeState::Listener,
-                            juce::Timer
+                            juce::AudioProcessorValueTreeState::Listener
 {
 public:
     AdditiveSynthesizer();
@@ -36,7 +50,7 @@ public:
 
     void getStateInformation(juce::MemoryBlock& destData) override {}
     void setStateInformation(const void* data, int sizeInBytes) override {}
-    double getTailLengthSeconds() const override { return synthParametersAtomic.release/1000; }
+    double getTailLengthSeconds() const override { return synthParameters.release/1000; }
 
     void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override;
     void releaseResources() override {};
@@ -66,19 +80,16 @@ public:
     /// @return The generated sample
     const float WaveTableFormula(float angle, int harmonics);
 
-    void timerCallback() override;
-
 private:
     juce::AudioProcessorValueTreeState* apvts;
 
+    AdditiveSynthParameters synthParameters;
+
     std::unique_ptr<juce::Synthesiser> synth = std::make_unique<juce::Synthesiser>();
-    std::unique_ptr<juce::dsp::Gain<float>> synthGain = std::make_unique<juce::dsp::Gain<float>>();
-
-    AdditiveSynthParametersAtomic synthParametersAtomic;
-
     juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
+    LUTUpdater lutUpdater { [&] () { updateLookupTable(); } };
 
-    juce::Atomic<bool> needUpdate { false };
+    std::unique_ptr<juce::dsp::Gain<float>> synthGain = std::make_unique<juce::dsp::Gain<float>>();
 
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 
