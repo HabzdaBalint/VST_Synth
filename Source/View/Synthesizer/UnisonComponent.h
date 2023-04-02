@@ -87,12 +87,15 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid unisonComponentGrid;
-        unisonComponentGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( 20 ) ) };
+        unisonComponentGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( HEIGHT_UNISON_KNOB_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ) };
         unisonComponentGrid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
-        unisonComponentGrid.items = { 
+        unisonComponentGrid.items = {
+            juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ),
             juce::GridItem( *unisonCountKnob ), juce::GridItem( *unisonDetuneKnob ), juce::GridItem( *unisonGainKnob ),
-            juce::GridItem( unisonCountLabel ), juce::GridItem( unisonDetuneLabel ), juce::GridItem( unisonGainLabel ) };
+            juce::GridItem( unisonCountLabel ), juce::GridItem( unisonDetuneLabel ), juce::GridItem( unisonGainLabel ),
+            juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ) };
 
+        unisonComponentGrid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
         unisonComponentGrid.performLayout(bounds);

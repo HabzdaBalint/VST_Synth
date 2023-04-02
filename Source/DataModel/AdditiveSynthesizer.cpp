@@ -30,7 +30,7 @@ AdditiveSynthesizer::AdditiveSynthesizer()
     }
     synth->setNoteStealingEnabled(true);
 
-    startTimer(10);
+    startTimer(20);
 }
 
 AdditiveSynthesizer::~AdditiveSynthesizer()
@@ -68,11 +68,15 @@ void AdditiveSynthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::M
 void AdditiveSynthesizer::parameterChanged(const juce::String &parameterID, float newValue)
 {
     updateSynthParameters();
+
+    //queue an update for the lookup table if necessary
+    if(parameterID.contains("partial"))
+        needUpdate.set(true);
 }
 
 void AdditiveSynthesizer::updateSynthParameters()
 {
-    synthGain->setGainDecibels(apvts->getRawParameterValue("synthGain")->load());
+    synthGain->setGainLinear(apvts->getRawParameterValue("synthGain")->load() / 100);
 
     synthParametersAtomic.octaveTuning = apvts->getRawParameterValue("oscillatorOctaves")->load();
     synthParametersAtomic.semitoneTuning = apvts->getRawParameterValue("oscillatorSemitones")->load();
@@ -97,9 +101,6 @@ void AdditiveSynthesizer::updateSynthParameters()
         synthParametersAtomic.partialGain[i] = apvts->getRawParameterValue(getPartialGainParameterName(i))->load() / 100;
         synthParametersAtomic.partialPhase[i] = apvts->getRawParameterValue(getPartialPhaseParameterName(i))->load() / 100;
     }
-
-    //queue an update for the lookup table
-    needUpdate.set(true);
 }
 
 void AdditiveSynthesizer::timerCallback()
@@ -112,10 +113,29 @@ void AdditiveSynthesizer::timerCallback()
 
 void AdditiveSynthesizer::updateLookupTable()
 {
-    for (size_t i = 0; i < LOOKUP_SIZE; i++)
+    float peakAmplitude = 0.f;
+    float gainToNormalize = 1.f;
+    for (size_t i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the waveform
     {
-        mipMap[i]->initialise([this, i](float x) { return WaveTableFormula(x, std::floor(HARMONIC_N / pow(2, i))); },
-            0, juce::MathConstants<float>::twoPi, LOOKUP_POINTS);
+        float sample = WaveTableFormula( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
+
+        if( std::fabs(sample) > peakAmplitude)
+        {
+            peakAmplitude = std::fabs(sample);
+        }
+    }
+
+    if(peakAmplitude != 0.f)
+    {
+        gainToNormalize = 1.f / peakAmplitude;
+    }
+
+    for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
+    {
+        mipMap[i]->initialise(
+            [this, i, gainToNormalize] (float x) { return gainToNormalize * WaveTableFormula( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
+            0, juce::MathConstants<float>::twoPi,
+            LOOKUP_POINTS);
     }
 }
 
@@ -179,8 +199,8 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     auto synthGain = std::make_unique<juce::AudioParameterFloat>(
         "synthGain",
         "Gain",
-        juce::NormalisableRange<float>(-90.f, 0.f, 0.1), 
-        -12.f);
+        juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
+        70.f);
     synthGroup.get()->addChild(std::move(synthGain));
     
     juce::AudioParameterFloatAttributes attr;
@@ -244,7 +264,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     auto globalPhseStart = std::make_unique<juce::AudioParameterFloat>(
         "globalPhase",
         "Phase",
-        juce::NormalisableRange<float>(0.f, 99.f, 1.f), 
+        juce::NormalisableRange<float>(0.f, 99.9, 0.1), 
         0.f);
     synthGroup.get()->addChild(std::move(globalPhseStart));
 
@@ -252,7 +272,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     auto randomPhaseRange = std::make_unique<juce::AudioParameterFloat>(
         "randomPhaseRange",
         "Phase Randomness",
-        juce::NormalisableRange<float>(0.f, 99.f, 1.f), 
+        juce::NormalisableRange<float>(0.f, 99.9, 0.1), 
         0.f);
     synthGroup.get()->addChild(std::move(randomPhaseRange));
 
@@ -284,15 +304,15 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     auto attack = std::make_unique<juce::AudioParameterFloat>(
         "amplitudeADSRAttack",
         "A",
-        juce::NormalisableRange<float>(0.f, 8000.f, 0.1, 0.45), 
-        0.5);
+        juce::NormalisableRange<float>(0.f, 10000.f, 0.1, 0.45), 
+        5.f);
     synthGroup.get()->addChild(std::move(attack));
 
     //Decay time for the oscillator's amplitudes in ms
     auto decay = std::make_unique<juce::AudioParameterFloat>(
         "amplitudeADSRDecay",
         "D",
-        juce::NormalisableRange<float>(0.f, 8000.f, 0.1, 0.45), 
+        juce::NormalisableRange<float>(0.f, 10000.f, 0.1, 0.45), 
         1000.f);
     synthGroup.get()->addChild(std::move(decay));
 
@@ -308,7 +328,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
     auto release = std::make_unique<juce::AudioParameterFloat>(
         "amplitudeADSRRelease",
         "R",
-        juce::NormalisableRange<float>(0.f, 8000.f, 0.1, 0.45), 
+        juce::NormalisableRange<float>(0.f, 10000.f, 0.1, 0.45), 
         50.f);
     synthGroup.get()->addChild(std::move(release));
 

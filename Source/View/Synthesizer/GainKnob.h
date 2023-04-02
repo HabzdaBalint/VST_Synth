@@ -27,7 +27,7 @@ public:
             "synthGain",
             *gainKnob);
         gainKnob->setScrollWheelEnabled(false);
-        gainKnob->setTextValueSuffix(" dB");
+        gainKnob->setTextValueSuffix("%");
         gainKnob->setTextBoxIsEditable(true);
         addAndMakeVisible(*gainKnob);
 
@@ -47,7 +47,7 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid gainKnobGrid;
-        gainKnobGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( HEIGHT_GAIN_KNOB_PX ) ), TrackInfo( Px( 20 ) ), TrackInfo( Fr( 1 ) ) };
+        gainKnobGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( HEIGHT_GAIN_KNOB_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ) };
         gainKnobGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
         gainKnobGrid.items = { juce::GridItem( nullptr ), juce::GridItem( *gainKnob ), juce::GridItem( gainLabel ), juce::GridItem( nullptr ) };
 

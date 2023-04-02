@@ -103,7 +103,7 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid adsrGrid;
-        adsrGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( 20 ) ) };
+        adsrGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
         adsrGrid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         adsrGrid.items = { 
             juce::GridItem( *attackSlider ), juce::GridItem( *decaySlider ), juce::GridItem( *sustainSlider ), juce::GridItem( *releaseSlider ),

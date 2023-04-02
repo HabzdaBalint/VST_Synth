@@ -48,8 +48,9 @@ public:
         updateFrequencies();
         updateAngles();
 
-        amplitudeADSR.reset();
         updateADSRParams();
+        if(amplitudeADSR.isActive())
+            amplitudeADSR.reset();
         amplitudeADSR.noteOn();
     }
 

@@ -29,15 +29,15 @@ public:
     {
         level = audioProcessor.atomicSynthRMS[channelIndex].get();
 
-        if(level < -90.f)
-            level = -90.f;
+        if(level < -60.f)
+            level = -60.f;
 
         auto bounds = getLocalBounds().toFloat();
         bounds.reduce(PADDING_PX, PADDING_PX);
         g.setColour(findColour(juce::GroupComponent::outlineColourId));
         g.fillRoundedRectangle(bounds, 4.f);
 
-        auto scaledValue = juce::jmap(level, -90.f, 6.f, 0.f, bounds.getWidth());
+        auto scaledValue = juce::jmap(level, -60.f, 0.f, 0.f, bounds.getWidth());
         g.setColour(findColour(juce::Slider::textBoxTextColourId));
         g.fillRoundedRectangle(bounds.removeFromLeft(scaledValue), 4.f);
     }

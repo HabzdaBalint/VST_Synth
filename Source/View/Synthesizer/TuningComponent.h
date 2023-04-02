@@ -95,11 +95,13 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid tuningComponentGrid;
-        tuningComponentGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( 20 ) ) };
+        tuningComponentGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( HEIGHT_TUNING_KNOB_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ) };
         tuningComponentGrid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         tuningComponentGrid.items = { 
+            juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ),
             juce::GridItem( *tuningOctavesKnob ), juce::GridItem( *tuningSemitonesKnob ), juce::GridItem( *tuningCentsKnob ), juce::GridItem( *pitchWheelKnob ),
-            juce::GridItem( nullptr ), juce::GridItem( tuningLabel ), juce::GridItem( nullptr ), juce::GridItem( pitchWheelLabel ) };
+            juce::GridItem( nullptr ), juce::GridItem( tuningLabel ), juce::GridItem( nullptr ), juce::GridItem( pitchWheelLabel ),
+            juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ) };
 
         tuningComponentGrid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();

@@ -85,7 +85,7 @@ void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 
     for (size_t i = 0; i < 2; i++)
     {
-        synthRMS[i].reset(sampleRate, 0.5);
+        synthRMS[i].reset(sampleRate, 0.3);
         synthRMS[i].setCurrentAndTargetValue(-90.f);
         atomicSynthRMS[i].set(-90.f);
     }
@@ -120,6 +120,8 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     auto numSamples = buffer.getNumSamples();
 
+    keyboardState.processNextMidiBuffer(midiMessages, 0, numSamples, true);
+
     for (size_t i = totalNumInputChannels; i < totalNumOutputChannels; i++)
         buffer.clear (i, 0, numSamples);
 
@@ -141,6 +143,8 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     fxChain->processBlock(buffer, midiMessages);
+
+    midiMessages.clear();
 }
 
 //==============================================================================

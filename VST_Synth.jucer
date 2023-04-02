@@ -72,6 +72,10 @@
               file="Source/View/Synthesizer/TuningComponent.h"/>
         <FILE id="RtekCK" name="UnisonComponent.h" compile="0" resource="0"
               file="Source/View/Synthesizer/UnisonComponent.h"/>
+        <FILE id="PgWC3y" name="WaveformSelector.h" compile="0" resource="0"
+              file="Source/View/Synthesizer/WaveformSelector.h"/>
+        <FILE id="Xe5tfm" name="WaveformSelectorItems.h" compile="0" resource="0"
+              file="Source/View/Synthesizer/WaveformSelectorItems.h"/>
       </GROUP>
       <FILE id="seMlII" name="EditorParameters.h" compile="0" resource="0"
             file="Source/View/EditorParameters.h"/>

@@ -13,8 +13,8 @@
 #include <JuceHeader.h>
 
 constexpr int SYNTH_MAX_VOICES = 128;                   //The number of voices the synth can handle simultaneously
-constexpr int HARMONIC_N = 128;                         //The number of harmonics the synth can generate
-const int LOOKUP_POINTS = HARMONIC_N * 32;          //The number of calculated points in the lookup table
+constexpr int HARMONIC_N = 256;                         //The number of harmonics the synth can generate
+const int LOOKUP_POINTS = HARMONIC_N * 32;              //The number of calculated points in the lookup table
 const int LOOKUP_SIZE = ceil(log2(HARMONIC_N) + 1);     //The number of mipmaps that need to be generated to avoid aliasing at a given harmonic count
 
 struct AdditiveSynthParametersAtomic

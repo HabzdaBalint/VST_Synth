@@ -27,11 +27,11 @@ public:
             "globalPhase",
             *globalPhaseKnob);
         globalPhaseKnob->setScrollWheelEnabled(false);
-        globalPhaseKnob->setTextValueSuffix("");
+        globalPhaseKnob->setTextValueSuffix("%");
         globalPhaseKnob->setTextBoxIsEditable(true);
         addAndMakeVisible(*globalPhaseKnob);
 
-        globalPhaseLabel.setText("Global Phase", juce::NotificationType::dontSendNotification);
+        globalPhaseLabel.setText("Phase", juce::NotificationType::dontSendNotification);
         globalPhaseLabel.setJustificationType(juce::Justification::centred);
         addAndMakeVisible(globalPhaseLabel);
 
@@ -43,7 +43,7 @@ public:
             "randomPhaseRange",
             *randomPhaseKnob);
         randomPhaseKnob->setScrollWheelEnabled(false);
-        randomPhaseKnob->setTextValueSuffix("");
+        randomPhaseKnob->setTextValueSuffix("%");
         randomPhaseKnob->setTextBoxIsEditable(true);
         addAndMakeVisible(*randomPhaseKnob);
 
@@ -71,7 +71,7 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid phaseComponentGrid;
-        phaseComponentGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( 20 ) ) };
+        phaseComponentGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
         phaseComponentGrid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         phaseComponentGrid.items = { 
             juce::GridItem( *globalPhaseKnob ), juce::GridItem( *randomPhaseKnob ),

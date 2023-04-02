@@ -87,39 +87,46 @@ private:
     void redrawPath()
     {
         waveformPath.clear();
+        auto bounds = getLocalBounds();
 
-        std::vector<float> amplitudes;
-        amplitudes.resize(LOOKUP_POINTS);
+        if( bounds.getWidth() > 0 )
+        {
+            std::vector<float> amplitudes;
+            amplitudes.resize(bounds.getWidth());
 
-        for (size_t i = 0; i < LOOKUP_POINTS; i++)
-        {
-            amplitudes[i] = audioProcessor.additiveSynth->WaveTableFormula((juce::MathConstants<float>::twoPi * (float)i) / (float)LOOKUP_POINTS, HARMONIC_N);
-        }
+            for (size_t i = 0; i < amplitudes.size(); i++)
+            {
+                amplitudes[i] = audioProcessor.additiveSynth->WaveTableFormula(
+                    juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1 ), 0.f, juce::MathConstants<float>::twoPi ), HARMONIC_N);
+            }
 
-        waveformPath.preallocateSpace(3*LOOKUP_POINTS);
-        waveformPath.startNewSubPath(getX(), -1 * amplitudes.front());
-        for (size_t i = 1; i < amplitudes.size(); i++)
-        {
-            waveformPath.lineTo(getX() + i, -1 * amplitudes[i]);
-        }
+            waveformPath.preallocateSpace( 3 * LOOKUP_POINTS );
 
-        int zeroCount = 0;
-        for (size_t i = 0; i < amplitudes.size(); i++)
-        {
-            if (amplitudes[i] == 0)
-                zeroCount++;
-        }
-        
-        if (zeroCount != amplitudes.size())
-        {
-            auto bounds = getLocalBounds();
             bounds.reduce(0, PADDING_PX);
 
-            waveformPath.scaleToFit(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), false);
-        }
-        else
-        {
-            waveformPath.clear();
+            waveformPath.startNewSubPath(bounds.getX(),
+                juce::jmap( -1 * amplitudes.front(), -1.f, 1.f, (float)bounds.getY(), (float)( bounds.getHeight() + bounds.getY() ) ) );
+            for (size_t i = 1; i < amplitudes.size(); i++)
+            {
+                waveformPath.lineTo(bounds.getX() + i,
+                    juce::jmap( -1 * amplitudes[i], -1.f, 1.f, (float)bounds.getY(), (float)( bounds.getHeight() + bounds.getY() ) ) );
+            }
+
+            int zeroCount = 0;
+            for (size_t i = 0; i < amplitudes.size(); i++)
+            {
+                if (amplitudes[i] == 0)
+                    zeroCount++;
+            }
+            
+            if (zeroCount != amplitudes.size())
+            {
+                waveformPath.scaleToFit(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), false);
+            }
+            else
+            {
+                waveformPath.clear();
+            }
         }
     }
 

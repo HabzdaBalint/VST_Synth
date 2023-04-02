@@ -14,6 +14,7 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
+#include "WaveformSelector.h"
 #include "TuningComponent.h"
 #include "PhaseComponent.h"
 #include "UnisonComponent.h"
@@ -25,6 +26,7 @@ class SynthEditor : public juce::Component
 public:
     SynthEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
+        addAndMakeVisible(*waveformSelector);
         addAndMakeVisible(*tuningComponent);
         addAndMakeVisible(*phaseComponent);
         addAndMakeVisible(*unisonComponent);
@@ -51,7 +53,7 @@ public:
         juce::Grid synthEditorGrid;
         synthEditorGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         synthEditorGrid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
-        synthEditorGrid.items = { juce::GridItem( nullptr ), juce::GridItem( *unisonComponent ), 
+        synthEditorGrid.items = { juce::GridItem( *waveformSelector ), juce::GridItem( *unisonComponent ), 
                                   juce::GridItem( *tuningComponent ), juce::GridItem( *adsrComponent ), 
                                   juce::GridItem( *phaseComponent ), juce::GridItem( *synthGainComponent ) };
 
@@ -64,7 +66,7 @@ public:
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    //std::unique_ptr<WaveformSelector> waveformSelector = std::make_unique<WaveformSelector>(audioProcessor);
+    std::unique_ptr<WaveformSelector> waveformSelector = std::make_unique<WaveformSelector>(audioProcessor);
     std::unique_ptr<TuningComponent> tuningComponent = std::make_unique<TuningComponent>(audioProcessor);
     std::unique_ptr<PhaseComponent> phaseComponent = std::make_unique<PhaseComponent>(audioProcessor);
     std::unique_ptr<UnisonComponent> unisonComponent = std::make_unique<UnisonComponent>(audioProcessor);
@@ -75,10 +77,3 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthEditor)
 };
-
-/*
-    WaveformSelector
-    Tuning
-*/
-
-

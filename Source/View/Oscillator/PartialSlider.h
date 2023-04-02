@@ -64,7 +64,7 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid partialGrid;
-        partialGrid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( HEIGHT_PARTIAL_NUMBER_PX ) ) };
+        partialGrid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
         partialGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
         partialGrid.items = { juce::GridItem( *gainSlider ), juce::GridItem( *phaseSlider ), juce::GridItem( partialNumber ) };
 
