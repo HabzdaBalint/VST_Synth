@@ -65,14 +65,33 @@ void AdditiveSynthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::M
 }
 
 void AdditiveSynthesizer::parameterChanged(const juce::String &parameterID, float newValue)
-{
-    updateSynthParameters();
-
-    //start an update for the lookup table if necessary
-    if(parameterID.contains("partial") && !lutUpdater.isThreadRunning())
+{   //todo: make an object of atomic float references that after initialization refer to things that need quick access, like partial gains
+    if( parameterID.contains("partial") )
     {
-        lutUpdater.startThread();
+        if( parameterID.contains("gain") )
+        {
+            int idx = std::stoi(parameterID.trimCharactersAtEnd("gain").trimCharactersAtStart("partial").toStdString());
+            synthParameters.partialGain[idx] = newValue / 100;
+        }
+        else if ( parameterID.contains("phase") )
+        {
+            int idx = std::stoi(parameterID.trimCharactersAtEnd("gain").trimCharactersAtStart("partial").toStdString());
+            synthParameters.partialPhase[idx] = newValue / 100;
+        }
+
+        //start an update for the lookup table if necessary
+        if( !lutUpdater.isThreadRunning() )
+        {
+            lutUpdater.startThread();
+        }
     }
+    else
+    {
+        updateSynthParameters();
+    }
+    
+
+    paramMap[parameterID] = newValue;
 }
 
 void AdditiveSynthesizer::updateSynthParameters()
@@ -96,21 +115,28 @@ void AdditiveSynthesizer::updateSynthParameters()
     synthParameters.decay = apvts->getRawParameterValue("amplitudeADSRDecay")->load() / 1000;
     synthParameters.sustain = apvts->getRawParameterValue("amplitudeADSRSustain")->load() / 100;
     synthParameters.release = apvts->getRawParameterValue("amplitudeADSRRelease")->load() / 1000;
-
-    for (size_t i = 0; i < HARMONIC_N; i++)
-    {
-        synthParameters.partialGain[i] = apvts->getRawParameterValue(getPartialGainParameterName(i))->load() / 100;
-        synthParameters.partialPhase[i] = apvts->getRawParameterValue(getPartialPhaseParameterName(i))->load() / 100;
-    }
 }
 
 void AdditiveSynthesizer::updateLookupTable()
+{
+    float gainToNormalize = findGainToNormalize();
+
+    for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
+    {
+        mipMap[i]->initialise(
+            [this, i, gainToNormalize] (float x) { return gainToNormalize * waveTableFormula( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
+            0, juce::MathConstants<float>::twoPi,
+            LOOKUP_POINTS);
+    }
+}
+
+const float AdditiveSynthesizer::findGainToNormalize()
 {
     float peakAmplitude = 0.f;
     float gainToNormalize = 1.f;
     for (size_t i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the waveform
     {
-        float sample = WaveTableFormula( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
+        float sample = waveTableFormula( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
 
         if( std::fabs(sample) > peakAmplitude)
         {
@@ -123,24 +149,20 @@ void AdditiveSynthesizer::updateLookupTable()
         gainToNormalize = 1.f / peakAmplitude;
     }
 
-    for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
-    {
-        mipMap[i]->initialise(
-            [this, i, gainToNormalize] (float x) { return gainToNormalize * WaveTableFormula( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
-            0, juce::MathConstants<float>::twoPi,
-            LOOKUP_POINTS);
-    }
+    return gainToNormalize;
 }
 
-const float AdditiveSynthesizer::WaveTableFormula(float angle, int harmonics)
+const float AdditiveSynthesizer::waveTableFormula(float angle, int harmonics)
 {
     float sample = 0.f;
 
     for (size_t i = 0; i < harmonics; i++)
     {
-        if (synthParameters.partialGain[i] != 0.f)
+        float gain = synthParameters.partialGain[i];
+        float phase = synthParameters.partialPhase[i];
+        if (gain != 0.f)
         {
-            sample += synthParameters.partialGain[i] * sin((i + 1) * angle + synthParameters.partialPhase[i] * juce::MathConstants<float>::twoPi);
+            sample += gain * sin((i + 1) * angle + phase * juce::MathConstants<float>::twoPi);
         }
     }
 
@@ -193,7 +215,7 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
         juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
         70.f);
     synthGroup.get()->addChild(std::move(synthGain));
-    
+
     juce::AudioParameterFloatAttributes attr;
 
     for (size_t i = 0; i < HARMONIC_N; i++)
@@ -323,15 +345,24 @@ std::unique_ptr<juce::AudioProcessorParameterGroup> AdditiveSynthesizer::createP
         50.f);
     synthGroup.get()->addChild(std::move(release));
 
+    auto params = synthGroup->getParameters(false);
+    for ( auto param : params)
+    {
+        auto id = dynamic_cast<juce::AudioParameterFloat*>(param)->getParameterID();
+        auto value = dynamic_cast<juce::AudioParameterFloat*>(param)->getNormalisableRange().convertFrom0to1(param->getDefaultValue());
+        paramMap.emplace(id, value);
+    }
+    paramRefs = std::make_unique<AdditiveSynthParameterReferences>(paramMap);
+
     return synthGroup;
 }
 
-juce::String AdditiveSynthesizer::getPartialGainParameterName(size_t index)
+const juce::String AdditiveSynthesizer::getPartialGainParameterName(size_t index)
 {
     return "partial" + juce::String(index) + "gain";
 }
 
-juce::String AdditiveSynthesizer::getPartialPhaseParameterName(size_t index)
+const juce::String AdditiveSynthesizer::getPartialPhaseParameterName(size_t index)
 {
     return "partial" + juce::String(index) + "phase";
 }

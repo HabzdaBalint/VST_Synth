@@ -28,6 +28,8 @@ private:
     std::function<void()> func;
 };
 
+struct AdditiveSynthParameterReferences;
+
 class AdditiveSynthesizer : public juce::AudioProcessor,
                             juce::AudioProcessorValueTreeState::Listener
 {
@@ -67,23 +69,25 @@ public:
     /// @brief Used for making the parameter ids of the the partials' gain parameters consistent
     /// @param index The index of the harmonic
     /// @return A consistent parameter id
-    juce::String getPartialGainParameterName(size_t index);
+    static const juce::String getPartialGainParameterName(size_t index);
 
     /// @brief Used for making the parameter ids of the the partials' phase parameters consistent
     /// @param index The index of the harmonic
     /// @return A consistent parameter id
-    juce::String getPartialPhaseParameterName(size_t index);
+    static const juce::String getPartialPhaseParameterName(size_t index);
 
     /// @brief Generates a sample of the waveform defined by the parameters of the synthesizer. Used for maintaining the lookup table. This function could also be used for accurate rendering, with any number of harmonics, if time is not a constraint
     /// @param angle The angle at which the sample is generated (in radians)
     /// @param harmonics The number of harmonics that are included in the calculation of the sample. Use lower numbers to avoid aliasing
     /// @return The generated sample
-    const float WaveTableFormula(float angle, int harmonics);
+    const float waveTableFormula(float angle, int harmonics);
 
 private:
     juce::AudioProcessorValueTreeState* apvts;
 
     AdditiveSynthParameters synthParameters;
+    std::unordered_map<juce::String, std::atomic<float>> paramMap;
+    std::unique_ptr<AdditiveSynthParameterReferences> paramRefs;
 
     std::unique_ptr<juce::Synthesiser> synth = std::make_unique<juce::Synthesiser>();
     juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
@@ -101,6 +105,53 @@ private:
     /// @brief Generates the lookup table with the current parameters
     void updateLookupTable();
     
+    const float findGainToNormalize();
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AdditiveSynthesizer)
+};
+
+struct AdditiveSynthParameterReferences
+{
+    AdditiveSynthParameterReferences(std::unordered_map<juce::String, std::atomic<float>>& paramMap) :
+        oscillatorOctaves(&paramMap.at("oscillatorOctaves")),
+        oscillatorSemitones(&paramMap.at("oscillatorOctaves")),
+        oscillatorFine(&paramMap.at("oscillatorFine")),
+        pitchWheelRange(&paramMap.at("pitchWheelRange")),
+        globalPhase(&paramMap.at("globalPhase")),
+        randomPhaseRange(&paramMap.at("randomPhaseRange")),
+        unisonCount(&paramMap.at("unisonCount")),
+        unisonDetune(&paramMap.at("unisonDetune")),
+        unisonGain(&paramMap.at("unisonGain")),
+        amplitudeADSRAttack(&paramMap.at("amplitudeADSRAttack")),
+        amplitudeADSRDecay(&paramMap.at("amplitudeADSRDecay")),
+        amplitudeADSRSustain(&paramMap.at("amplitudeADSRSustain")),
+        amplitudeADSRRelease(&paramMap.at("amplitudeADSRRelease"))
+    {
+        for (size_t i = 0; i < HARMONIC_N; i++)
+        {
+            partialGains.push_back(&paramMap.at(AdditiveSynthesizer::getPartialGainParameterName(i)));
+            partialPhases.push_back(&paramMap.at(AdditiveSynthesizer::getPartialPhaseParameterName(i)));
+        }
+    }
+
+    std::vector<std::atomic<float>*> partialGains;
+    std::vector<std::atomic<float>*> partialPhases;
+
+    std::atomic<float>* oscillatorOctaves;
+    std::atomic<float>* oscillatorSemitones;
+    std::atomic<float>* oscillatorFine;
+    std::atomic<float>* pitchWheelRange;
+
+    std::atomic<float>* globalPhase;
+    std::atomic<float>* randomPhaseRange;
+
+    std::atomic<float>* unisonCount;
+    std::atomic<float>* unisonDetune;
+    std::atomic<float>* unisonGain;
+
+    std::atomic<float>* amplitudeADSRAttack;
+    std::atomic<float>* amplitudeADSRDecay;
+    std::atomic<float>* amplitudeADSRSustain;
+    std::atomic<float>* amplitudeADSRRelease;
 };

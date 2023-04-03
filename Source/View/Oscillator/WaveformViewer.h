@@ -96,7 +96,7 @@ private:
 
             for (size_t i = 0; i < amplitudes.size(); i++)
             {
-                amplitudes[i] = audioProcessor.additiveSynth->WaveTableFormula(
+                amplitudes[i] = audioProcessor.additiveSynth->waveTableFormula(
                     juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1 ), 0.f, juce::MathConstants<float>::twoPi ), HARMONIC_N);
             }
 
