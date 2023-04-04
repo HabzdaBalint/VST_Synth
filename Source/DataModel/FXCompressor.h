@@ -18,9 +18,10 @@ using DryWetMixer = juce::dsp::DryWetMixer<float>;
 class FXCompressor : public FXProcessorUnit
 {
 public:
-    FXCompressor()
+    FXCompressor(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
     {
         dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
+        registerListeners();
     }
 
     ~FXCompressor() {}
@@ -52,14 +53,14 @@ public:
 
     void updateCompressorParameters()
     {
-        dryWetMixer.setWetMixProportion(apvts->getRawParameterValue("compressorMix")->load()/100);
-        compressor.setThreshold(apvts->getRawParameterValue("compressorThreshold")->load());
-        compressor.setRatio(apvts->getRawParameterValue("compressorRatio")->load());
-        compressor.setAttack(apvts->getRawParameterValue("compressorAttack")->load());
-        compressor.setRelease(apvts->getRawParameterValue("compressorRelease")->load());
+        dryWetMixer.setWetMixProportion(apvts.getRawParameterValue("compressorMix")->load()/100);
+        compressor.setThreshold(apvts.getRawParameterValue("compressorThreshold")->load());
+        compressor.setRatio(apvts.getRawParameterValue("compressorRatio")->load());
+        compressor.setAttack(apvts.getRawParameterValue("compressorAttack")->load());
+        compressor.setRelease(apvts.getRawParameterValue("compressorRelease")->load());
     }
 
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> compressorGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>(
@@ -110,11 +111,11 @@ private:
 
     void registerListeners() override
     {
-        apvts->addParameterListener("compressorMix", this);
-        apvts->addParameterListener("compressorThreshold", this);
-        apvts->addParameterListener("compressorRatio", this);
-        apvts->addParameterListener("compressorAttack", this);
-        apvts->addParameterListener("compressorRelease", this);
+        apvts.addParameterListener("compressorMix", this);
+        apvts.addParameterListener("compressorThreshold", this);
+        apvts.addParameterListener("compressorRatio", this);
+        apvts.addParameterListener("compressorAttack", this);
+        apvts.addParameterListener("compressorRelease", this);
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override

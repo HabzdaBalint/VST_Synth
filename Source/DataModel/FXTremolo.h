@@ -17,9 +17,10 @@ using DryWetMixer = juce::dsp::DryWetMixer<float>;
 class FXTremolo : public FXProcessorUnit
 {
 public:
-    FXTremolo()
+    FXTremolo(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
     {
         dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
+        registerListeners();
     }
 
     ~FXTremolo() {}
@@ -74,13 +75,13 @@ public:
 
     void updateTremoloParameters()
     {
-        dryWetMixer.setWetMixProportion(apvts->getRawParameterValue("tremoloMix")->load()/100);
-        depth = apvts->getRawParameterValue("tremoloDepth")->load()/100;
-        rate = apvts->getRawParameterValue("tremoloRate")->load();
-        isAutoPan = apvts->getRawParameterValue("tremoloAutoPan")->load();
+        dryWetMixer.setWetMixProportion(apvts.getRawParameterValue("tremoloMix")->load()/100);
+        depth = apvts.getRawParameterValue("tremoloDepth")->load()/100;
+        rate = apvts.getRawParameterValue("tremoloRate")->load();
+        isAutoPan = apvts.getRawParameterValue("tremoloAutoPan")->load();
     }
 
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> tremoloGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>(
@@ -130,10 +131,10 @@ private:
 
     void registerListeners() override
     {
-        apvts->addParameterListener("tremoloMix", this);
-        apvts->addParameterListener("tremoloDepth", this);
-        apvts->addParameterListener("tremoloRate", this);
-        apvts->addParameterListener("tremoloAutoPan", this);
+        apvts.addParameterListener("tremoloMix", this);
+        apvts.addParameterListener("tremoloDepth", this);
+        apvts.addParameterListener("tremoloRate", this);
+        apvts.addParameterListener("tremoloAutoPan", this);
     }
 
     void updateAngles()

@@ -53,8 +53,5 @@ private:
 
     juce::OwnedArray<PartialSlider> partialSliders;
 
-    void createGainSlider(int idx);
-    void createPhaseSlider(int idx);
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WaveformEditor)
 };

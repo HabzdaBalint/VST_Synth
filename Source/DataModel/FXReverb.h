@@ -17,7 +17,10 @@ using Reverb = juce::dsp::Reverb;
 class FXReverb : public FXProcessorUnit
 {
 public:
-    FXReverb() {}
+    FXReverb(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
+    {
+        registerListeners();
+    }
 
     ~FXReverb() {}
 
@@ -46,15 +49,15 @@ public:
     void updateReverbParameters()
     {
         Reverb::Parameters newParams;
-        newParams.wetLevel = apvts->getRawParameterValue("reverbWet")->load()/100;
-        newParams.dryLevel = apvts->getRawParameterValue("reverbDry")->load()/100;
-        newParams.roomSize = apvts->getRawParameterValue("reverbRoom")->load()/100;
-        newParams.damping = apvts->getRawParameterValue("reverbDamping")->load()/100;
-        newParams.width = apvts->getRawParameterValue("reverbWidth")->load()/100;
+        newParams.wetLevel = apvts.getRawParameterValue("reverbWet")->load()/100;
+        newParams.dryLevel = apvts.getRawParameterValue("reverbDry")->load()/100;
+        newParams.roomSize = apvts.getRawParameterValue("reverbRoom")->load()/100;
+        newParams.damping = apvts.getRawParameterValue("reverbDamping")->load()/100;
+        newParams.width = apvts.getRawParameterValue("reverbWidth")->load()/100;
         reverb.setParameters(newParams);
     }
 
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> reverbGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>(
@@ -104,11 +107,11 @@ private:
 
     void registerListeners() override
     {
-        apvts->addParameterListener("reverbWet", this);
-        apvts->addParameterListener("reverbDry", this);
-        apvts->addParameterListener("reverbRoom", this);
-        apvts->addParameterListener("reverbDamping", this);
-        apvts->addParameterListener("reverbWidth", this);
+        apvts.addParameterListener("reverbWet", this);
+        apvts.addParameterListener("reverbDry", this);
+        apvts.addParameterListener("reverbRoom", this);
+        apvts.addParameterListener("reverbDamping", this);
+        apvts.addParameterListener("reverbWidth", this);
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override

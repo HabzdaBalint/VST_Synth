@@ -17,7 +17,10 @@ using Chorus = juce::dsp::Chorus<float>;
 class FXChorus : public FXProcessorUnit
 {
 public:
-    FXChorus() {}
+    FXChorus(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
+    {
+        registerListeners();
+    }
 
     ~FXChorus() {}
 
@@ -45,14 +48,14 @@ public:
 
     void updateChorusParameters()
     {
-        chorus.setMix(apvts->getRawParameterValue("chorusMix")->load()/100);
-        chorus.setRate(apvts->getRawParameterValue("chorusRate")->load());
-        chorus.setCentreDelay(apvts->getRawParameterValue("chorusDelay")->load());
-        chorus.setDepth(apvts->getRawParameterValue("chorusDepth")->load()/100);
-        chorus.setFeedback(apvts->getRawParameterValue("chorusFeedback")->load()/100);
+        chorus.setMix(apvts.getRawParameterValue("chorusMix")->load()/100);
+        chorus.setRate(apvts.getRawParameterValue("chorusRate")->load());
+        chorus.setCentreDelay(apvts.getRawParameterValue("chorusDelay")->load());
+        chorus.setDepth(apvts.getRawParameterValue("chorusDepth")->load()/100);
+        chorus.setFeedback(apvts.getRawParameterValue("chorusFeedback")->load()/100);
     }
 
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> chorusGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>(
@@ -103,11 +106,11 @@ private:
     
     void registerListeners() override
     {
-        apvts->addParameterListener("chorusMix", this);
-        apvts->addParameterListener("chorusRate", this);
-        apvts->addParameterListener("chorusDelay", this);
-        apvts->addParameterListener("chorusDepth", this);
-        apvts->addParameterListener("chorusFeedback", this);
+        apvts.addParameterListener("chorusMix", this);
+        apvts.addParameterListener("chorusRate", this);
+        apvts.addParameterListener("chorusDelay", this);
+        apvts.addParameterListener("chorusDepth", this);
+        apvts.addParameterListener("chorusFeedback", this);
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override

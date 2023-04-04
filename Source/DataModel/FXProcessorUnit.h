@@ -16,8 +16,10 @@ class FXProcessorUnit : public juce::AudioProcessor,
                         public juce::AudioProcessorValueTreeState::Listener
 {
 public:
-    FXProcessorUnit() : AudioProcessor(BusesProperties().withInput("Input", juce::AudioChannelSet::stereo())
-                                                        .withOutput("Output", juce::AudioChannelSet::stereo())) {}
+    FXProcessorUnit(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts),
+                    AudioProcessor(BusesProperties().withInput("Input", juce::AudioChannelSet::stereo())
+                                                    .withOutput("Output", juce::AudioChannelSet::stereo()))
+    {}
 
     void prepareToPlay(double, int) override {}
     void releaseResources() override {}
@@ -40,17 +42,10 @@ public:
     void getStateInformation(juce::MemoryBlock&) override {}
     void setStateInformation(const void*, int) override {}
 
-    virtual std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() = 0;
     virtual void registerListeners() = 0;
 
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts)
-    {
-        this->apvts = &apvts;
-        registerListeners();
-    }
-
 protected:
-    juce::AudioProcessorValueTreeState* apvts;    
+    juce::AudioProcessorValueTreeState& apvts;    
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXProcessorUnit)
 };

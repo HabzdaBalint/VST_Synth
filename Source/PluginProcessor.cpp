@@ -21,16 +21,9 @@ VST_SynthAudioProcessor::VST_SynthAudioProcessor()
                      #endif
                        )
 #endif
-{
-    additiveSynth->connectApvts(apvts);
-    fxChain->connectApvts(apvts);
-}
+{}
 
-VST_SynthAudioProcessor::~VST_SynthAudioProcessor()
-{
-    delete(additiveSynth);
-    delete(fxChain);
-}
+VST_SynthAudioProcessor::~VST_SynthAudioProcessor() {}
 
 //==============================================================================
 const juce::String VST_SynthAudioProcessor::getName() const
@@ -143,7 +136,7 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     fxChain->processBlock(buffer, midiMessages);
-
+ 
     midiMessages.clear();
 }
 
@@ -176,9 +169,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
 {
     std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> layout;
 
-    layout.push_back(additiveSynth->createParameterLayout());
-
-    fxChain->createParameters(layout);
+    layout.push_back(AdditiveSynthParameters::createParameterLayout());
+    layout.push_back(FXChain::FXProcessorChain::createParameterLayout());
+    layout.push_back(FXEqualizer::createParameterLayout());
+    layout.push_back(FXFilter::createParameterLayout());
+    layout.push_back(FXCompressor::createParameterLayout());
+    layout.push_back(FXDelay::createParameterLayout());
+    layout.push_back(FXReverb::createParameterLayout());
+    layout.push_back(FXChorus::createParameterLayout());
+    layout.push_back(FXPhaser::createParameterLayout());
+    layout.push_back(FXTremolo::createParameterLayout());
 
     return { layout.begin(), layout.end() };
 }

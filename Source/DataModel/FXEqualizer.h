@@ -18,13 +18,14 @@ using Coefficients = juce::dsp::IIR::Coefficients<float>;
 class FXEqualizer : public FXProcessorUnit
 {
 public:
-    FXEqualizer()
+    FXEqualizer(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
     {
         for (size_t i = 0; i < 10; i++)
         {
             leftFilters[i] = new Filter();
             rightFilters[i] = new Filter();
         }
+        registerListeners();
     }
 
     ~FXEqualizer()
@@ -76,14 +77,14 @@ public:
         {            
             for (int i = 0; i < 10; i++)
             {
-                float gain = apvts->getRawParameterValue(getBandGainParameterName(i))->load();
+                float gain = apvts.getRawParameterValue(getBandGainParameterName(i))->load();
                 leftFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
                 rightFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
             }
         }
     }
 
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> eqGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>(
@@ -107,7 +108,7 @@ public:
     /// @brief Used for making the parameter ids of the the bands' gain parameters consistent
     /// @param index The index of the band
     /// @return A consistent parameter id
-    juce::String getBandGainParameterName(size_t index)
+    static const juce::String getBandGainParameterName(size_t index)
     {
         return "band" + juce::String(index) + "gain";
     }
@@ -115,7 +116,7 @@ public:
     /// @brief Used for getting usable frequency numbers from a bands' index
     /// @param index The index of the band
     /// @return A string containing the frequency the band is responsible for
-    juce::String getBandFrequencyLabel(size_t index)
+    static const juce::String getBandFrequencyLabel(size_t index)
     {
         float frequency = 31.25 * pow(2, index);
         juce::String suffix;
@@ -140,7 +141,7 @@ private:
     {
         for (size_t i = 0; i < 10; i++)
         {
-            apvts->addParameterListener(getBandGainParameterName(i), this);
+            apvts.addParameterListener(getBandGainParameterName(i), this);
         }
     }
 

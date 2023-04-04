@@ -94,14 +94,14 @@ public:
                     fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
 
                     //Generating unison data for the sample
-                    for (size_t unison = 0; unison < synthParameters.unisonPairCount; unison++)
+                    for (size_t unison = 0; unison < synthParameters.unisonCount->load(); unison++)
                     {
                         if (unisonCurrentAngles[channel][unison] > juce::MathConstants<float>::twoPi)
                         {
                             unisonCurrentAngles[channel][unison] -= juce::MathConstants<float>::twoPi;
                         }
 
-                        bufferPointer[sample] += velocityGain * synthParameters.unisonGain * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[channel][unison]);
+                        bufferPointer[sample] += velocityGain * ( synthParameters.unisonGain->load() / 100 ) * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[channel][unison]);
 
                         unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
                     }
@@ -159,7 +159,7 @@ private:
         for (size_t channel = 0; channel < 2; channel++)
         {
             fundamentalCurrentAngle[channel] = getRandomPhase();
-            for (size_t i = 0; i < 2 * synthParameters.unisonPairCount; i++)
+            for (size_t i = 0; i < 2 * synthParameters.unisonCount->load(); i++)
             {
                 unisonCurrentAngles[channel][i] = getRandomPhase();
             }
@@ -170,7 +170,7 @@ private:
     /// @return Returns the generated offset
     float getRandomPhase()
     {
-        return (((rng.nextFloat() * synthParameters.randomPhaseRange) + synthParameters.globalPhseStart) * juce::MathConstants<float>::twoPi);
+        return (((rng.nextFloat() * synthParameters.randomPhaseRange->load() / 100) + ( synthParameters.globalPhase->load() / 100 ) ) * juce::MathConstants<float>::twoPi);
     }
 
     /// @brief Called to update frequencies with current parameters
@@ -179,18 +179,18 @@ private:
         //formula for equal temperament from midi note# with A4 at 440Hz
         fundamentalFrequency = 440.f * pow(2, ((float)currentNote - 69.f) / 12);
         //Applying octave, semitone and fine tuning and pitchwheel offsets
-        float unifiedGlobalTuningOffset = pow(2, synthParameters.octaveTuning + (synthParameters.semitoneTuning / 12) + (synthParameters.fineTuningCents / 1200) + (synthParameters.pitchWheelRange * pitchWheelOffset / 12));
+        float unifiedGlobalTuningOffset = pow(2, synthParameters.oscillatorOctaves->load() + (synthParameters.oscillatorSemitones->load() / 12) + (synthParameters.oscillatorFine->load() / 1200) + (synthParameters.pitchWheelRange->load() * pitchWheelOffset / 12));
         fundamentalFrequency *= unifiedGlobalTuningOffset;
 
         /*Calculating evenly spaced unison frequency offsets and applying the global tuning offset*/
-        float unisonTuningRange = pow(2, synthParameters.unisonDetune / 1200);
-        float unisonTuningStep = (unisonTuningRange - 1) / synthParameters.unisonPairCount;
-        for (size_t i = 0; i < synthParameters.unisonPairCount; i++)
+        float unisonTuningRange = pow(2, synthParameters.unisonDetune->load() / 1200);
+        float unisonTuningStep = (unisonTuningRange - 1) / synthParameters.unisonCount->load();
+        for (size_t i = 0; i < synthParameters.unisonCount->load(); i++)
         {
             unisonFrequencyOffsets[i] = 1 + (unisonTuningStep * (i + 1));
         }
 
-        if (synthParameters.unisonPairCount > 0)
+        if (synthParameters.unisonCount->load() > 0)
         {
             highestCurrentFrequency = fundamentalFrequency * unisonTuningRange;
         }
@@ -209,7 +209,7 @@ private:
         float cyclesPerSample = fundamentalFrequency / sampleRate;
         fundamentalAngleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
 
-        for (size_t i = 0; i < (2 * synthParameters.unisonPairCount); i += 2)
+        for (size_t i = 0; i < (2 * synthParameters.unisonCount->load()); i += 2)
         {
             cyclesPerSample = (fundamentalFrequency * unisonFrequencyOffsets[i]) / sampleRate;
             unisonAngleDeltas[i] = cyclesPerSample * juce::MathConstants<float>::twoPi;
@@ -271,10 +271,10 @@ private:
 
         amplitudeADSR.setSampleRate(getSampleRate());
 
-        params.attack = synthParameters.attack;
-        params.decay = synthParameters.decay;
-        params.sustain = synthParameters.sustain;
-        params.release = synthParameters.release;
+        params.attack = synthParameters.amplitudeADSRAttack->load() / 1000;
+        params.decay = synthParameters.amplitudeADSRDecay->load() / 1000;
+        params.sustain = synthParameters.amplitudeADSRSustain->load() / 100;
+        params.release = synthParameters.amplitudeADSRRelease->load() / 1000;
 
         amplitudeADSR.setParameters(params);
     }

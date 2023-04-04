@@ -98,13 +98,13 @@ struct WaveformMenuItem : juce::PopupMenu::CustomComponent
         {
             if( i >= dataset.size() )
             {
-                audioProcessor.apvts.getParameter(audioProcessor.additiveSynth->getPartialGainParameterName(i))->setValueNotifyingHost(0.f);
-                audioProcessor.apvts.getParameter(audioProcessor.additiveSynth->getPartialPhaseParameterName(i))->setValueNotifyingHost(0.f);
+                audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialGainParameterName(i))->setValueNotifyingHost(0.f);
+                audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(0.f);
             }
             else
             {
-                audioProcessor.apvts.getParameter(audioProcessor.additiveSynth->getPartialGainParameterName(i))->setValueNotifyingHost(dataset[i].gain);
-                audioProcessor.apvts.getParameter(audioProcessor.additiveSynth->getPartialPhaseParameterName(i))->setValueNotifyingHost(dataset[i].phase);
+                audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialGainParameterName(i))->setValueNotifyingHost(dataset[i].gain);
+                audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(dataset[i].phase);
             }
         }
     }

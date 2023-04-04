@@ -31,12 +31,16 @@ enum FilterType
     highPass
 };
 
+static const juce::StringArray typeChoices = {"Low-pass", "High-pass"};
+static const juce::StringArray slopeChoices = {"6dB/Oct", "12dB/Oct", "18dB/Oct", "24dB/Oct"};
+
 class FXFilter : public FXProcessorUnit
 {
 public:
-    FXFilter()
+    FXFilter(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
     {
         dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
+        registerListeners();
     }
 
     ~FXFilter(){}
@@ -79,13 +83,13 @@ public:
     {
         if(getSampleRate() > 0)
         {
-            dryWetMixer.setWetMixProportion(apvts->getRawParameterValue("filterMix")->load()/100); 
-            float frequency = apvts->getRawParameterValue("filterCutoff")->load();
+            dryWetMixer.setWetMixProportion(apvts.getRawParameterValue("filterMix")->load()/100); 
+            float frequency = apvts.getRawParameterValue("filterCutoff")->load();
 
             juce::ReferenceCountedArray<Coefficients> coeffs;
 
-            FilterType type = static_cast<FilterType>(dynamic_cast<juce::AudioParameterChoice*>(apvts->getParameter("filterType"))->getIndex());
-            FilterSlope slope = static_cast<FilterSlope>(dynamic_cast<juce::AudioParameterChoice*>(apvts->getParameter("filterSlope"))->getIndex());
+            FilterType type = static_cast<FilterType>(dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter("filterType"))->getIndex());
+            FilterSlope slope = static_cast<FilterSlope>(dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter("filterSlope"))->getIndex());
 
             switch (type)
             {
@@ -104,7 +108,7 @@ public:
         }
     }
 
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> filterGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>("filterGroup", "Filter", "|"));
@@ -145,15 +149,12 @@ private:
     PassFilter rightChain;
     juce::dsp::DryWetMixer<float> dryWetMixer;
 
-    const juce::StringArray typeChoices = {"Low-pass", "High-pass"};
-    const juce::StringArray slopeChoices = {"6dB/Oct", "12dB/Oct", "18dB/Oct", "24dB/Oct"};
-
     void registerListeners() override
     {
-        apvts->addParameterListener("filterMix", this);
-        apvts->addParameterListener("filterCutoff", this);
-        apvts->addParameterListener("filterType", this);
-        apvts->addParameterListener("filterSlope", this);
+        apvts.addParameterListener("filterMix", this);
+        apvts.addParameterListener("filterCutoff", this);
+        apvts.addParameterListener("filterType", this);
+        apvts.addParameterListener("filterSlope", this);
     }
 
     juce::ReferenceCountedArray<Coefficients> makeLowPassCoefficients(float frequency, int slope)

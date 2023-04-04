@@ -20,84 +20,70 @@
 #include "FXPhaser.h"
 #include "FXTremolo.h"
 
-constexpr int FX_MAX_SLOTS = 8;//todo probably remove
-
-class FXProcessorChain : public juce::AudioProcessor,
-                         juce::AudioProcessorValueTreeState::Listener
+namespace FXChain
 {
-public:
-    FXProcessorChain();
+    static const juce::StringArray choices = { "Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo"};
+    const int FX_MAX_SLOTS = choices.size() - 1;
 
-    ~FXProcessorChain();
-
-    const juce::String getName() const override { return "Effect Chain"; }
-    bool acceptsMidi() const override { return true; }
-    bool producesMidi() const override { return true; }
-
-    juce::AudioProcessorEditor* createEditor() override;
-    bool hasEditor() const override { return true; }
-
-    int getNumPrograms() override { return 1; }
-    int getCurrentProgram() override { return 0; }
-    void setCurrentProgram(int) override {}
-    const juce::String getProgramName(int) override { return {}; }
-    void changeProgramName(int, const juce::String&) override {}
-
-    void getStateInformation(juce::MemoryBlock&) override {}
-    void setStateInformation(const void*, int) override {}
-
-    double getTailLengthSeconds() const override;
-
-    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
-    void releaseResources() override;
-    void processBlock(juce::AudioSampleBuffer &buffer, juce::MidiBuffer &midiMessages) override;
-
-    void connectApvts(juce::AudioProcessorValueTreeState& apvts);
-
-    void registerListeners();
-    void createParameters(std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> &layout);
-
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout();
-
-    /// @brief Used for making the parameter ids of the the FX slots' bypass parameters consistent
-    /// @param index The index of the effect
-    /// @return A consistent parameter id
-    juce::String getFXBypassParameterName(size_t index)
+    class FXProcessorChain : public juce::AudioProcessor,
+                             public juce::AudioProcessorValueTreeState::Listener
     {
-        return "bypass" + juce::String(index);
-    }
+    public:
+        FXProcessorChain(juce::AudioProcessorValueTreeState&);
 
-    /// @brief Used for making the parameter ids of the the FX slots' choice parameters consistent
-    /// @param index The index of the effect
-    /// @return A consistent parameter id
-    juce::String getFXChoiceParameterName(size_t index)
-    {
-        return "fxSlot" + juce::String(index);
-    }
+        ~FXProcessorChain();
 
-    //todo: only have one owned array of unique processor objects instead of an instance of all of them. make it modifiable and organizable with functions
-    juce::OwnedArray<juce::AudioProcessor> processors;
+        const juce::String getName() const override { return "Effect Chain"; }
+        bool acceptsMidi() const override { return true; }
+        bool producesMidi() const override { return true; }
 
-    FXEqualizer* equalizer = new FXEqualizer();
-    FXFilter* filter = new FXFilter();
-    FXCompressor* compressor = new FXCompressor();
-    FXDelay* delay = new FXDelay();
-    FXReverb* reverb = new FXReverb();
-    FXChorus* chorus = new FXChorus();
-    FXPhaser* phaser = new FXPhaser();
-    FXTremolo* tremolo = new FXTremolo();
-private:
-    juce::AudioProcessorValueTreeState* apvts;
+        juce::AudioProcessorEditor* createEditor() { return nullptr; }
+        bool hasEditor() const override { return true; }
 
-    const juce::StringArray choices = {"Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo"};
+        int getNumPrograms() override { return 1; }
+        int getCurrentProgram() override { return 0; }
+        void setCurrentProgram(int) override {}
+        const juce::String getProgramName(int) override { return {}; }
+        void changeProgramName(int, const juce::String&) override {}
 
-    juce::AudioProcessor* fxProcessorChain[FX_MAX_SLOTS] = {};
-    bool bypassSlot[FX_MAX_SLOTS] = {};
+        void getStateInformation(juce::MemoryBlock&) override {}
+        void setStateInformation(const void*, int) override {}
 
-    void parameterChanged(const juce::String &parameterID, float newValue) override;
+        double getTailLengthSeconds() const override;
 
-    void updateGraph();
+        void prepareToPlay(double sampleRate, int samplesPerBlock) override;
+        void releaseResources() override;
+        void processBlock(juce::AudioSampleBuffer &buffer, juce::MidiBuffer &midiMessages) override;
 
-    //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXProcessorChain)
-};
+        void registerListeners();
+
+        static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout();
+
+        /// @brief Used for making the parameter ids of the the FX slots' bypass parameters consistent
+        /// @param index The index of the effect
+        /// @return A consistent parameter id
+        static const juce::String getFXBypassParameterName(size_t index)
+        {
+            return "bypass" + juce::String(index);
+        }
+
+        /// @brief Used for making the parameter ids of the the FX slots' choice parameters consistent
+        /// @param index The index of the effect
+        /// @return A consistent parameter id
+        static const juce::String getFXChoiceParameterName(size_t index)
+        {
+            return "fxSlot" + juce::String(index);
+        }
+
+    private:
+        juce::AudioProcessorValueTreeState& apvts;
+        
+        std::vector<std::unique_ptr<juce::AudioProcessor>> processors;
+        std::vector<bool> bypasses;
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override;
+
+        //==============================================================================
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXProcessorChain)
+    };
+} // namespace FXChain

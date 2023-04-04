@@ -17,7 +17,10 @@ using Phaser = juce::dsp::Phaser<float>;
 class FXPhaser : public FXProcessorUnit
 {
 public:
-    FXPhaser() {}
+    FXPhaser(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
+    {
+        registerListeners();
+    }
 
     ~FXPhaser() {}
 
@@ -45,14 +48,14 @@ public:
 
     void updatePhaserParameters()
     {
-        phaser.setMix(apvts->getRawParameterValue("phaserMix")->load()/100);
-        phaser.setRate(apvts->getRawParameterValue("phaserRate")->load());
-        phaser.setDepth(apvts->getRawParameterValue("phaserDepth")->load()/100);
-        phaser.setCentreFrequency(apvts->getRawParameterValue("phaserFrequency")->load());
-        phaser.setFeedback(apvts->getRawParameterValue("phaserFeedback")->load()/100);
+        phaser.setMix(apvts.getRawParameterValue("phaserMix")->load()/100);
+        phaser.setRate(apvts.getRawParameterValue("phaserRate")->load());
+        phaser.setDepth(apvts.getRawParameterValue("phaserDepth")->load()/100);
+        phaser.setCentreFrequency(apvts.getRawParameterValue("phaserFrequency")->load());
+        phaser.setFeedback(apvts.getRawParameterValue("phaserFeedback")->load()/100);
     }
 
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> phaserGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>(
@@ -102,11 +105,11 @@ private:
 
     void registerListeners() override
     {
-        apvts->addParameterListener("phaserMix", this);
-        apvts->addParameterListener("phaserRate", this);
-        apvts->addParameterListener("phaserDepth", this);
-        apvts->addParameterListener("phaserFrequency", this);
-        apvts->addParameterListener("phaserFeedback", this);
+        apvts.addParameterListener("phaserMix", this);
+        apvts.addParameterListener("phaserRate", this);
+        apvts.addParameterListener("phaserDepth", this);
+        apvts.addParameterListener("phaserFrequency", this);
+        apvts.addParameterListener("phaserFeedback", this);
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override

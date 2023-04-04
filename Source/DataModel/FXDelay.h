@@ -22,9 +22,10 @@ constexpr float DELAY_MAXLENGTH = 1000.f;
 class FXDelay : public FXProcessorUnit
 {
 public:
-    FXDelay()
+    FXDelay(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
     {
         dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
+        registerListeners();
     }
 
     ~FXDelay() {}
@@ -82,18 +83,18 @@ public:
     {
         if(getSampleRate() > 0)
         {
-            dryWetMixer.setWetMixProportion(apvts->getRawParameterValue("delayMix")->load()/100);
-            feedback = apvts->getRawParameterValue("delayFeedback")->load()/100;
-            delay.setDelay( (float)std::round( ( apvts->getRawParameterValue("delayTime")->load() / 1000 ) * getSampleRate() ) );
-            float freq = apvts->getRawParameterValue("delayFilterFrequency")->load();
-            float q = apvts->getRawParameterValue("delayFilterQ")->load();
+            dryWetMixer.setWetMixProportion(apvts.getRawParameterValue("delayMix")->load()/100);
+            feedback = apvts.getRawParameterValue("delayFeedback")->load()/100;
+            delay.setDelay( (float)std::round( ( apvts.getRawParameterValue("delayTime")->load() / 1000 ) * getSampleRate() ) );
+            float freq = apvts.getRawParameterValue("delayFilterFrequency")->load();
+            float q = apvts.getRawParameterValue("delayFilterQ")->load();
 
             filter[0].coefficients = Coefficients::makeBandPass(getSampleRate(), freq, q);
             filter[1].coefficients = Coefficients::makeBandPass(getSampleRate(), freq, q);
         }
     }
 
-    std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout() override
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> delayGroup (
             std::make_unique<juce::AudioProcessorParameterGroup>(
@@ -148,11 +149,11 @@ private:
 
     void registerListeners() override
     {
-        apvts->addParameterListener("delayMix", this);
-        apvts->addParameterListener("delayFeedback", this);
-        apvts->addParameterListener("delayTime", this);
-        apvts->addParameterListener("delayFilterFrequency", this);
-        apvts->addParameterListener("delayFilterQ", this);
+        apvts.addParameterListener("delayMix", this);
+        apvts.addParameterListener("delayFeedback", this);
+        apvts.addParameterListener("delayTime", this);
+        apvts.addParameterListener("delayFilterFrequency", this);
+        apvts.addParameterListener("delayFilterQ", this);
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override

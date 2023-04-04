@@ -67,7 +67,5 @@ private:
     std::unique_ptr<SynthGainComponent> synthGainComponent = std::make_unique<SynthGainComponent>(audioProcessor);
     std::unique_ptr<ADSRComponent> adsrComponent = std::make_unique<ADSRComponent>(audioProcessor);
 
-
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthEditor)
 };

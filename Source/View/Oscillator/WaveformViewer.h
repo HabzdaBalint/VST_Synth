@@ -23,8 +23,8 @@ public:
     {
         for (size_t i = 0; i < HARMONIC_N; i++)
         {
-            audioProcessor.apvts.getParameter(audioProcessor.additiveSynth->getPartialGainParameterName(i))->addListener(this);
-            audioProcessor.apvts.getParameter(audioProcessor.additiveSynth->getPartialPhaseParameterName(i))->addListener(this);
+            audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialGainParameterName(i))->addListener(this);
+            audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialPhaseParameterName(i))->addListener(this);
         }
 
         startTimerHz(60);
@@ -36,8 +36,8 @@ public:
     {
         for (size_t i = 0; i < HARMONIC_N; i++)
         {
-            audioProcessor.apvts.getParameter(audioProcessor.additiveSynth->getPartialGainParameterName(i))->removeListener(this);
-            audioProcessor.apvts.getParameter(audioProcessor.additiveSynth->getPartialPhaseParameterName(i))->removeListener(this);
+            audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialGainParameterName(i))->removeListener(this);
+            audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialPhaseParameterName(i))->removeListener(this);
         }
     }
 

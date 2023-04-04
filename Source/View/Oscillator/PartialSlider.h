@@ -24,7 +24,7 @@ public:
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         gainSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            audioProcessor.additiveSynth->getPartialGainParameterName(partialIndex),
+            AdditiveSynthParameters::getPartialGainParameterName(partialIndex),
             *gainSlider);
         gainSlider->setScrollWheelEnabled(false);
         gainSlider->setTextValueSuffix("%");
@@ -36,7 +36,7 @@ public:
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         phaseSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            audioProcessor.additiveSynth->getPartialPhaseParameterName(partialIndex),
+            AdditiveSynthParameters::getPartialPhaseParameterName(partialIndex),
             *phaseSlider);    
         phaseSlider->setScrollWheelEnabled(false);
         phaseSlider->setTextValueSuffix("%");

@@ -44,7 +44,8 @@ public:
         juce::Grid oscillatorEditorGrid;
         oscillatorEditorGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         oscillatorEditorGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
-        oscillatorEditorGrid.items = { juce::GridItem( *waveformViewer ), juce::GridItem( *waveformEditorViewport ) };
+        oscillatorEditorGrid.items = { juce::GridItem( *waveformViewer ), 
+                                       juce::GridItem( *waveformEditorViewport ) };
 
         oscillatorEditorGrid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();

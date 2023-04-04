@@ -32,7 +32,6 @@ public:
 #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
 #endif
-
     void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     //==============================================================================
@@ -58,14 +57,11 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    //std::unique_ptr<AdditiveSynthesizer> additiveSynth = std::make_unique<AdditiveSynthesizer>();
-    //std::unique_ptr<FXProcessorChain> fxChain = std::make_unique<FXProcessorChain>();
-
-    AdditiveSynthesizer *additiveSynth = new AdditiveSynthesizer();
-    FXProcessorChain *fxChain = new FXProcessorChain();
-
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Audio Parameters", createParameterLayout() };
+
+    std::unique_ptr<AdditiveSynthesizer> additiveSynth = std::make_unique<AdditiveSynthesizer>(apvts);
+    std::unique_ptr<FXChain::FXProcessorChain> fxChain = std::make_unique<FXChain::FXProcessorChain>(apvts);
 
     juce::LinearSmoothedValue<float> synthRMS[2];
     juce::Atomic<float> atomicSynthRMS[2];
