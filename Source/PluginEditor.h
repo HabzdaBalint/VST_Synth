@@ -13,7 +13,7 @@
 #include "View/EditorParameters.h"
 #include "View/Oscillator/OscillatorEditor.h"
 #include "View/Synthesizer/SynthEditor.h"
-#include "View/Effects/FXProcessorChainEditor.h"
+#include "View/Effects/EffectsEditor.h"
 
 class VST_SynthTabbedComponent : public juce::TabbedComponent
 {

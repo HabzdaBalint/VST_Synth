@@ -32,8 +32,12 @@
     </GROUP>
     <GROUP id="{EC1B2779-625D-D799-7B24-3885CFCB1DE1}" name="View">
       <GROUP id="{308CD48D-FF9B-C445-F620-C94589914757}" name="Effects">
-        <FILE id="lJMVIp" name="FXChorusEditor.h" compile="0" resource="0"
-              file="Source/View/Effects/FXChorusEditor.h"/>
+        <FILE id="T6nQj7" name="EffectsEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectsEditor.h"/>
+        <FILE id="EKb2NN" name="FXChainSelector.h" compile="0" resource="0"
+              file="Source/View/Effects/FXChainSelector.h"/>
+        <GROUP id="{22676003-CD8F-0A83-9038-5F1F8D125472}" name="Chorus">
+          <FILE id="uLBby7" name="ChorusEditor.h" compile="0" resource="0" file="Source/View/Effects/Chorus/ChorusEditor.h"/>
+        </GROUP>
         <FILE id="V89uFT" name="FXCompressorEditor.h" compile="0" resource="0"
               file="Source/View/Effects/FXCompressorEditor.h"/>
         <FILE id="zdh78M" name="FXDelayEditor.h" compile="0" resource="0" file="Source/View/Effects/FXDelayEditor.h"/>
@@ -43,8 +47,7 @@
               file="Source/View/Effects/FXFilterEditor.h"/>
         <FILE id="MOqY2V" name="FXPhaserEditor.h" compile="0" resource="0"
               file="Source/View/Effects/FXPhaserEditor.h"/>
-        <FILE id="oTrhSv" name="FXProcessorChainEditor.h" compile="0" resource="0"
-              file="Source/View/Effects/FXProcessorChainEditor.h"/>
+        <FILE id="oTrhSv" name="FXChainEditor.h" compile="0" resource="0" file="Source/View/Effects/FXChainEditor.h"/>
         <FILE id="zgvJWO" name="FXReverbEditor.h" compile="0" resource="0"
               file="Source/View/Effects/FXReverbEditor.h"/>
       </GROUP>

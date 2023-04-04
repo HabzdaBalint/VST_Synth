@@ -59,7 +59,7 @@ VST_SynthTabbedComponent::VST_SynthTabbedComponent(VST_SynthAudioProcessor& p)
 
     addTab("Oscillator", color, new OscillatorEditor(p), true);
     addTab("Synthesizer", color, new SynthEditor(p), true);  
-    addTab("Effects", color, nullptr /*&new FXProcessorChainEditor(p)*/, true); //todo
+    addTab("Effects", color, new EffectsEditor(p), true); //todo
 }
 
 VST_SynthTabbedComponent::~VST_SynthTabbedComponent() {}
