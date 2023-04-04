@@ -25,16 +25,15 @@ public:
 
     ~FXTremolo() {}
 
-    juce::AudioProcessorEditor* createEditor() override { return nullptr; } // todo return the Compressor's editor object
-
-    void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override
     {
+        setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
+
         juce::dsp::ProcessSpec processSpec;
-        processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
+        processSpec.maximumBlockSize = samplesPerBlock;
         processSpec.numChannels = getTotalNumOutputChannels();
         processSpec.sampleRate = sampleRate;
         dryWetMixer.prepare(processSpec);
-
         updateTremoloParameters();
     }
 

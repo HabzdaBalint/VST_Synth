@@ -37,13 +37,12 @@ public:
         }
     }
 
-    juce::AudioProcessorEditor* createEditor() override { return nullptr; } // todo return the EQ's editor object
-
-    void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override
     {
-        updateEqualizerParameters();
+        setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
+        
         juce::dsp::ProcessSpec processSpec;
-        processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
+        processSpec.maximumBlockSize = samplesPerBlock;
         processSpec.numChannels = 1;
         processSpec.sampleRate = sampleRate;
 
@@ -52,6 +51,7 @@ public:
             leftFilters[i]->prepare(processSpec);
             rightFilters[i]->prepare(processSpec);
         }
+        updateEqualizerParameters();
     }
 
     void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override

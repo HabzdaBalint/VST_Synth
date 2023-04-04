@@ -45,23 +45,23 @@ public:
 
     ~FXFilter(){}
 
-    juce::AudioProcessorEditor* createEditor() override { return nullptr; } // todo return the Filter's editor object
-
-    void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override
     {
-        updateFilterParameters();
+        setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
+        
         juce::dsp::ProcessSpec filterSpec;
-        filterSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
+        filterSpec.maximumBlockSize = samplesPerBlock;
         filterSpec.numChannels = 1;
         filterSpec.sampleRate = sampleRate;
         leftChain.prepare(filterSpec);
         rightChain.prepare(filterSpec);
 
         juce::dsp::ProcessSpec dryWetSpec;
-        dryWetSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
+        dryWetSpec.maximumBlockSize = samplesPerBlock;
         dryWetSpec.numChannels = getTotalNumOutputChannels();
         dryWetSpec.sampleRate = sampleRate;
         dryWetMixer.prepare(dryWetSpec);
+        updateFilterParameters();
     }
 
     void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override

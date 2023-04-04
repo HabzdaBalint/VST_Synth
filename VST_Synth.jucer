@@ -14,8 +14,8 @@
             file="Source/DataModel/AdditiveSynthesizer.h"/>
       <FILE id="VQLNQ1" name="AdditiveSynthParameters.h" compile="0" resource="0"
             file="Source/DataModel/AdditiveSynthParameters.h"/>
-      <FILE id="lc1WJM" name="AdditiveVoice.h" compile="0" resource="0" file="Source/DataModel/AdditiveVoice.h"/>
       <FILE id="qGiDtT" name="FXChorus.h" compile="0" resource="0" file="Source/DataModel/FXChorus.h"/>
+      <FILE id="lc1WJM" name="AdditiveVoice.h" compile="0" resource="0" file="Source/DataModel/AdditiveVoice.h"/>
       <FILE id="uBpDtA" name="FXCompressor.h" compile="0" resource="0" file="Source/DataModel/FXCompressor.h"/>
       <FILE id="aMyeBi" name="FXDelay.h" compile="0" resource="0" file="Source/DataModel/FXDelay.h"/>
       <FILE id="BvwNz5" name="FXEqualizer.h" compile="0" resource="0" file="Source/DataModel/FXEqualizer.h"/>

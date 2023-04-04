@@ -34,6 +34,7 @@ namespace FXChain
 
     void FXProcessorChain::prepareToPlay(double sampleRate, int samplesPerBlock)
     {
+        setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
         for (size_t i = 0; i < FX_MAX_SLOTS; i++)
         {
             if( processors[i] != nullptr )
@@ -142,7 +143,6 @@ namespace FXChain
             }
             if(processors[idx] != nullptr)
             {
-                processors[idx]->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
                 processors[idx]->prepareToPlay(getSampleRate(), getBlockSize());
             }
         }

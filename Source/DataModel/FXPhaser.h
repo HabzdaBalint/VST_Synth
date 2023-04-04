@@ -24,16 +24,15 @@ public:
 
     ~FXPhaser() {}
 
-    juce::AudioProcessorEditor* createEditor() override { return nullptr; } // todo return the Phaser's editor object
-
-    void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override
     {
+        setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
+
         juce::dsp::ProcessSpec processSpec;
-        processSpec.maximumBlockSize = maximumExpectedSamplesPerBlock;
+        processSpec.maximumBlockSize = samplesPerBlock;
         processSpec.numChannels = getTotalNumOutputChannels();
         processSpec.sampleRate = sampleRate;
         phaser.prepare(processSpec);
-
         updatePhaserParameters();
     }
 
