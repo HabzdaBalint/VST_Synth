@@ -7,6 +7,8 @@
               companyWebsite="https://github.com/HabzdaBalint/VST_Synth" pluginVST3Category="Instrument,Synth">
   <MAINGROUP id="LS9iqU" name="VST_Synth">
     <GROUP id="{5734276F-DE0A-83E2-026A-312ED750FC21}" name="DataModel">
+      <FILE id="Rz0BIm" name="OscillatorParameters.h" compile="0" resource="0"
+            file="Source/DataModel/OscillatorParameters.h"/>
       <FILE id="rcGRhu" name="AdditiveSound.h" compile="0" resource="0" file="Source/DataModel/AdditiveSound.h"/>
       <FILE id="XANbMw" name="AdditiveSynthesizer.cpp" compile="1" resource="0"
             file="Source/DataModel/AdditiveSynthesizer.cpp"/>
@@ -32,24 +34,22 @@
     </GROUP>
     <GROUP id="{EC1B2779-625D-D799-7B24-3885CFCB1DE1}" name="View">
       <GROUP id="{308CD48D-FF9B-C445-F620-C94589914757}" name="Effects">
-        <FILE id="T6nQj7" name="EffectsEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectsEditor.h"/>
-        <FILE id="EKb2NN" name="FXChainSelector.h" compile="0" resource="0"
-              file="Source/View/Effects/FXChainSelector.h"/>
-        <GROUP id="{22676003-CD8F-0A83-9038-5F1F8D125472}" name="Chorus">
-          <FILE id="uLBby7" name="ChorusEditor.h" compile="0" resource="0" file="Source/View/Effects/Chorus/ChorusEditor.h"/>
+        <GROUP id="{4A12F904-187D-D74A-B9E7-163BFBE53A14}" name="Chorus">
+          <FILE id="JSqS8i" name="ChorusEditor.h" compile="0" resource="0" file="Source/View/Effects/Chorus/ChorusEditor.h"/>
         </GROUP>
-        <FILE id="V89uFT" name="FXCompressorEditor.h" compile="0" resource="0"
-              file="Source/View/Effects/FXCompressorEditor.h"/>
-        <FILE id="zdh78M" name="FXDelayEditor.h" compile="0" resource="0" file="Source/View/Effects/FXDelayEditor.h"/>
-        <FILE id="n90GBm" name="FXEqualizerEditor.h" compile="0" resource="0"
-              file="Source/View/Effects/FXEqualizerEditor.h"/>
-        <FILE id="g9kBIY" name="FXFilterEditor.h" compile="0" resource="0"
-              file="Source/View/Effects/FXFilterEditor.h"/>
-        <FILE id="MOqY2V" name="FXPhaserEditor.h" compile="0" resource="0"
-              file="Source/View/Effects/FXPhaserEditor.h"/>
-        <FILE id="oTrhSv" name="FXChainEditor.h" compile="0" resource="0" file="Source/View/Effects/FXChainEditor.h"/>
-        <FILE id="zgvJWO" name="FXReverbEditor.h" compile="0" resource="0"
-              file="Source/View/Effects/FXReverbEditor.h"/>
+        <GROUP id="{75A83BF7-9853-822B-7A5A-A08349AA9E65}" name="Compressor"/>
+        <GROUP id="{B64D4AEF-4BA0-C283-2909-524A50FF2086}" name="Delay"/>
+        <GROUP id="{E1511C4F-1632-00B7-C81A-EDDC0F461CE6}" name="Equalizer"/>
+        <GROUP id="{2C9355D4-E334-7A04-A171-F331E2FFC643}" name="Filter"/>
+        <GROUP id="{D76459F7-57A0-0D7C-54FA-09D902E6048A}" name="Phaser"/>
+        <GROUP id="{129DD8D2-48CC-5DCA-774A-09722CE9FBA5}" name="Reverb"/>
+        <GROUP id="{9A807C1D-A432-B531-0879-A94E42BBFD49}" name="Tremolo"/>
+        <FILE id="GU1GKo" name="EffectsEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectsEditor.h"/>
+        <FILE id="nAn9YU" name="FXChainEditor.h" compile="0" resource="0" file="Source/View/Effects/FXChainEditor.h"/>
+        <FILE id="luhfEK" name="FXChainSelector.h" compile="0" resource="0"
+              file="Source/View/Effects/FXChainSelector.h"/>
+        <FILE id="Gl9V53" name="FXChainSelectorItem.h" compile="0" resource="0"
+              file="Source/View/Effects/FXChainSelectorItem.h"/>
       </GROUP>
       <GROUP id="{719C8F43-30EA-618B-B28C-2A68E0EA4282}" name="Oscillator">
         <FILE id="dvHZxO" name="OscillatorEditor.h" compile="0" resource="0"

@@ -169,6 +169,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
 {
     std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> layout;
 
+    layout.push_back(OscillatorParameters::createParameterLayout());
     layout.push_back(AdditiveSynthParameters::createParameterLayout());
     layout.push_back(FXChain::FXProcessorChain::createParameterLayout());
     layout.push_back(FXEqualizer::createParameterLayout());

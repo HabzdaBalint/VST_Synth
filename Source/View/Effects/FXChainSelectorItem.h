@@ -19,7 +19,7 @@ constexpr int IDX_OFFSET = 1;
 class FXChainSelectorItem : public juce::Component
 {
 public:
-    FXChainSelectorItem(VST_SynthAudioProcessor& p, int idx) : audioProcessor(p)
+    FXChainSelectorItem(VST_SynthAudioProcessor& p, int idx, juce::Array<int>& selectedIndexes) : audioProcessor(p), selectedIndexes(selectedIndexes)
     {
         label = std::make_unique<juce::Label>( "slot" + juce::String(idx), "FX Slot #" + juce::String(idx + 1) );
         addAndMakeVisible(*label);
@@ -51,7 +51,7 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid chainSelectorItemGrid;
-        chainSelectorItemGrid.templateColumns = { TrackInfo( Fr( 5 ) ), TrackInfo( Fr( 2 ) ) };
+        chainSelectorItemGrid.templateColumns = { TrackInfo( Fr( 3 ) ), TrackInfo( Fr( 2 ) ) };
         chainSelectorItemGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 3 ) ) };
         chainSelectorItemGrid.items = { juce::GridItem( *label ), nullptr,
                                         juce::GridItem( *selector ), juce::GridItem( *bypass ) };
@@ -62,20 +62,19 @@ public:
         chainSelectorItemGrid.performLayout(bounds);
     }
 
-    void updateChoices(juce::Array<int> loadedIndexes)
+    void updateChoices()
     { //used to invalidate choices in the selector that are already loded in.
-        auto choice = selector->getSelectedItemIndex();
-        loadedIndexes.removeAllInstancesOf(choice);
-        loadedIndexes.removeAllInstancesOf(0);
+        auto choice = getChoice();
 
-        for(size_t i = IDX_OFFSET; i < selector->getNumItems() + IDX_OFFSET; i++)
+        for(size_t i = 0; i < selector->getNumItems(); i++)
         {
-            selector->setItemEnabled(i, true);
+            selector->setItemEnabled(i + IDX_OFFSET, true);
         }
 
-        for(auto idx : loadedIndexes)
+        for(auto idx : selectedIndexes)
         {
-            selector->setItemEnabled(idx + IDX_OFFSET, false);
+            if(idx != choice && idx != 0)
+                selector->setItemEnabled(idx + IDX_OFFSET, false);
         }
     }
 
@@ -86,6 +85,8 @@ public:
 
 private:
     VST_SynthAudioProcessor& audioProcessor;
+
+    const juce::Array<int>& selectedIndexes;
 
     std::unique_ptr<juce::Label> label;
 

@@ -30,7 +30,10 @@ constexpr int HEIGHT_TUNING_KNOB_PX = 110;
 constexpr int HEIGHT_UNISON_KNOB_PX = 115;
 constexpr int HEIGHT_GAIN_KNOB_PX = 100;
 
-constexpr int WIDTH_WAVEFORM_SELECTOR_PX = 100;
+constexpr int WIDTH_WAVEFORM_SELECTOR_PX = 120;
+constexpr int HEIGHT_WAVEFORM_SELECTOR_PX = 50;
 
 
 //============== EFFECTS ==============//
+constexpr int WIDTH_MIX_KNOB = 50;
+constexpr int HEIGHT_CHORUS_EDITOR_PX = 100;

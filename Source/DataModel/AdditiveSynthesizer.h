@@ -12,11 +12,28 @@
 
 #include <JuceHeader.h>
 
-#ifndef SYNTHPARAMS_INCLUDED
-    #include "AdditiveSynthParameters.h"
-#endif
+#include "AdditiveSynthParameters.h"
+#include "AdditiveSound.h"
+#include "AdditiveVoice.h"
 
-class AdditiveSynthesizer : public juce::AudioProcessor
+struct LUTUpdater : juce::Thread
+{
+    LUTUpdater(std::function<void()> func) :
+        juce::Thread("LUT Updater"),
+        func(func)
+    {}
+
+    void run() override
+    {
+        func();
+    }
+private:
+    std::function<void()> func;
+};
+
+class AdditiveSynthesizer : public juce::AudioProcessor,
+                            public juce::AudioProcessorValueTreeState::Listener,
+                            public juce::Timer
 {
 public:
     AdditiveSynthesizer(juce::AudioProcessorValueTreeState&);
@@ -43,24 +60,24 @@ public:
     void releaseResources() override {};
     void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override;
 
-    /// @brief Generates a sample of the waveform defined by the parameters of the synthesizer. Used for maintaining the lookup table. This function could also be used for accurate rendering, with any number of harmonics, if time is not a constraint
-    /// @param angle The angle at which the sample is generated (in radians)
-    /// @param harmonics The number of harmonics that are included in the calculation of the sample. Use lower numbers to avoid aliasing
-    /// @return The generated sample
-    const float waveTableFormula(float angle, int harmonics);
-private:
-    std::unique_ptr<AdditiveSynthParameters> synthParameters;
+    void parameterChanged(const juce::String &parameterID, float newValue) override;
 
+    void timerCallback() override;
+
+    std::unique_ptr<AdditiveSynthParameters> synthParameters;
+    std::unique_ptr<OscillatorParameters> oscParameters;
+private:
     std::unique_ptr<juce::Synthesiser> synth = std::make_unique<juce::Synthesiser>();
     juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
     LUTUpdater lutUpdater { [&] () { updateLookupTable(); } };
+    std::atomic<bool> missedUpdate = { false };
 
     std::unique_ptr<juce::dsp::Gain<float>> synthGain = std::make_unique<juce::dsp::Gain<float>>();
 
     /// @brief Generates the lookup table with the current parameters
     void updateLookupTable();
     
-    const float findGainToNormalize();
+    const float getPeakAmplitude();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AdditiveSynthesizer)

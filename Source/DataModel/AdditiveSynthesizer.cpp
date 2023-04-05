@@ -11,12 +11,11 @@
 #pragma once
 
 #include "AdditiveSynthesizer.h"
-#include "AdditiveSound.h"
-#include "AdditiveVoice.h"
 
 AdditiveSynthesizer::AdditiveSynthesizer(juce::AudioProcessorValueTreeState& apvts) :
                         AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo())),
-                        synthParameters(std::make_unique<AdditiveSynthParameters>(apvts, lutUpdater))
+                        oscParameters(std::make_unique<OscillatorParameters>(apvts)),
+                        synthParameters(std::make_unique<AdditiveSynthParameters>(apvts))
 {
     for (size_t i = 0; i < LOOKUP_SIZE; i++)
     {
@@ -30,6 +29,8 @@ AdditiveSynthesizer::AdditiveSynthesizer(juce::AudioProcessorValueTreeState& apv
         synth->addVoice(new AdditiveVoice(*synthParameters, mipMap));
     }
     synth->setNoteStealingEnabled(true);
+
+    oscParameters->registerListener(this);
 }
 
 AdditiveSynthesizer::~AdditiveSynthesizer()
@@ -68,26 +69,59 @@ void AdditiveSynthesizer::processBlock(juce::AudioBuffer<float> &buffer, juce::M
     synthGain->process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
 }
 
-void AdditiveSynthesizer::updateLookupTable()
+void AdditiveSynthesizer::parameterChanged(const juce::String &parameterID, float newValue)
 {
-    float gainToNormalize = findGainToNormalize();
+    //start an update for the lookup table if necessary
+    if( !lutUpdater.isThreadRunning() )
+        lutUpdater.startThread();
+    else
+        missedUpdate = true;
+}
 
-    for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
+void AdditiveSynthesizer::timerCallback()
+{
+    if( !lutUpdater.isThreadRunning() && missedUpdate )
     {
-        mipMap[i]->initialise(
-            [this, i, gainToNormalize] (float x) { return gainToNormalize * waveTableFormula( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
-            0, juce::MathConstants<float>::twoPi,
-            LOOKUP_POINTS);
+        lutUpdater.startThread();
+        missedUpdate = false;
     }
 }
 
-const float AdditiveSynthesizer::findGainToNormalize()
+
+void AdditiveSynthesizer::updateLookupTable()
+{
+    float peakAmplitude = getPeakAmplitude();
+
+    if(peakAmplitude > 0.f)
+    {
+        float gainToNormalize = 1.f / peakAmplitude;
+        for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
+        {
+            mipMap[i]->initialise(
+                [this, i, gainToNormalize] (float x) { return gainToNormalize * oscParameters->getSample( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
+                0, juce::MathConstants<float>::twoPi,
+                LOOKUP_POINTS);
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < LOOKUP_SIZE; i++)
+        {
+            mipMap[i]->initialise(
+                [] (float x) { return 0; },
+                0, juce::MathConstants<float>::twoPi,
+                LOOKUP_POINTS);
+        }
+    }
+}
+
+const float AdditiveSynthesizer::getPeakAmplitude()
 {
     float peakAmplitude = 0.f;
     float gainToNormalize = 1.f;
-    for (size_t i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the waveform
+    for (size_t i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the lut
     {
-        float sample = waveTableFormula( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
+        float sample = oscParameters->getSample( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
 
         if( std::fabs(sample) > peakAmplitude)
         {
@@ -95,27 +129,5 @@ const float AdditiveSynthesizer::findGainToNormalize()
         }
     }
 
-    if(peakAmplitude != 0.f)
-    {
-        gainToNormalize = 1.f / peakAmplitude;
-    }
-
-    return gainToNormalize;
-}
-
-const float AdditiveSynthesizer::waveTableFormula(float angle, int harmonics)
-{
-    float sample = 0.f;
-
-    for (size_t i = 0; i < harmonics; i++)
-    {
-        float gain = synthParameters->partialGains[i]->load() / 100;
-        float phase = synthParameters->partialPhases[i]->load() / 100;
-        if (gain != 0.f)
-        {
-            sample += gain * sin((i + 1) * angle + phase * juce::MathConstants<float>::twoPi);
-        }
-    }
-
-    return sample;
+    return peakAmplitude;
 }

@@ -16,28 +16,19 @@
 
 #include "FXChainSelectorItem.h"
 
-class FXChainSelector : public juce::Component,
-                        public juce::AudioProcessorParameter::Listener
+class FXChainSelector : public juce::Component
 {
 public:
-    FXChainSelector(VST_SynthAudioProcessor& p) : audioProcessor(p)
+    FXChainSelector(VST_SynthAudioProcessor& p, juce::Array<int>& selectedItems) : audioProcessor(p), selectedItems(selectedItems)
     {
         for (size_t i = 0; i < FXChain::FX_MAX_SLOTS; i++)
         {
-            items.add(std::make_unique<FXChainSelectorItem>(p, i));
+            items.add(std::make_unique<FXChainSelectorItem>(p, i, selectedItems));
             addAndMakeVisible(*items[i]);
-
-            p.apvts.getParameter(FXChain::FXProcessorChain::getFXChoiceParameterName(i))->addListener(this);
         }
     }
 
-    ~FXChainSelector() override
-    {
-        for (size_t i = 0; i < FXChain::FX_MAX_SLOTS; i++)
-        {
-            audioProcessor.apvts.getParameter(FXChain::FXProcessorChain::getFXChoiceParameterName(i))->removeListener(this);
-        }
-    }
+    ~FXChainSelector() override {}
 
     void paint(juce::Graphics& g) override {}
 
@@ -62,16 +53,10 @@ public:
         chainSelectorGrid.performLayout(bounds);
     }
 
-    void parameterValueChanged (int parameterIndex, float newValue) override
-    {
-        updateSelectors();
-    }
-
-    void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override {}
 
     void updateSelectors()
     {
-        juce::Array<int> selectedItems;
+        selectedItems.clearQuick();
         for(auto item : items)
         {   //collect selected items
             selectedItems.add(item->getChoice());
@@ -79,12 +64,14 @@ public:
 
         for(auto item : items)
         {
-            item->updateChoices(selectedItems);
+            item->updateChoices();
         }
     }
 
 private:
     VST_SynthAudioProcessor& audioProcessor;
+
+    juce::Array<int>& selectedItems;
 
     juce::OwnedArray<FXChainSelectorItem> items;
 

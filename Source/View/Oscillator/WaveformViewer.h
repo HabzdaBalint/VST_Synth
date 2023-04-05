@@ -23,8 +23,8 @@ public:
     {
         for (size_t i = 0; i < HARMONIC_N; i++)
         {
-            audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialGainParameterName(i))->addListener(this);
-            audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialPhaseParameterName(i))->addListener(this);
+            audioProcessor.apvts.getParameter(OscillatorParameters::getPartialGainParameterName(i))->addListener(this);
+            audioProcessor.apvts.getParameter(OscillatorParameters::getPartialPhaseParameterName(i))->addListener(this);
         }
 
         startTimerHz(60);
@@ -36,8 +36,8 @@ public:
     {
         for (size_t i = 0; i < HARMONIC_N; i++)
         {
-            audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialGainParameterName(i))->removeListener(this);
-            audioProcessor.apvts.getParameter(AdditiveSynthParameters::getPartialPhaseParameterName(i))->removeListener(this);
+            audioProcessor.apvts.getParameter(OscillatorParameters::getPartialGainParameterName(i))->removeListener(this);
+            audioProcessor.apvts.getParameter(OscillatorParameters::getPartialPhaseParameterName(i))->removeListener(this);
         }
     }
 
@@ -96,7 +96,7 @@ private:
 
             for (size_t i = 0; i < amplitudes.size(); i++)
             {
-                amplitudes[i] = audioProcessor.additiveSynth->waveTableFormula(
+                amplitudes[i] = audioProcessor.additiveSynth->oscParameters->getSample(
                     juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1 ), 0.f, juce::MathConstants<float>::twoPi ), HARMONIC_N);
             }
 

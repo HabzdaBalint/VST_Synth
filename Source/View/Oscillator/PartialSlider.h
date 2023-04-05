@@ -14,7 +14,8 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-class PartialSlider : public juce::Component
+class PartialSlider : public juce::Component,
+                      public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     PartialSlider(VST_SynthAudioProcessor& p, int partialIndex) : audioProcessor(p), partialIndex(partialIndex)
@@ -24,7 +25,7 @@ public:
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         gainSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            AdditiveSynthParameters::getPartialGainParameterName(partialIndex),
+            OscillatorParameters::getPartialGainParameterName(partialIndex),
             *gainSlider);
         gainSlider->setScrollWheelEnabled(false);
         gainSlider->setTextValueSuffix("%");
@@ -36,7 +37,7 @@ public:
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         phaseSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            AdditiveSynthParameters::getPartialPhaseParameterName(partialIndex),
+            OscillatorParameters::getPartialPhaseParameterName(partialIndex),
             *phaseSlider);    
         phaseSlider->setScrollWheelEnabled(false);
         phaseSlider->setTextValueSuffix("%");
@@ -69,6 +70,18 @@ public:
         partialGrid.items = { juce::GridItem( *gainSlider ), juce::GridItem( *phaseSlider ), juce::GridItem( partialNumber ) };
 
         partialGrid.performLayout(getLocalBounds());
+    }
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override
+    {
+        if(parameterID == OscillatorParameters::getPartialGainParameterName(partialIndex))
+        {
+            
+        }
+        else if(parameterID == OscillatorParameters::getPartialPhaseParameterName(partialIndex))
+        {
+
+        }
     }
     
 private:

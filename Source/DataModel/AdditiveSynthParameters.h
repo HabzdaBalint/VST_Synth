@@ -8,65 +8,34 @@
 ==============================================================================
 */
 
-#define SYNTHPARAMS_INCLUDED
-
 #pragma once
 
 #include <JuceHeader.h>
+#include "OscillatorParameters.h"
 
 constexpr int SYNTH_MAX_VOICES = 32;                    //The number of voices the synth can handle simultaneously
-constexpr int HARMONIC_N = 256;                         //The number of harmonics the synth can generate
 constexpr int LOOKUP_POINTS = HARMONIC_N * 32;          //The number of calculated points in the lookup table
 const int LOOKUP_SIZE = ceil(log2(HARMONIC_N) + 1);     //The number of mipmaps that need to be generated to avoid aliasing at a given harmonic count
 
-struct LUTUpdater : juce::Thread
-{
-    LUTUpdater(std::function<void()> func) :
-        juce::Thread("LUT Updater"),
-        func(std::move(func))
-    {}
-
-    void run() override
-    {
-        func();
-    }
-private:
-    std::function<void()> func;
-};
-
-struct AdditiveSynthParameters : public juce::AudioProcessorValueTreeState::Listener,
-                                 public juce::Timer
+struct AdditiveSynthParameters : public juce::AudioProcessorValueTreeState::Listener
 {
 public:
-    AdditiveSynthParameters(juce::AudioProcessorValueTreeState& apvts, LUTUpdater& lutUpdater) : apvts(apvts), lutUpdater(lutUpdater)
+    AdditiveSynthParameters(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
-        registerListeners();
+        registerListener(this);
         linkParameters();
-        startTimerHz(20);
     }
 
-    void registerListeners()
+    void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
     {
-        apvts.addParameterListener("synthGain", this);
+        auto paramLayoutSchema = createParameterLayout();
+        auto params = paramLayoutSchema->getParameters(false);
 
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for(auto param : params)
         {
-            apvts.addParameterListener(AdditiveSynthParameters::getPartialGainParameterName(i), this);
-            apvts.addParameterListener(AdditiveSynthParameters::getPartialPhaseParameterName(i), this);
+            auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+            apvts.addParameterListener(id, listener);
         }
-        apvts.addParameterListener("oscillatorOctaves", this);
-        apvts.addParameterListener("oscillatorSemitones", this);
-        apvts.addParameterListener("oscillatorFine", this);
-        apvts.addParameterListener("pitchWheelRange", this);
-        apvts.addParameterListener("globalPhase", this);
-        apvts.addParameterListener("randomPhaseRange", this);
-        apvts.addParameterListener("unisonCount", this);
-        apvts.addParameterListener("unisonDetune", this);
-        apvts.addParameterListener("unisonGain", this);
-        apvts.addParameterListener("amplitudeADSRAttack", this);
-        apvts.addParameterListener("amplitudeADSRDecay", this);
-        apvts.addParameterListener("amplitudeADSRSustain", this);
-        apvts.addParameterListener("amplitudeADSRRelease", this);
     }
 
     void linkParameters()
@@ -83,7 +52,7 @@ public:
 
         synthGain = (&paramMap.at("synthGain"));
         oscillatorOctaves = (&paramMap.at("oscillatorOctaves"));
-        oscillatorSemitones = (&paramMap.at("oscillatorOctaves"));
+        oscillatorSemitones = (&paramMap.at("oscillatorSemitones"));
         oscillatorFine = (&paramMap.at("oscillatorFine"));
         pitchWheelRange = (&paramMap.at("pitchWheelRange"));
         globalPhase = (&paramMap.at("globalPhase"));
@@ -95,35 +64,13 @@ public:
         amplitudeADSRDecay = (&paramMap.at("amplitudeADSRDecay"));
         amplitudeADSRSustain = (&paramMap.at("amplitudeADSRSustain"));
         amplitudeADSRRelease = (&paramMap.at("amplitudeADSRRelease"));
-        for (size_t i = 0; i < HARMONIC_N; i++)
-        {
-            partialGains[i] = (&paramMap.at(getPartialGainParameterName(i)));
-            partialPhases[i] = (&paramMap.at(getPartialPhaseParameterName(i)));
-        }
     }
 
     void parameterChanged(const juce::String &parameterID, float newValue) override
-    {   //todo: make an object of atomic float references that after initialization refer to things that need quick access, like partial gains
-        paramMap[parameterID] = newValue;
-
-        //start an update for the lookup table if necessary
-        if( parameterID.contains("partial") )
-        {
-            if( !lutUpdater.isThreadRunning() )
-                lutUpdater.startThread();
-            else
-                missedUpdate = true;
-        }
-    }
-
-    void timerCallback() override
     {
-        if( !lutUpdater.isThreadRunning() && missedUpdate )
-        {
-            lutUpdater.startThread();
-            missedUpdate = false;
-        }
+        paramMap[parameterID] = newValue;
     }
+
 
     /// @brief Creates and adds the synthesizer's parameters into a parameter group
     /// @return unique pointer to the group
@@ -142,31 +89,6 @@ public:
             juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
             70.f);
         synthGroup.get()->addChild(std::move(synthGain));
-
-        juce::AudioParameterFloatAttributes attr;
-
-        for (size_t i = 0; i < HARMONIC_N; i++)
-        {
-            juce::String namePrefix = "Partial " + juce::String(i + 1) + " ";
-
-            // Generating parameters to represent the amplitude percentage values of the partials
-            auto partialGain = std::make_unique<juce::AudioParameterFloat>(
-                AdditiveSynthParameters::getPartialGainParameterName(i),
-                namePrefix + "Gain",
-                juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-                0.f,
-                attr.withAutomatable(false).withMeta(true));
-            synthGroup.get()->addChild(std::move(partialGain));
-
-            // Generating parameters to represent the phase of the partials. These are represented as a percentage value of 2 * pi radians 
-            auto partialPhase = std::make_unique<juce::AudioParameterFloat>(
-                AdditiveSynthParameters::getPartialPhaseParameterName(i),
-                namePrefix + "Phase",
-                juce::NormalisableRange<float>(0.f, 99.f, 1.f), 
-                0.f,
-                attr.withAutomatable(false).withMeta(true));
-            synthGroup.get()->addChild(std::move(partialPhase));
-        }
 
         //Tuning of the generated notes in octaves
         auto octaveTuning = std::make_unique<juce::AudioParameterFloat>(
@@ -272,40 +194,10 @@ public:
             50.f);
         synthGroup.get()->addChild(std::move(release));
 
-        /*
-        auto params = synthGroup->getParameters(false);
-        for ( auto param : params)
-        {
-            auto id = dynamic_cast<juce::AudioParameterFloat*>(param)->getParameterID();
-            auto value = dynamic_cast<juce::AudioParameterFloat*>(param)->getNormalisableRange().convertFrom0to1(param->getDefaultValue());
-            paramMap.emplace(id, value);
-        }
-        paramRefs = std::make_unique<AdditiveSynthParameterReferences>(paramMap);
-        */
-
         return synthGroup;
     }
 
-    /// @brief Used for making the parameter ids of the the partials' gain parameters consistent
-    /// @param index The index of the harmonic
-    /// @return A consistent parameter id
-    static const juce::String getPartialGainParameterName(size_t index)
-    {
-        return "partial" + juce::String(index) + "gain";
-    }
-
-    /// @brief Used for making the parameter ids of the the partials' phase parameters consistent
-    /// @param index The index of the harmonic
-    /// @return A consistent parameter id
-    static const juce::String getPartialPhaseParameterName(size_t index)
-    {
-        return "partial" + juce::String(index) + "phase";
-    }
-
     const std::atomic<float>* synthGain;
-
-    const std::atomic<float>* partialGains[HARMONIC_N];
-    const std::atomic<float>* partialPhases[HARMONIC_N];
 
     const std::atomic<float>* oscillatorOctaves;
     const std::atomic<float>* oscillatorSemitones;
@@ -326,6 +218,4 @@ public:
 private:
     juce::AudioProcessorValueTreeState& apvts;
     std::unordered_map<juce::String, std::atomic<float>> paramMap;
-    LUTUpdater& lutUpdater;
-    std::atomic<bool> missedUpdate = false;
 };
