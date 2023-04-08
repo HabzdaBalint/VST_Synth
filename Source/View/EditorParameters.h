@@ -10,30 +10,27 @@
 
 #pragma once
 
-
 //============== MAIN ==============//
-constexpr int WIDTH_MAIN_WINDOW_PX = 700;
-constexpr int HEIGHT_MAIN_WINDOW_PX = 600;
-constexpr int HEIGHT_KEYBOARD_PX = 85;
+constexpr int WIDTH_MAIN_WINDOW_PX = 750;
+constexpr int HEIGHT_MAIN_WINDOW_PX = 650;
 
-constexpr int PADDING_PX = 4;
+constexpr int PADDING_PX = 5;
+
+constexpr float OUTLINE_WIDTH = 2.f;
 
 constexpr int LABEL_HEIGHT = 20;
 
+constexpr int IDX_OFFSET = 1;   //necessary for combo boxes
+
 //============== OSC ==============//
 constexpr int HEIGHT_PARTIAL_PHASE_PX = 40;
-constexpr int WIDTH_PARTIAL_SLIDERS_PX = 50;
-
+constexpr int WIDTH_PARTIAL_SLIDERS_PX = 55;
 
 //============== SYNTH ==============//
 constexpr int HEIGHT_TUNING_KNOB_PX = 110;
 constexpr int HEIGHT_UNISON_KNOB_PX = 115;
-constexpr int HEIGHT_GAIN_KNOB_PX = 100;
 
 constexpr int WIDTH_WAVEFORM_SELECTOR_PX = 120;
 constexpr int HEIGHT_WAVEFORM_SELECTOR_PX = 50;
 
-
 //============== EFFECTS ==============//
-constexpr int WIDTH_MIX_KNOB = 50;
-constexpr int HEIGHT_CHORUS_EDITOR_PX = 100;

@@ -14,31 +14,51 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
+#include "EffectEditor.h"
+
+#include "Equalizer/EqualizerEditor.h"
+#include "Filter/FilterEditor.h"
+#include "Compressor/CompressorEditor.h"
+#include "Delay/DelayEditor.h"
+#include "Reverb/ReverbEditor.h"
 #include "Chorus/ChorusEditor.h"
+#include "Phaser/PhaserEditor.h"
+#include "Tremolo/TremoloEditor.h"
 
 class FXChainEditor : public juce::Component
 {
 public:
     FXChainEditor(VST_SynthAudioProcessor& p, juce::Array<int>& loadedFx) : audioProcessor(p), loadedFx(loadedFx)
-    {   //todo: construct items in order, also set desired height during construction
+    {   //construct items in order, editors can simply be indexed with the processors' index
+        editors.add(nullptr);
+        editors.add(std::make_unique<EqualizerEditor>(p));
+        editors.add(std::make_unique<FilterEditor>(p));
+        editors.add(std::make_unique<CompressorEditor>(p));
+        editors.add(std::make_unique<DelayEditor>(p));
+        editors.add(std::make_unique<ReverbEditor>(p));
         editors.add(std::make_unique<ChorusEditor>(p));
-        editors.add(std::make_unique<ChorusEditor>(p));
-        editors.add(std::make_unique<ChorusEditor>(p));
-        editors.add(std::make_unique<ChorusEditor>(p));
-        editors.add(std::make_unique<ChorusEditor>(p));
-        editors.add(std::make_unique<ChorusEditor>(p));
-        editors.add(std::make_unique<ChorusEditor>(p));
-        editors.add(std::make_unique<ChorusEditor>(p));
+        editors.add(std::make_unique<PhaserEditor>(p));
+        editors.add(std::make_unique<TremoloEditor>(p));
 
         for (auto editor : editors)
         {
-            addAndMakeVisible(editor);
+            if(editor != nullptr)
+                addAndMakeVisible(editor);
         }
     }
 
     ~FXChainEditor() override {}
 
-    void paint(juce::Graphics& g) override {}
+    void paint(juce::Graphics& g) override
+    {
+        g.setColour(findColour(juce::GroupComponent::outlineColourId));
+
+        for ( auto child : getChildren() )
+        {
+            auto bounds = child->getBounds();
+            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+        }
+    }
 
     void resized() override
     {
@@ -46,21 +66,36 @@ public:
         using Fr = juce::Grid::Fr;
         using Px = juce::Grid::Px;
 
+        for (auto child : getChildren())
+        {
+            auto bounds = child->getBounds();
+            bounds.setHeight(0);
+            child->setBounds(bounds);
+        }
+
         juce::Grid effectsEditorsGrid;
         effectsEditorsGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
 
+        int height = 0, counter = 0;
         for (auto idx : loadedFx)
         {
-            idx -= 1; //first element is ,,Empty"
-            if(idx >= 0)
+            if(idx > 0 && idx < editors.size())
             {
-                effectsEditorsGrid.items.add( juce::GridItem( *editors[idx] ) );    //todo: implement a custom component for fx units that return a number here
+                effectsEditorsGrid.items.add( juce::GridItem( *editors[idx] ) );
                 effectsEditorsGrid.templateRows.add ( TrackInfo( Px( editors[idx]->getIdealHeight() ) ) );
+                height += editors[idx]->getIdealHeight();
+                counter++;
             }
-        }       
+        }
 
-        effectsEditorsGrid.setGap( Px( PADDING_PX ) );
+        //for the viewport    
         auto bounds = getLocalBounds();
+        bounds.setHeight(height + ( counter + 1 ) * PADDING_PX );
+        setBounds(bounds);
+
+        //gird
+        effectsEditorsGrid.setGap( Px( PADDING_PX ) );
+        bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
         effectsEditorsGrid.performLayout(bounds);
     }
@@ -75,7 +110,7 @@ private:
 
     const juce::Array<int>& loadedFx;
 
-    juce::OwnedArray<juce::Component> editors;
+    juce::OwnedArray<EffectEditor> editors;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXChainEditor)
 };

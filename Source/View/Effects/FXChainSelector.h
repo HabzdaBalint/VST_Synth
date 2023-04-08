@@ -21,7 +21,7 @@ class FXChainSelector : public juce::Component
 public:
     FXChainSelector(VST_SynthAudioProcessor& p, juce::Array<int>& selectedItems) : audioProcessor(p), selectedItems(selectedItems)
     {
-        for (size_t i = 0; i < FXChain::FX_MAX_SLOTS; i++)
+        for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
         {
             items.add(std::make_unique<FXChainSelectorItem>(p, i, selectedItems));
             addAndMakeVisible(*items[i]);
@@ -30,7 +30,16 @@ public:
 
     ~FXChainSelector() override {}
 
-    void paint(juce::Graphics& g) override {}
+    void paint(juce::Graphics& g) override
+    {
+        g.setColour(findColour(juce::GroupComponent::outlineColourId));
+
+        for ( auto child : getChildren() )
+        {
+            auto bounds = child->getBounds();
+            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+        }
+    }
 
     void resized() override
     {
@@ -58,7 +67,7 @@ public:
     {
         selectedItems.clearQuick();
         for(auto item : items)
-        {   //collect selected items
+        {   //collect selected item indexes
             selectedItems.add(item->getChoice());
         }
 

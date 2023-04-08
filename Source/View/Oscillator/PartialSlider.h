@@ -14,8 +14,7 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-class PartialSlider : public juce::Component,
-                      public juce::AudioProcessorValueTreeState::Listener
+class PartialSlider : public juce::Component
 {
 public:
     PartialSlider(VST_SynthAudioProcessor& p, int partialIndex) : audioProcessor(p), partialIndex(partialIndex)
@@ -25,7 +24,7 @@ public:
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         gainSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            OscillatorParameters::getPartialGainParameterName(partialIndex),
+            Synthesizer::OscillatorParameters::getPartialGainParameterName(partialIndex),
             *gainSlider);
         gainSlider->setScrollWheelEnabled(false);
         gainSlider->setTextValueSuffix("%");
@@ -37,25 +36,29 @@ public:
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         phaseSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            OscillatorParameters::getPartialPhaseParameterName(partialIndex),
+            Synthesizer::OscillatorParameters::getPartialPhaseParameterName(partialIndex),
             *phaseSlider);    
         phaseSlider->setScrollWheelEnabled(false);
         phaseSlider->setTextValueSuffix("%");
         phaseSlider->setTextBoxIsEditable(false);
         addAndMakeVisible(*phaseSlider);
 
-        partialNumber.setText("#" + juce::String(partialIndex + 1), juce::NotificationType::dontSendNotification);
-        partialNumber.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(partialNumber);
+        partialNumberLabel = std::make_unique<juce::Label>();
+        partialNumberLabel->setText("#" + juce::String(partialIndex + 1), juce::NotificationType::dontSendNotification);
+        partialNumberLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*partialNumberLabel);
     }
 
     ~PartialSlider() override {}
 
     void paint(juce::Graphics& g) override
     {
-        auto bounds = partialNumber.getBounds();
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        g.drawRect(bounds, 1.f);
+        for (auto child : getChildren())
+        {
+            auto bounds = child->getBounds();
+            g.setColour(findColour(juce::GroupComponent::outlineColourId));
+            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+        }
     }
 
     void resized() override
@@ -64,24 +67,18 @@ public:
         using Fr = juce::Grid::Fr;
         using Px = juce::Grid::Px;
 
-        juce::Grid partialGrid;
-        partialGrid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
-        partialGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
-        partialGrid.items = { juce::GridItem( *gainSlider ), juce::GridItem( *phaseSlider ), juce::GridItem( partialNumber ) };
+        juce::Grid grid;
+        grid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
+        grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+        grid.items = {
+            juce::GridItem( *gainSlider ).withColumn( { 1 } ).withRow( { 1 } ),
+            juce::GridItem( *phaseSlider ).withColumn( { 1 } ).withRow( { 2 } ),
+            juce::GridItem( *partialNumberLabel ).withColumn( { 1 } ).withRow( { 3 } ) };
 
-        partialGrid.performLayout(getLocalBounds());
-    }
-
-    void parameterChanged(const juce::String &parameterID, float newValue) override
-    {
-        if(parameterID == OscillatorParameters::getPartialGainParameterName(partialIndex))
-        {
-            
-        }
-        else if(parameterID == OscillatorParameters::getPartialPhaseParameterName(partialIndex))
-        {
-
-        }
+        grid.setGap( Px( PADDING_PX ) );
+        auto bounds = getLocalBounds();
+        bounds.reduce(PADDING_PX, PADDING_PX);
+        grid.performLayout(getLocalBounds());
     }
     
 private:
@@ -89,13 +86,10 @@ private:
 
     int partialIndex;
 
-    std::unique_ptr<juce::Slider> gainSlider;
-    std::unique_ptr<juce::Slider> phaseSlider;
+    std::unique_ptr<juce::Slider> gainSlider, phaseSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainSliderAttachment, phaseSliderAttachment;
 
-    juce::Label partialNumber;
-
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainSliderAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> phaseSliderAttachment;
+    std::unique_ptr<juce::Label> partialNumberLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PartialSlider)
 };

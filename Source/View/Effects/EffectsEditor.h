@@ -27,28 +27,29 @@ public:
         chainEditorViewport->setViewedComponent(new FXChainEditor(p, selectedEffects), true);
         addAndMakeVisible(*chainEditorViewport);
 
-        for (size_t i = 0; i < FXChain::FX_MAX_SLOTS; i++)
+        for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
         {
-            p.apvts.getParameter(FXChain::FXProcessorChain::getFXChoiceParameterName(i))->addListener(this);
+            p.apvts.getParameter(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i))->addListener(this);
         }
     }
 
     ~EffectsEditor() override
     {
-        for (size_t i = 0; i < FXChain::FX_MAX_SLOTS; i++)
+        for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
         {
-            audioProcessor.apvts.getParameter(FXChain::FXProcessorChain::getFXChoiceParameterName(i))->removeListener(this);
+            audioProcessor.apvts.getParameter(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i))->removeListener(this);
         }
     }
 
     void paint(juce::Graphics& g) override
     {
         g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        auto bounds = chainEditorViewport->getBounds();
-        g.drawRect(bounds, 1.f);
 
-        bounds = chainSelector->getBounds();
-        g.drawRect(bounds, 1.f);
+        for ( auto child : getChildren() )
+        {
+            auto bounds = child->getBounds();
+            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+        }
     }
 
     void resized() override
@@ -59,7 +60,7 @@ public:
 
         juce::Grid effectsEditorGrid;
         effectsEditorGrid.templateRows = { TrackInfo( Fr( 1 ) ) };
-        effectsEditorGrid.templateColumns = { TrackInfo( Fr( 3 ) ), TrackInfo( Fr( 7 ) ) };
+        effectsEditorGrid.templateColumns = { TrackInfo( Fr( 3 ) ), TrackInfo( Fr( 8 ) ) };
         effectsEditorGrid.items = { juce::GridItem( *chainSelector ), juce::GridItem( *chainEditorViewport ) };
 
         effectsEditorGrid.setGap( Px( PADDING_PX ) );
@@ -68,7 +69,7 @@ public:
         effectsEditorGrid.performLayout(bounds);
 
         bounds = chainEditorViewport->getViewedComponent()->getBounds();
-        bounds.setWidth(chainEditorViewport->getLocalBounds().getWidth() - 8); //8 is the width of the scroll bar
+        bounds.setWidth(chainEditorViewport->getLocalBounds().getWidth());
         chainEditorViewport->getViewedComponent()->setBounds(bounds);
     }
 

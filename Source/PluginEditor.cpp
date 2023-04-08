@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "PluginProcessor.h"
 #include "PluginEditor.h"
 
 //==============================================================================
@@ -21,10 +20,15 @@ VST_SynthAudioProcessorEditor::VST_SynthAudioProcessorEditor (VST_SynthAudioProc
     setSize(WIDTH_MAIN_WINDOW_PX, HEIGHT_MAIN_WINDOW_PX);
     setResizable(false, true);
     setResizeLimits(WIDTH_MAIN_WINDOW_PX, HEIGHT_MAIN_WINDOW_PX, 1.3 * WIDTH_MAIN_WINDOW_PX, 1.3 * HEIGHT_MAIN_WINDOW_PX);
+
     addAndMakeVisible(*tabbedComponent);
+
+    keyboardComponent->setKeyPressBaseOctave(4);
+    keyboardComponent->setOctaveForMiddleC(4);
+    keyboardComponent->setScrollButtonsVisible(false);
     addAndMakeVisible(*keyboardComponent);
-    
-    setLookAndFeel(&lnf);
+
+    setLookAndFeel(&lnf);    
 }
 
 VST_SynthAudioProcessorEditor::~VST_SynthAudioProcessorEditor()
@@ -42,11 +46,23 @@ void VST_SynthAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    auto bounds = getLocalBounds().removeFromBottom(HEIGHT_KEYBOARD_PX);;
-    keyboardComponent->setBounds(bounds);
 
-    bounds = getLocalBounds().removeFromTop(getLocalBounds().getHeight() - HEIGHT_KEYBOARD_PX);
-    tabbedComponent->setBounds(bounds);
+    using TrackInfo = juce::Grid::TrackInfo;
+    using Fr = juce::Grid::Fr;
+    using Px = juce::Grid::Px;
+
+    juce::Grid grid;
+    grid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Fr( 1 ) ) };
+    grid.templateColumns= { TrackInfo( Fr( 1 ) ) };
+    grid.items = {
+        juce::GridItem( *tabbedComponent ).withColumn( { 1 } ).withRow( { 1 } ),
+        juce::GridItem( *keyboardComponent ).withColumn( { 1 } ).withRow( { 2 } ) };
+
+    auto bounds = getLocalBounds();
+    grid.performLayout(bounds);
+
+    keyboardComponent->setKeyWidth( keyboardComponent->getWidth() / ( 35.f + ( keyboardComponent->getWidth() > 1.2 * WIDTH_MAIN_WINDOW_PX ? 7.f : 0.f ) ) );
+    keyboardComponent->setAvailableRange(36 - ( keyboardComponent->getWidth() > 1.2 * WIDTH_MAIN_WINDOW_PX ? 12 : 0 ), 95);
 }
 
 //===================================================================================================================
@@ -55,21 +71,20 @@ VST_SynthTabbedComponent::VST_SynthTabbedComponent(VST_SynthAudioProcessor& p)
     : audioProcessor (p),
       TabbedComponent(juce::TabbedButtonBar::TabsAtTop)
 {
-    auto color = getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId);
+    auto color = findColour(juce::ResizableWindow::backgroundColourId);
 
     addTab("Oscillator", color, new OscillatorEditor(p), true);
     addTab("Synthesizer", color, new SynthEditor(p), true);  
-    addTab("Effects", color, new EffectsEditor(p), true); //todo
+    addTab("Effects", color, new EffectsEditor(p), true);
 }
 
 VST_SynthTabbedComponent::~VST_SynthTabbedComponent() {}
 
 void VST_SynthTabbedComponent::lookAndFeelChanged()
 {
-    auto color = getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId);
+    auto color = findColour(juce::ResizableWindow::backgroundColourId);
     for (size_t i = 0; i < getNumTabs(); i++)
     {
         setTabBackgroundColour(i, color);
     }
 }
-

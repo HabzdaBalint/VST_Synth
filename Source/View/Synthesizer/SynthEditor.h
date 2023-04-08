@@ -36,7 +36,16 @@ public:
 
     ~SynthEditor() override {}
 
-    void paint(juce::Graphics& g) override {}
+    void paint(juce::Graphics& g) override
+    {
+        g.setColour(findColour(juce::GroupComponent::outlineColourId));
+
+        for ( auto child : getChildren() )
+        {
+            auto bounds = child->getBounds();
+            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+        }
+    }
 
     void resized() override
     {
@@ -44,17 +53,21 @@ public:
         using Fr = juce::Grid::Fr;
         using Px = juce::Grid::Px;
 
-        juce::Grid synthEditorGrid;
-        synthEditorGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
-        synthEditorGrid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
-        synthEditorGrid.items = { juce::GridItem( *waveformSelector ), juce::GridItem( *unisonComponent ), 
-                                  juce::GridItem( *tuningComponent ), juce::GridItem( *adsrComponent ), 
-                                  juce::GridItem( *phaseComponent ), juce::GridItem( *synthGainComponent ) };
+        juce::Grid grid;
+        grid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
+        grid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
+        grid.items = {
+            juce::GridItem( *waveformSelector ).withColumn( { 1 } ).withRow( { 1 } ),
+            juce::GridItem( *unisonComponent ).withColumn( { 2 } ).withRow( { 1 } ), 
+            juce::GridItem( *tuningComponent ).withColumn( { 1 } ).withRow( { 2 } ),
+            juce::GridItem( *adsrComponent ).withColumn( { 2 } ).withRow( { 2 } ),
+            juce::GridItem( *phaseComponent ).withColumn( { 1 } ).withRow( { 3 } ),
+            juce::GridItem( *synthGainComponent ).withColumn( { 2 } ).withRow( { 3 } ) };
 
-        synthEditorGrid.setGap( Px( PADDING_PX ) );
+        grid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
-        synthEditorGrid.performLayout(bounds);
+        grid.performLayout(bounds);
     }
 
 private:

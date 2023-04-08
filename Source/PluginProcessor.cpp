@@ -169,17 +169,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
 {
     std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> layout;
 
-    layout.push_back(OscillatorParameters::createParameterLayout());
-    layout.push_back(AdditiveSynthParameters::createParameterLayout());
-    layout.push_back(FXChain::FXProcessorChain::createParameterLayout());
-    layout.push_back(FXEqualizer::createParameterLayout());
-    layout.push_back(FXFilter::createParameterLayout());
-    layout.push_back(FXCompressor::createParameterLayout());
-    layout.push_back(FXDelay::createParameterLayout());
-    layout.push_back(FXReverb::createParameterLayout());
-    layout.push_back(FXChorus::createParameterLayout());
-    layout.push_back(FXPhaser::createParameterLayout());
-    layout.push_back(FXTremolo::createParameterLayout());
+    layout.push_back(Synthesizer::OscillatorParameters::createParameterLayout());
+    layout.push_back(Synthesizer::AdditiveSynthParameters::createParameterLayout());
+    layout.push_back(EffectsChain::FXProcessorChain::createParameterLayout());
+    layout.push_back(EffectProcessors::EqualizerUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::FilterUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::CompressorUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::DelayUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::ReverbUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::ChorusUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::PhaserUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::TremoloUnit::createParameterLayout());
 
     return { layout.begin(), layout.end() };
 }

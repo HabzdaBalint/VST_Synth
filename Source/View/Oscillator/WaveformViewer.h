@@ -21,10 +21,10 @@ class WaveformViewer : public juce::Component,
 public:
     WaveformViewer(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
-            audioProcessor.apvts.getParameter(OscillatorParameters::getPartialGainParameterName(i))->addListener(this);
-            audioProcessor.apvts.getParameter(OscillatorParameters::getPartialPhaseParameterName(i))->addListener(this);
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->addListener(this);
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->addListener(this);
         }
 
         startTimerHz(60);
@@ -34,10 +34,10 @@ public:
 
     ~WaveformViewer() override
     {
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
-            audioProcessor.apvts.getParameter(OscillatorParameters::getPartialGainParameterName(i))->removeListener(this);
-            audioProcessor.apvts.getParameter(OscillatorParameters::getPartialPhaseParameterName(i))->removeListener(this);
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->removeListener(this);
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->removeListener(this);
         }
     }
 
@@ -59,15 +59,12 @@ public:
 
     void paint (juce::Graphics& g) override
     {
-        auto bounds = getLocalBounds();
         g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        g.drawRect(bounds, 1.f);
-
-        bounds = getLocalBounds().removeFromTop(getLocalBounds().getHeight() / 2);
+        auto bounds = getLocalBounds().removeFromTop(getLocalBounds().getHeight() / 2);
         juce::Line<float> line(bounds.getBottomLeft().toFloat(), bounds.getBottomRight().toFloat());
         g.drawLine(line, 1.5);
 
-        g.setColour(findColour(juce::Slider::textBoxTextColourId));
+        g.setColour(findColour(juce::Label::textColourId));
         g.strokePath(waveformPath, juce::PathStrokeType(1.5));
     }
 
@@ -97,10 +94,10 @@ private:
             for (size_t i = 0; i < amplitudes.size(); i++)
             {
                 amplitudes[i] = audioProcessor.additiveSynth->oscParameters->getSample(
-                    juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1 ), 0.f, juce::MathConstants<float>::twoPi ), HARMONIC_N);
+                    juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1 ), 0.f, juce::MathConstants<float>::twoPi ), Synthesizer::HARMONIC_N);
             }
 
-            waveformPath.preallocateSpace( 3 * LOOKUP_POINTS );
+            waveformPath.preallocateSpace( 3 * Synthesizer::LOOKUP_POINTS );
 
             bounds.reduce(0, PADDING_PX);
 

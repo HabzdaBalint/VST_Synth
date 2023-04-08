@@ -31,8 +31,12 @@ public:
     void paint(juce::Graphics& g) override
     {
         g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        auto bounds = waveformEditorViewport->getBounds();
-        g.drawRect(bounds, 1.f);
+
+        for(auto child : getChildren())
+        {
+            auto bounds = child->getBounds();
+            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+        }
     }
 
     void resized() override
@@ -41,19 +45,19 @@ public:
         using Fr = juce::Grid::Fr;
         using Px = juce::Grid::Px;
 
-        juce::Grid oscillatorEditorGrid;
-        oscillatorEditorGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
-        oscillatorEditorGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
-        oscillatorEditorGrid.items = { juce::GridItem( *waveformViewer ), 
-                                       juce::GridItem( *waveformEditorViewport ) };
+        juce::Grid grid;
+        grid.templateRows = { TrackInfo( Fr( 3 ) ), TrackInfo( Fr( 4 ) ) };
+        grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+        grid.items = { juce::GridItem( *waveformViewer ).withColumn( { 1 } ).withRow( { 1 } ), 
+                                       juce::GridItem( *waveformEditorViewport ).withColumn( { 1 } ).withRow( { 2 } ) };
 
-        oscillatorEditorGrid.setGap( Px( PADDING_PX ) );
+        grid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
-        oscillatorEditorGrid.performLayout(bounds);
+        grid.performLayout(bounds);
 
         bounds = waveformEditorViewport->getViewedComponent()->getBounds();
-        bounds.setHeight(waveformEditorViewport->getLocalBounds().getHeight() - 8); //8 is the height of the scroll bar
+        bounds.setHeight(waveformEditorViewport->getBounds().getHeight() - 8); //8 is the height of the scroll bar
         waveformEditorViewport->getViewedComponent()->setBounds(bounds);
     }
 

@@ -59,14 +59,24 @@ struct PartialState
     float phase = 0;
 };
 
-struct WaveformMenuItem : juce::PopupMenu::CustomComponent
+class WaveformMenuItem : public juce::PopupMenu::CustomComponent
 {
+public:
     WaveformMenuItem(VST_SynthAudioProcessor& p, int width, int height, const juce::String& buttonName) :
-            juce::PopupMenu::CustomComponent(true),
-            audioProcessor(p),
-            waveformButton(buttonName, [&](){ loadWaveform(); }, [&]( juce::Graphics& g, juce::Rectangle<int> r ){ drawWaveform(g, r); }),
-            idealWidth(width),
-            idealHeight(height)
+        juce::PopupMenu::CustomComponent(true),
+        audioProcessor(p),
+        waveformButton(buttonName, [&](){ loadWaveform(); }, [&]( juce::Graphics& g, juce::Rectangle<int> r ){ drawWaveform(g, r); }),
+        idealWidth(width),
+        idealHeight(height)
+    {
+        addMouseListener(&waveformButton, true);
+        addAndMakeVisible(waveformButton);
+    }
+
+    WaveformMenuItem(VST_SynthAudioProcessor& p, const juce::String& buttonName) :
+        juce::PopupMenu::CustomComponent(true),
+        audioProcessor(p),
+        waveformButton(buttonName, [&](){ loadWaveform(); }, [&]( juce::Graphics& g, juce::Rectangle<int> r ){ drawWaveform(g, r); })
     {
         addMouseListener(&waveformButton, true);
         addAndMakeVisible(waveformButton);
@@ -92,19 +102,19 @@ struct WaveformMenuItem : juce::PopupMenu::CustomComponent
 
     void loadWaveform()
     {
-        const auto& dataset = prepareWaveform();
+        const auto dataset = prepareWaveform();
 
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
             if( i >= dataset.size() )
             {
-                audioProcessor.apvts.getParameter(OscillatorParameters::getPartialGainParameterName(i))->setValueNotifyingHost(0.f);
-                audioProcessor.apvts.getParameter(OscillatorParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(0.f);
+                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->setValueNotifyingHost(0.f);
+                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(0.f);
             }
             else
             {
-                audioProcessor.apvts.getParameter(OscillatorParameters::getPartialGainParameterName(i))->setValueNotifyingHost(dataset[i].gain);
-                audioProcessor.apvts.getParameter(OscillatorParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(dataset[i].phase);
+                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->setValueNotifyingHost(dataset[i].gain);
+                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(dataset[i].phase);
             }
         }
     }
@@ -122,14 +132,19 @@ private:
     VST_SynthAudioProcessor& audioProcessor;
     WaveformMenuItemButton waveformButton;
 
-    int idealWidth;
-    int idealHeight;
+    int idealWidth = WIDTH_WAVEFORM_SELECTOR_PX;
+    int idealHeight = HEIGHT_WAVEFORM_SELECTOR_PX;
 };
 
-struct WaveformSine : WaveformMenuItem
+class WaveformSine : public WaveformMenuItem
 {
+public:
     WaveformSine(VST_SynthAudioProcessor& p, int width, int height, const juce::String& buttonName) :
         WaveformMenuItem(p, width, height, buttonName )
+    {}
+
+    WaveformSine(VST_SynthAudioProcessor& p, const juce::String& buttonName) :
+        WaveformMenuItem(p, buttonName )
     {}
 
     const juce::Array<PartialState> prepareWaveform() override
@@ -173,10 +188,15 @@ private:
     juce::Path previewPath;
 };
 
-struct WaveformTriangle : WaveformMenuItem
+class WaveformTriangle : public WaveformMenuItem
 {
+public:
     WaveformTriangle(VST_SynthAudioProcessor& p, int width, int height, const juce::String& buttonName) :
         WaveformMenuItem(p, width, height, buttonName)
+    {}
+
+    WaveformTriangle(VST_SynthAudioProcessor& p, const juce::String& buttonName) :
+        WaveformMenuItem(p, buttonName)
     {}
 
     const juce::Array<PartialState> prepareWaveform() override
@@ -184,7 +204,7 @@ struct WaveformTriangle : WaveformMenuItem
         juce::Array<PartialState> state;
 
         //A triangle's partials' gains quickly tend to 0. Only odd harmonics are used, and every second odd harmonic is offset by half its phase
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
             float gain, phase;
             
@@ -216,10 +236,15 @@ private:
     juce::Path previewPath;
 };
 
-struct WaveformSquare : WaveformMenuItem
+class WaveformSquare : public WaveformMenuItem
 {
+public:
     WaveformSquare(VST_SynthAudioProcessor& p, int width, int height, const juce::String& buttonName) :
         WaveformMenuItem(p, width, height, buttonName)
+    {}
+
+    WaveformSquare(VST_SynthAudioProcessor& p, const juce::String& buttonName) :
+        WaveformMenuItem(p, buttonName)
     {}
 
     const juce::Array<PartialState> prepareWaveform() override
@@ -227,7 +252,7 @@ struct WaveformSquare : WaveformMenuItem
         juce::Array<PartialState> state;
 
         //A square's partials' gains tend to 0 like the triangle's, but slower. Only odd harmonics are used, all in the same phase
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
             float gain, phase;
             
@@ -261,10 +286,15 @@ private:
     juce::Path previewPath;
 };
 
-struct WaveformSawtooth : WaveformMenuItem
+class WaveformSawtooth : public WaveformMenuItem
 {
+public:
     WaveformSawtooth(VST_SynthAudioProcessor& p, int width, int height, const juce::String& buttonName) :
         WaveformMenuItem(p, width, height, buttonName)
+    {}
+
+    WaveformSawtooth(VST_SynthAudioProcessor& p, const juce::String& buttonName) :
+        WaveformMenuItem(p, buttonName)
     {}
 
     const juce::Array<PartialState> prepareWaveform() override
@@ -272,7 +302,7 @@ struct WaveformSawtooth : WaveformMenuItem
         juce::Array<PartialState> state;
 
         //A sawtooth has every partial in the harmonic series. Every even partial is offset by half its phase
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
             float gain, phase;
             
@@ -304,10 +334,15 @@ private:
     juce::Path previewPath;
 };
 
-struct WaveformSawSquare : WaveformMenuItem
+class WaveformSawSquare : public WaveformMenuItem
 {
+public:
     WaveformSawSquare(VST_SynthAudioProcessor& p, int width, int height, const juce::String& buttonName) :
         WaveformMenuItem(p, width, height, buttonName)
+    {}   
+    
+    WaveformSawSquare(VST_SynthAudioProcessor& p, const juce::String& buttonName) :
+        WaveformMenuItem(p, buttonName)
     {}
 
     const juce::Array<PartialState> prepareWaveform() override
@@ -315,7 +350,7 @@ struct WaveformSawSquare : WaveformMenuItem
         juce::Array<PartialState> state;
 
         //A saw-square has every partial, but the even partials are lower in amplitude. Phases are 0
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
             float gain, phase;
             
@@ -348,3 +383,5 @@ struct WaveformSawSquare : WaveformMenuItem
 private:
     juce::Path previewPath;
 };
+
+//To add a new waveform, just implement the drawing function and the state preparer

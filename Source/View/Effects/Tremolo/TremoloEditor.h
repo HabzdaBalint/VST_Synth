@@ -1,9 +1,9 @@
 /*
 ==============================================================================
 
-    ChorusEditor.h
-    Created: 5 Apr 2023 4:38:09pm
-    Author:  habzd
+    TremoloEditor.h
+    Created: 6 Apr 2023 3:02:00pm
+    Author:  Habama10
 
 ==============================================================================
 */
@@ -16,17 +16,17 @@
 
 #include "../EffectEditor.h"
 
-class ChorusEditor : public EffectEditor
+class TremoloEditor : public EffectEditor
 {
 public:
-    ChorusEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
+    TremoloEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         mixKnob = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         mixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            "chorusMix",
+            "tremoloMix",
             *mixKnob);
         mixKnob->setScrollWheelEnabled(false);
         mixKnob->setTextValueSuffix("%");
@@ -42,7 +42,7 @@ public:
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            "chorusRate",
+            "tremoloRate",
             *rateKnob);
         rateKnob->setScrollWheelEnabled(false);
         rateKnob->setTextValueSuffix(" Hz");
@@ -53,28 +53,12 @@ public:
         rateLabel->setJustificationType(juce::Justification::centred);
         addAndMakeVisible(*rateLabel);
 
-        delayKnob = std::make_unique<juce::Slider>(
-            juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-            juce::Slider::TextEntryBoxPosition::TextBoxBelow);
-        delayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            audioProcessor.apvts,
-            "chorusDelay",
-            *delayKnob);
-        delayKnob->setScrollWheelEnabled(false);
-        delayKnob->setTextValueSuffix(" ms");
-        delayKnob->setTextBoxIsEditable(true);
-        addAndMakeVisible(*delayKnob);
-        delayLabel = std::make_unique<juce::Label>();
-        delayLabel->setText("Delay", juce::NotificationType::dontSendNotification);
-        delayLabel->setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(*delayLabel);
-
         depthKnob = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         depthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            "chorusDepth",
+            "tremoloDepth",
             *depthKnob);
         depthKnob->setScrollWheelEnabled(false);
         depthKnob->setTextValueSuffix("%");
@@ -85,30 +69,21 @@ public:
         depthLabel->setJustificationType(juce::Justification::centred);
         addAndMakeVisible(*depthLabel);
 
-        feedbackKnob = std::make_unique<juce::Slider>(
-            juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-            juce::Slider::TextEntryBoxPosition::TextBoxBelow);
-        feedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            audioProcessor.apvts,
-            "chorusFeedback",
-            *feedbackKnob);
-        feedbackKnob->setScrollWheelEnabled(false);
-        feedbackKnob->setTextValueSuffix("%");
-        feedbackKnob->setTextBoxIsEditable(true);
-        addAndMakeVisible(*feedbackKnob);
-        feedbackLabel = std::make_unique<juce::Label>();
-        feedbackLabel->setText("Feedback", juce::NotificationType::dontSendNotification);
-        feedbackLabel->setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(*feedbackLabel);
+        autoPanToggle = std::make_unique<juce::ToggleButton>( "Auto-Pan" );
+        autoPanAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+            p.apvts,
+            "tremoloAutoPan",
+            *autoPanToggle);
+        addAndMakeVisible(*autoPanToggle);
 
         nameLabel = std::make_unique<juce::Label>();
-        nameLabel->setText("Chorus", juce::NotificationType::dontSendNotification);
+        nameLabel->setText("Tremolo", juce::NotificationType::dontSendNotification);
         nameLabel->setFont(juce::Font(20));
         nameLabel->setJustificationType(juce::Justification::centredLeft);
         addAndMakeVisible(*nameLabel);
     }
 
-    ~ChorusEditor() override {}
+    ~TremoloEditor() override {}
 
     void paint(juce::Graphics& g) override {}
 
@@ -120,23 +95,19 @@ public:
 
         juce::Grid grid;
         grid.templateRows = { TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
-        grid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
+        grid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         grid.items = { 
             juce::GridItem( *mixKnob ).withColumn( { 1 } ).withRow( { 2 } ),
             juce::GridItem( *mixLabel ).withColumn( { 1 } ).withRow( { 3 } ),
 
             juce::GridItem( *rateKnob ).withColumn( { 2 } ).withRow( { 2 } ),
             juce::GridItem( *rateLabel ).withColumn( { 2 } ).withRow( { 3 } ),
+            
+            juce::GridItem( *depthKnob ).withColumn( { 3 } ).withRow( { 2 } ),
+            juce::GridItem( *depthLabel ).withColumn( { 3 } ).withRow( { 3 } ),
 
-            juce::GridItem( *delayKnob ).withColumn( { 3 } ).withRow( { 2 } ),
-            juce::GridItem( *delayLabel ).withColumn( { 3 } ).withRow( { 3 } ),
-
-            juce::GridItem( *depthKnob ).withColumn( { 4 } ).withRow( { 2 } ),
-            juce::GridItem( *depthLabel ).withColumn( { 4 } ).withRow( { 3 } ), 
-
-            juce::GridItem( *feedbackKnob ).withColumn( { 5 } ).withRow( { 2 } ),
-            juce::GridItem( *feedbackLabel ).withColumn( { 5 } ).withRow( { 3 } ),
-
+            juce::GridItem( *autoPanToggle ).withColumn( { 4 } ).withRow( { 2 } ),
+            
             juce::GridItem( *nameLabel ).withColumn( { 1, 6 } ).withRow( { 1 } ) };
 
         grid.setGap( Px( PADDING_PX ) );
@@ -153,9 +124,13 @@ public:
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    std::unique_ptr<juce::Slider> mixKnob, rateKnob, delayKnob, depthKnob, feedbackKnob;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment, rateAttachment, delayAttachment, depthAttachment, feedbackAttachment;
-    std::unique_ptr<juce::Label> mixLabel, rateLabel, delayLabel, depthLabel, feedbackLabel, nameLabel;
+    std::unique_ptr<juce::Slider> mixKnob, rateKnob, depthKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment, rateAttachment, depthAttachment;
+    std::unique_ptr<juce::Label> mixLabel, rateLabel, depthLabel, nameLabel;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChorusEditor)
+    std::unique_ptr<juce::ToggleButton> autoPanToggle;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> autoPanAttachment;
+
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TremoloEditor)
 };

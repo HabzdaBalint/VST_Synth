@@ -1,9 +1,9 @@
 /*
 ==============================================================================
 
-    ChorusEditor.h
-    Created: 5 Apr 2023 4:38:09pm
-    Author:  habzd
+    PhaserEditor.h
+    Created: 6 Apr 2023 3:10:45pm
+    Author:  Habama10
 
 ==============================================================================
 */
@@ -16,17 +16,17 @@
 
 #include "../EffectEditor.h"
 
-class ChorusEditor : public EffectEditor
+class PhaserEditor : public EffectEditor
 {
 public:
-    ChorusEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
+    PhaserEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         mixKnob = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         mixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            "chorusMix",
+            "phaserMix",
             *mixKnob);
         mixKnob->setScrollWheelEnabled(false);
         mixKnob->setTextValueSuffix("%");
@@ -42,7 +42,7 @@ public:
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         rateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            "chorusRate",
+            "phaserRate",
             *rateKnob);
         rateKnob->setScrollWheelEnabled(false);
         rateKnob->setTextValueSuffix(" Hz");
@@ -53,28 +53,12 @@ public:
         rateLabel->setJustificationType(juce::Justification::centred);
         addAndMakeVisible(*rateLabel);
 
-        delayKnob = std::make_unique<juce::Slider>(
-            juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-            juce::Slider::TextEntryBoxPosition::TextBoxBelow);
-        delayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            audioProcessor.apvts,
-            "chorusDelay",
-            *delayKnob);
-        delayKnob->setScrollWheelEnabled(false);
-        delayKnob->setTextValueSuffix(" ms");
-        delayKnob->setTextBoxIsEditable(true);
-        addAndMakeVisible(*delayKnob);
-        delayLabel = std::make_unique<juce::Label>();
-        delayLabel->setText("Delay", juce::NotificationType::dontSendNotification);
-        delayLabel->setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(*delayLabel);
-
         depthKnob = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         depthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            "chorusDepth",
+            "phaserDepth",
             *depthKnob);
         depthKnob->setScrollWheelEnabled(false);
         depthKnob->setTextValueSuffix("%");
@@ -85,12 +69,28 @@ public:
         depthLabel->setJustificationType(juce::Justification::centred);
         addAndMakeVisible(*depthLabel);
 
+        frequencyKnob = std::make_unique<juce::Slider>(
+            juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
+            juce::Slider::TextEntryBoxPosition::TextBoxBelow);
+        frequencyAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            audioProcessor.apvts,
+            "phaserFrequency",
+            *frequencyKnob);
+        frequencyKnob->setScrollWheelEnabled(false);
+        frequencyKnob->setTextValueSuffix(" Hz");
+        frequencyKnob->setTextBoxIsEditable(true);
+        addAndMakeVisible(*frequencyKnob);
+        frequencyLabel = std::make_unique<juce::Label>();
+        frequencyLabel->setText("Frequency", juce::NotificationType::dontSendNotification);
+        frequencyLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*frequencyLabel);
+
         feedbackKnob = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
         feedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             audioProcessor.apvts,
-            "chorusFeedback",
+            "phaserFeedback",
             *feedbackKnob);
         feedbackKnob->setScrollWheelEnabled(false);
         feedbackKnob->setTextValueSuffix("%");
@@ -102,15 +102,20 @@ public:
         addAndMakeVisible(*feedbackLabel);
 
         nameLabel = std::make_unique<juce::Label>();
-        nameLabel->setText("Chorus", juce::NotificationType::dontSendNotification);
+        nameLabel->setText("Phaser", juce::NotificationType::dontSendNotification);
         nameLabel->setFont(juce::Font(20));
         nameLabel->setJustificationType(juce::Justification::centredLeft);
         addAndMakeVisible(*nameLabel);
     }
 
-    ~ChorusEditor() override {}
+    ~PhaserEditor() override {}
 
-    void paint(juce::Graphics& g) override {}
+    void paint(juce::Graphics& g) override
+    {
+        auto bounds = getLocalBounds();
+        g.setColour(findColour(juce::GroupComponent::outlineColourId));
+        g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+    }
 
     void resized() override
     {
@@ -127,16 +132,16 @@ public:
 
             juce::GridItem( *rateKnob ).withColumn( { 2 } ).withRow( { 2 } ),
             juce::GridItem( *rateLabel ).withColumn( { 2 } ).withRow( { 3 } ),
+            
+            juce::GridItem( *depthKnob ).withColumn( { 3 } ).withRow( { 2 } ),
+            juce::GridItem( *depthLabel ).withColumn( { 3 } ).withRow( { 3 } ),
 
-            juce::GridItem( *delayKnob ).withColumn( { 3 } ).withRow( { 2 } ),
-            juce::GridItem( *delayLabel ).withColumn( { 3 } ).withRow( { 3 } ),
-
-            juce::GridItem( *depthKnob ).withColumn( { 4 } ).withRow( { 2 } ),
-            juce::GridItem( *depthLabel ).withColumn( { 4 } ).withRow( { 3 } ), 
+            juce::GridItem( *frequencyKnob ).withColumn( { 4 } ).withRow( { 2 } ),
+            juce::GridItem( *frequencyLabel ).withColumn( { 4 } ).withRow( { 3 } ),
 
             juce::GridItem( *feedbackKnob ).withColumn( { 5 } ).withRow( { 2 } ),
             juce::GridItem( *feedbackLabel ).withColumn( { 5 } ).withRow( { 3 } ),
-
+            
             juce::GridItem( *nameLabel ).withColumn( { 1, 6 } ).withRow( { 1 } ) };
 
         grid.setGap( Px( PADDING_PX ) );
@@ -153,9 +158,9 @@ public:
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    std::unique_ptr<juce::Slider> mixKnob, rateKnob, delayKnob, depthKnob, feedbackKnob;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment, rateAttachment, delayAttachment, depthAttachment, feedbackAttachment;
-    std::unique_ptr<juce::Label> mixLabel, rateLabel, delayLabel, depthLabel, feedbackLabel, nameLabel;
+    std::unique_ptr<juce::Slider> mixKnob, rateKnob, depthKnob, frequencyKnob, feedbackKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment, rateAttachment, depthAttachment, frequencyAttachment, feedbackAttachment;
+    std::unique_ptr<juce::Label> mixLabel, rateLabel, depthLabel, frequencyLabel, feedbackLabel, nameLabel;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChorusEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PhaserEditor)
 };

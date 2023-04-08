@@ -15,6 +15,8 @@
 #include "View/Synthesizer/SynthEditor.h"
 #include "View/Effects/EffectsEditor.h"
 
+#include "View/VST_SynthLookAndFeel.h"
+
 class VST_SynthTabbedComponent : public juce::TabbedComponent
 {
 public:
@@ -23,7 +25,7 @@ public:
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    void lookAndFeelChanged() override;
+    void lookAndFeelChanged();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VST_SynthTabbedComponent)
 };
@@ -44,7 +46,7 @@ public:
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    juce::LookAndFeel_V4 lnf = juce::LookAndFeel_V4(juce::LookAndFeel_V4::getMidnightColourScheme());
+    VST_SynthLookAndFeel lnf = VST_SynthLookAndFeel();
 
     std::unique_ptr<VST_SynthTabbedComponent> tabbedComponent = std::make_unique<VST_SynthTabbedComponent>(audioProcessor);
 

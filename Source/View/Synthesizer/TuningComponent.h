@@ -55,9 +55,10 @@ public:
         tuningCentsKnob->setTextBoxIsEditable(true);
         addAndMakeVisible(*tuningCentsKnob);
 
-        tuningLabel.setText("Tuning", juce::NotificationType::dontSendNotification);
-        tuningLabel.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(tuningLabel);
+        tuningLabel = std::make_unique<juce::Label>();
+        tuningLabel->setText("Tuning", juce::NotificationType::dontSendNotification);
+        tuningLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*tuningLabel);
 
         pitchWheelKnob = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
@@ -71,22 +72,15 @@ public:
         pitchWheelKnob->setTextBoxIsEditable(true);
         addAndMakeVisible(*pitchWheelKnob);
 
-        pitchWheelLabel.setText("PW Range", juce::NotificationType::dontSendNotification);
-        pitchWheelLabel.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(pitchWheelLabel);
+        pitchWheelLabel = std::make_unique<juce::Label>();
+        pitchWheelLabel->setText("PW Range", juce::NotificationType::dontSendNotification);
+        pitchWheelLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*pitchWheelLabel);
     }
 
-    ~TuningComponent() override
-    {
+    ~TuningComponent() override {}
 
-    }
-
-    void paint(juce::Graphics& g) override
-    {
-        auto bounds = getLocalBounds();
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        g.drawRect(bounds, 1.f);
-    }
+    void paint(juce::Graphics& g) override {}
 
     void resized() override
     {
@@ -94,36 +88,32 @@ public:
         using Fr = juce::Grid::Fr;
         using Px = juce::Grid::Px;
 
-        juce::Grid tuningComponentGrid;
-        tuningComponentGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( HEIGHT_TUNING_KNOB_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ) };
-        tuningComponentGrid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
-        tuningComponentGrid.items = { 
-            juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ),
-            juce::GridItem( *tuningOctavesKnob ), juce::GridItem( *tuningSemitonesKnob ), juce::GridItem( *tuningCentsKnob ), juce::GridItem( *pitchWheelKnob ),
-            juce::GridItem( nullptr ), juce::GridItem( tuningLabel ), juce::GridItem( nullptr ), juce::GridItem( pitchWheelLabel ),
-            juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ), juce::GridItem( nullptr ) };
+        juce::Grid grid;
+        grid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 8 ) ), TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ) };
+        grid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
+        grid.items = { 
+            juce::GridItem( *tuningOctavesKnob ).withColumn( { 1 } ).withRow( { 2, 3 } ),
+            juce::GridItem( *tuningSemitonesKnob ).withColumn( { 2 } ).withRow( { 2, 3 } ),
+            juce::GridItem( *tuningCentsKnob ).withColumn( { 3 } ).withRow( { 2, 3 } ),
+            juce::GridItem( *tuningLabel ).withColumn( { 1, 4 } ).withRow( { 3 } ),
 
-        tuningComponentGrid.setGap( Px( PADDING_PX ) );
+            juce::GridItem( *pitchWheelKnob ).withColumn( { 4 } ).withRow( { 2, 3 } ),
+            juce::GridItem( *pitchWheelLabel ).withColumn( { 4 } ).withRow( { 3 } ) };
+
+        grid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
-        tuningComponentGrid.performLayout(bounds);
+        grid.performLayout(bounds);
     }
 
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    std::unique_ptr<juce::Slider> tuningOctavesKnob;
-    std::unique_ptr<juce::Slider> tuningSemitonesKnob;
-    std::unique_ptr<juce::Slider> tuningCentsKnob;
-    std::unique_ptr<juce::Slider> pitchWheelKnob;
+    std::unique_ptr<juce::Slider> tuningOctavesKnob, tuningSemitonesKnob, tuningCentsKnob, pitchWheelKnob;
 
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tuningOctavesKnobAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tuningSemitonesKnobAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tuningCentsKnobAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> pitchWheelKnobAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tuningOctavesKnobAttachment, tuningSemitonesKnobAttachment, tuningCentsKnobAttachment, pitchWheelKnobAttachment;
 
-    juce::Label tuningLabel;
-    juce::Label pitchWheelLabel;
+    std::unique_ptr<juce::Label> tuningLabel, pitchWheelLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TuningComponent)
 };

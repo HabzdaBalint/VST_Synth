@@ -20,15 +20,11 @@ class WaveformEditor : public juce::Component
 public:
     WaveformEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
             partialSliders.add(new PartialSlider(audioProcessor, i));
             addAndMakeVisible(partialSliders[i]);
         }
-        
-        auto bounds = getLocalBounds();
-        bounds.setWidth(HARMONIC_N * WIDTH_PARTIAL_SLIDERS_PX);
-        setBounds(bounds);
     }
 
     ~WaveformEditor() override {}
@@ -37,15 +33,27 @@ public:
 
     void resized() override
     {
-        auto bounds1 = getLocalBounds();
+        using TrackInfo = juce::Grid::TrackInfo;
+        using Fr = juce::Grid::Fr;
+        using Px = juce::Grid::Px;
 
-        for (size_t i = 0; i < HARMONIC_N; i++)
+        juce::Grid grid;
+        grid.templateRows = { TrackInfo( Fr( 1 ) ) };
+
+        for (int i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
-            auto bounds = getLocalBounds();
-            bounds.setWidth(WIDTH_PARTIAL_SLIDERS_PX);
-            bounds.setX(i * WIDTH_PARTIAL_SLIDERS_PX);
-            partialSliders[i]->setBounds(bounds);
+            grid.templateColumns.add( TrackInfo( ( Px( WIDTH_PARTIAL_SLIDERS_PX ) ) ) );
+            grid.items.add( juce::GridItem( partialSliders[i] ).withColumn( { i + 1 } ).withRow( { 1 } ) );
         }
+
+        auto bounds = getLocalBounds();
+        bounds.setWidth(Synthesizer::HARMONIC_N * ( WIDTH_PARTIAL_SLIDERS_PX + PADDING_PX ) + PADDING_PX );
+        setBounds(bounds);
+
+        grid.setGap( Px( PADDING_PX ) );
+        bounds = getLocalBounds();
+        bounds.reduce(PADDING_PX, PADDING_PX);
+        grid.performLayout(bounds);
     }
     
 private:

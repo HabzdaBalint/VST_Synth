@@ -38,7 +38,7 @@ public:
         g.fillRoundedRectangle(bounds, 4.f);
 
         auto scaledValue = juce::jmap(level, -60.f, 0.f, 0.f, bounds.getWidth());
-        g.setColour(findColour(juce::Slider::textBoxTextColourId));
+        g.setColour(findColour(juce::TextButton::buttonOnColourId));
         g.fillRoundedRectangle(bounds.removeFromLeft(scaledValue), 4.f);
     }
 

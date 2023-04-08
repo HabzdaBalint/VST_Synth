@@ -31,9 +31,10 @@ public:
         gainKnob->setTextBoxIsEditable(true);
         addAndMakeVisible(*gainKnob);
 
-        gainLabel.setText("Gain", juce::NotificationType::dontSendNotification);
-        gainLabel.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(gainLabel);
+        gainLabel = std::make_unique<juce::Label>();
+        gainLabel->setText("Gain", juce::NotificationType::dontSendNotification);
+        gainLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*gainLabel);
     }
 
     ~GainKnob() override {}
@@ -46,15 +47,17 @@ public:
         using Fr = juce::Grid::Fr;
         using Px = juce::Grid::Px;
 
-        juce::Grid gainKnobGrid;
-        gainKnobGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( HEIGHT_GAIN_KNOB_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ) };
-        gainKnobGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
-        gainKnobGrid.items = { juce::GridItem( nullptr ), juce::GridItem( *gainKnob ), juce::GridItem( gainLabel ), juce::GridItem( nullptr ) };
+        juce::Grid grid;
+        grid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 8 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) , TrackInfo( Fr( 1 ) ) };
+        grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+        grid.items = {
+            juce::GridItem( *gainKnob ).withColumn( { 1 } ).withRow( { 2, 3 } ),
+            juce::GridItem( *gainLabel ).withColumn( { 1 } ).withRow( { 3 } ) };
 
-        gainKnobGrid.setGap( Px( PADDING_PX ) );
+        grid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
-        gainKnobGrid.performLayout(bounds);
+        grid.performLayout(bounds);
     }
     
 private:
@@ -63,7 +66,7 @@ private:
     std::unique_ptr<juce::Slider> gainKnob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainKnobAttachment;
 
-    juce::Label gainLabel;
+    std::unique_ptr<juce::Label> gainLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GainKnob)
 };

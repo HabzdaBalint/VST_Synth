@@ -31,9 +31,10 @@ public:
         attackSlider->setTextBoxIsEditable(true);
         addAndMakeVisible(*attackSlider);
 
-        attackLabel.setText("Attack", juce::NotificationType::dontSendNotification);
-        attackLabel.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(attackLabel);
+        attackLabel = std::make_unique<juce::Label>();
+        attackLabel->setText("Attack", juce::NotificationType::dontSendNotification);
+        attackLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*attackLabel);
 
         decaySlider = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::LinearVertical,
@@ -47,9 +48,10 @@ public:
         decaySlider->setTextBoxIsEditable(true);
         addAndMakeVisible(*decaySlider);
 
-        decayLabel.setText("Decay", juce::NotificationType::dontSendNotification);
-        decayLabel.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(decayLabel);
+        decayLabel = std::make_unique<juce::Label>();
+        decayLabel->setText("Decay", juce::NotificationType::dontSendNotification);
+        decayLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*decayLabel);
 
         sustainSlider = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::LinearVertical,
@@ -63,9 +65,10 @@ public:
         sustainSlider->setTextBoxIsEditable(true);
         addAndMakeVisible(*sustainSlider);
 
-        sustainLabel.setText("Sustain", juce::NotificationType::dontSendNotification);
-        sustainLabel.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(sustainLabel);
+        sustainLabel = std::make_unique<juce::Label>();
+        sustainLabel->setText("Sustain", juce::NotificationType::dontSendNotification);
+        sustainLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*sustainLabel);
 
         releaseSlider = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::LinearVertical,
@@ -79,19 +82,15 @@ public:
         releaseSlider->setTextBoxIsEditable(true);
         addAndMakeVisible(*releaseSlider);
 
-        releaseLabel.setText("Release", juce::NotificationType::dontSendNotification);
-        releaseLabel.setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(releaseLabel);
+        releaseLabel = std::make_unique<juce::Label>();
+        releaseLabel->setText("Release", juce::NotificationType::dontSendNotification);
+        releaseLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*releaseLabel);
     }
 
     ~ADSRComponent() override {}
 
-    void paint(juce::Graphics& g) override
-    {
-        auto bounds = getLocalBounds();
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        g.drawRect(bounds, 1.f);
-    }
+    void paint(juce::Graphics& g) override {}
 
     void resized() override
     {
@@ -103,8 +102,17 @@ public:
         adsrGrid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
         adsrGrid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         adsrGrid.items = { 
-            juce::GridItem( *attackSlider ), juce::GridItem( *decaySlider ), juce::GridItem( *sustainSlider ), juce::GridItem( *releaseSlider ),
-            juce::GridItem( attackLabel ), juce::GridItem( decayLabel ), juce::GridItem( sustainLabel ), juce::GridItem( releaseLabel ) };
+            juce::GridItem( *attackSlider ).withColumn({1}).withRow({1}),
+            juce::GridItem( *attackLabel ).withColumn({1}).withRow({2}),
+
+            juce::GridItem( *decaySlider ).withColumn({2}).withRow({1}),
+            juce::GridItem( *decayLabel ).withColumn({2}).withRow({2}),
+
+            juce::GridItem( *sustainSlider ).withColumn({3}).withRow({1}),
+            juce::GridItem( *sustainLabel ).withColumn({3}).withRow({2}),
+
+            juce::GridItem( *releaseSlider ).withColumn({4}).withRow({1}),
+            juce::GridItem( *releaseLabel ).withColumn({4}).withRow({2}) };
 
         adsrGrid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
@@ -115,20 +123,10 @@ public:
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    std::unique_ptr<juce::Slider> attackSlider;
-    std::unique_ptr<juce::Slider> decaySlider;
-    std::unique_ptr<juce::Slider> sustainSlider;
-    std::unique_ptr<juce::Slider> releaseSlider;
+    std::unique_ptr<juce::Slider> attackSlider, decaySlider, sustainSlider, releaseSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackSliderAttachment, decaySliderAttachment, sustainSliderAttachment, releaseSliderAttachment;
 
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackSliderAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decaySliderAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sustainSliderAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> releaseSliderAttachment;
-
-    juce::Label attackLabel;
-    juce::Label decayLabel;
-    juce::Label sustainLabel;
-    juce::Label releaseLabel;
+    std::unique_ptr<juce::Label> attackLabel, decayLabel, sustainLabel, releaseLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ADSRComponent)
 };

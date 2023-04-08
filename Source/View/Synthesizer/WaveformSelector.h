@@ -25,11 +25,11 @@ public:
         onClick = [&] ()
         {
             juce::PopupMenu menu;
-            menu.addCustomItem(1, std::make_unique<WaveformSine>(p, WIDTH_WAVEFORM_SELECTOR_PX, HEIGHT_WAVEFORM_SELECTOR_PX, "Sine"), nullptr, "Sine");
-            menu.addCustomItem(2, std::make_unique<WaveformTriangle>(p, WIDTH_WAVEFORM_SELECTOR_PX, HEIGHT_WAVEFORM_SELECTOR_PX, "Triangle"), nullptr, "Triangle");
-            menu.addCustomItem(3, std::make_unique<WaveformSquare>(p, WIDTH_WAVEFORM_SELECTOR_PX, HEIGHT_WAVEFORM_SELECTOR_PX, "Square"), nullptr, "Square");
-            menu.addCustomItem(4, std::make_unique<WaveformSawtooth>(p, WIDTH_WAVEFORM_SELECTOR_PX, HEIGHT_WAVEFORM_SELECTOR_PX, "Sawtooth"), nullptr, "Sawtooth");
-            menu.addCustomItem(4, std::make_unique<WaveformSawSquare>(p, WIDTH_WAVEFORM_SELECTOR_PX, HEIGHT_WAVEFORM_SELECTOR_PX, "SawSquare"), nullptr, "SawSquare");
+            menu.addCustomItem(1, std::make_unique<WaveformSine>(p, "Sine"), nullptr, "Sine");
+            menu.addCustomItem(2, std::make_unique<WaveformTriangle>(p, "Triangle"), nullptr, "Triangle");
+            menu.addCustomItem(3, std::make_unique<WaveformSquare>(p, "Square"), nullptr, "Square");
+            menu.addCustomItem(4, std::make_unique<WaveformSawtooth>(p, "Sawtooth"), nullptr, "Sawtooth");
+            menu.addCustomItem(4, std::make_unique<WaveformSawSquare>(p, "SawSquare"), nullptr, "SawSquare");
 
             auto& lnf = getLookAndFeel();
             menu.setLookAndFeel(&lnf);
@@ -48,17 +48,14 @@ public:
 
     void paintButton(juce::Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
     {
+        g.setColour(findColour(juce::GroupComponent::outlineColourId));
+        auto bounds = waveformViewer->getBounds();
+        g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);        
+    }
+
+    void resized() override
+    {
         auto bounds = getLocalBounds();
-
-        auto& lnf = getLookAndFeel();
-
-        if( shouldDrawButtonAsHighlighted || shouldDrawButtonAsDown )
-            g.setColour(findColour(juce::Slider::textBoxTextColourId));
-        else
-            g.setColour(findColour(juce::GroupComponent::outlineColourId));
-
-        g.drawRect(bounds, 1.f);
-
         bounds.reduce(PADDING_PX, PADDING_PX);
         waveformViewer->setBounds(bounds);
     }
@@ -81,9 +78,14 @@ public:
 
     void paint(juce::Graphics& g) override
     {
-        auto bounds = getLocalBounds();
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        g.drawRect(bounds, 1.f);
+        auto state = waveformMenuButton->getState();
+        if( state == juce::Button::ButtonState::buttonDown || state == juce::Button::ButtonState::buttonOver )
+            g.setColour(findColour(juce::DrawableButton::backgroundOnColourId));
+        else
+            g.setColour(findColour(juce::GroupComponent::outlineColourId));
+
+        auto bounds = waveformMenuButton->getBounds();
+        g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
     }
 
     void resized() override

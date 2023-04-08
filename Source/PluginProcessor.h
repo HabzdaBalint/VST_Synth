@@ -9,8 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "DataModel/AdditiveSynthesizer.h"
-#include "DataModel/FXProcessorChain.h"
+#include "Model/Synthesizer/AdditiveSynthesizer.h"
+#include "Model/EffectsChain/FXProcessorChain.h"
 
 //==============================================================================
 /**
@@ -60,8 +60,8 @@ public:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Audio Parameters", createParameterLayout() };
 
-    std::unique_ptr<AdditiveSynthesizer> additiveSynth = std::make_unique<AdditiveSynthesizer>(apvts);
-    std::unique_ptr<FXChain::FXProcessorChain> fxChain = std::make_unique<FXChain::FXProcessorChain>(apvts);
+    std::unique_ptr<Synthesizer::AdditiveSynthesizer> additiveSynth = std::make_unique<Synthesizer::AdditiveSynthesizer>(apvts);
+    std::unique_ptr<EffectsChain::FXProcessorChain> fxChain = std::make_unique<EffectsChain::FXProcessorChain>(apvts);
 
     juce::LinearSmoothedValue<float> synthRMS[2];
     juce::Atomic<float> atomicSynthRMS[2];

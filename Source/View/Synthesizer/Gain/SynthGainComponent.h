@@ -14,8 +14,8 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "LevelMeterGrid.h"
 #include "GainKnob.h"
+#include "LevelMeter.h"
 
 class SynthGainComponent : public juce::Component
 {
@@ -23,17 +23,18 @@ public:
     SynthGainComponent(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         addAndMakeVisible(*gainKnob);
-        addAndMakeVisible(*levelMeters);
+
+        auto numChannels = p.getTotalNumOutputChannels();
+        for (size_t i = 0; i < numChannels; i++)
+        {
+            levelMeters.add(std::make_unique<LevelMeter>(p, i));
+            addAndMakeVisible(*levelMeters[i]);
+        }
     }
 
     ~SynthGainComponent() override {}
 
-    void paint(juce::Graphics& g) override
-    {
-        auto bounds = getLocalBounds();
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        g.drawRect(bounds, 1.f);
-    }
+    void paint(juce::Graphics& g) override {}
 
     void resized() override
     {
@@ -41,22 +42,27 @@ public:
         using Fr = juce::Grid::Fr;
         using Px = juce::Grid::Px;
         
-        juce::Grid gainComponentGrid;
-        gainComponentGrid.templateRows = { TrackInfo( Fr( 1 ) ) };
-        gainComponentGrid.templateColumns = { TrackInfo( Fr( 2 ) ), TrackInfo( Fr( 5 ) ) };
-        gainComponentGrid.items = { juce::GridItem( *gainKnob ), juce::GridItem( *levelMeters ) };
+        juce::Grid grid;
+        grid.templateColumns = { TrackInfo( Fr( 2 ) ), TrackInfo( Fr( 5 ) ) };
 
-        gainComponentGrid.setGap( Px( PADDING_PX ) );
+        for(int i = 0; i < levelMeters.size(); i++)
+        {
+            grid.templateRows.add( TrackInfo( Fr( 1 ) ) );
+            grid.items.add( juce::GridItem( *levelMeters[i] ).withColumn( { 2 } ).withRow( { (i+1) } ) );
+        }
+        grid.items.add( juce::GridItem( *gainKnob ).withColumn( { 1 } ).withRow( { 1, levelMeters.size() + 1 } ) );
+
+        grid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
-        gainComponentGrid.performLayout(bounds);
+        grid.performLayout(bounds);
     }
 
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
     std::unique_ptr<GainKnob> gainKnob = std::make_unique<GainKnob>(audioProcessor);
-    std::unique_ptr<LevelMeterGrid> levelMeters = std::make_unique<LevelMeterGrid>(audioProcessor);
+    juce::OwnedArray<LevelMeter> levelMeters;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthGainComponent)
 };

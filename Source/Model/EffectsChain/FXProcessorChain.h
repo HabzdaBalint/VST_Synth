@@ -11,18 +11,19 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "FXEqualizer.h"
-#include "FXFilter.h"
-#include "FXCompressor.h"
-#include "FXDelay.h"
-#include "FXReverb.h"
-#include "FXChorus.h"
-#include "FXPhaser.h"
-#include "FXTremolo.h"
 
-namespace FXChain
+#include "../EffectProcessors/EqualizerUnit.h"
+#include "../EffectProcessors/FilterUnit.h"
+#include "../EffectProcessors/CompressorUnit.h"
+#include "../EffectProcessors/DelayUnit.h"
+#include "../EffectProcessors/ReverbUnit.h"
+#include "../EffectProcessors/ChorusUnit.h"
+#include "../EffectProcessors/PhaserUnit.h"
+#include "../EffectProcessors/TremoloUnit.h"
+
+namespace EffectsChain
 {
-    static const juce::StringArray choices = { "Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo"};
+    static const juce::StringArray choices = { "Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo" };
     const int FX_MAX_SLOTS = choices.size() - 1;
 
     class FXProcessorChain : public juce::AudioProcessor,
@@ -37,7 +38,7 @@ namespace FXChain
         bool acceptsMidi() const override { return true; }
         bool producesMidi() const override { return true; }
 
-        juce::AudioProcessorEditor* createEditor() { return nullptr; }
+        juce::AudioProcessorEditor* createEditor() override { return nullptr; }
         bool hasEditor() const override { return true; }
 
         int getNumPrograms() override { return 1; }
@@ -78,7 +79,10 @@ namespace FXChain
     private:
         juce::AudioProcessorValueTreeState& apvts;
         
-        std::vector<std::unique_ptr<juce::AudioProcessor>> processors;
+        //juce::AudioProcessorGraph graph;
+        juce::Array<juce::AudioProcessor*> chain;
+        juce::OwnedArray<juce::AudioProcessor> processors;
+        //std::vector<std::unique_ptr<juce::AudioProcessor>> processors;
         std::vector<bool> bypasses;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
