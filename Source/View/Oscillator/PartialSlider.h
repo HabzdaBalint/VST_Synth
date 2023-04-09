@@ -53,10 +53,11 @@ public:
 
     void paint(juce::Graphics& g) override
     {
-        for (auto child : getChildren())
+        g.setColour(findColour(juce::GroupComponent::outlineColourId));
+
+        for(auto child : getChildren())
         {
             auto bounds = child->getBounds();
-            g.setColour(findColour(juce::GroupComponent::outlineColourId));
             g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
         }
     }
@@ -68,7 +69,7 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid grid;
-        grid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
+        grid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( LABEL_HEIGHT + PADDING_PX ) ) };
         grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
         grid.items = {
             juce::GridItem( *gainSlider ).withColumn( { 1 } ).withRow( { 1 } ),
@@ -77,8 +78,8 @@ public:
 
         grid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
-        bounds.reduce(PADDING_PX, PADDING_PX);
-        grid.performLayout(getLocalBounds());
+        bounds.reduce(PADDING_PX/2, PADDING_PX/2);
+        grid.performLayout(bounds);
     }
     
 private:

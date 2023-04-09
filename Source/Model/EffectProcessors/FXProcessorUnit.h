@@ -44,11 +44,11 @@ namespace EffectProcessors
         void getStateInformation(juce::MemoryBlock&) override {}
         void setStateInformation(const void*, int) override {}
 
-        virtual void registerListeners() = 0;
-
     protected:
         juce::AudioProcessorValueTreeState& apvts;    
+        
     private:
+
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXProcessorUnit)
     };
 }

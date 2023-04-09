@@ -22,7 +22,7 @@ namespace EffectProcessors
         TremoloUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
             dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
-            registerListeners();
+            registerListener(this);
         }
 
         ~TremoloUnit() {}
@@ -74,12 +74,29 @@ namespace EffectProcessors
             dryWetMixer.mixWetSamples(audioBlock);
         }
 
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.addParameterListener(id, listener);
+            }
+        }
+
         void updateTremoloParameters()
         {
             dryWetMixer.setWetMixProportion(apvts.getRawParameterValue("tremoloMix")->load()/100);
             depth = apvts.getRawParameterValue("tremoloDepth")->load()/100;
             rate = apvts.getRawParameterValue("tremoloRate")->load();
             isAutoPan = apvts.getRawParameterValue("tremoloAutoPan")->load();
+        }
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            updateTremoloParameters();
         }
 
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
@@ -130,24 +147,11 @@ namespace EffectProcessors
         float currentAngle = 0;
         float angleDelta = 0;
 
-        void registerListeners() override
-        {
-            apvts.addParameterListener("tremoloMix", this);
-            apvts.addParameterListener("tremoloDepth", this);
-            apvts.addParameterListener("tremoloRate", this);
-            apvts.addParameterListener("tremoloAutoPan", this);
-        }
-
         void updateAngles()
         {
             auto sampleRate = getSampleRate();
             float cyclesPerSample = rate/sampleRate;
             angleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            updateTremoloParameters();
         }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TremoloUnit)

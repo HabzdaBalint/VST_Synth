@@ -75,30 +75,11 @@ namespace Synthesizer
 
     void AdditiveSynthesizer::parameterChanged(const juce::String &parameterID, float newValue)
     {
-        //start an update for the lookup table if necessary
-        /*
-        if( !lutUpdater.isThreadRunning() )
-        {
-            lutUpdater.startThread();
-            missedUpdate = false;
-        }
-        else
-        {
-            missedUpdate = true;
-        }
-        */
         needUpdate = true;
     }
 
     void AdditiveSynthesizer::timerCallback()
     {
-        /*
-        if( !lutUpdater.isThreadRunning() && missedUpdate )
-        {
-            lutUpdater.startThread();
-            missedUpdate = false;
-        }
-        */
         if( !lutUpdater.isThreadRunning() && needUpdate)
         {
             lutUpdater.startThread();

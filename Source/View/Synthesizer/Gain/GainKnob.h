@@ -27,8 +27,9 @@ public:
             "synthGain",
             *gainKnob);
         gainKnob->setScrollWheelEnabled(false);
-        gainKnob->setTextValueSuffix("%");
+        //gainKnob->setTextValueSuffix("%");
         gainKnob->setTextBoxIsEditable(true);
+        gainKnob->setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, gainKnob->getTextBoxWidth()*1.3, gainKnob->getTextBoxHeight());
         addAndMakeVisible(*gainKnob);
 
         gainLabel = std::make_unique<juce::Label>();
@@ -48,7 +49,7 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid grid;
-        grid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 8 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) , TrackInfo( Fr( 1 ) ) };
+        grid.templateRows = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 12 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) , TrackInfo( Fr( 1 ) ) };
         grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
         grid.items = {
             juce::GridItem( *gainKnob ).withColumn( { 1 } ).withRow( { 2, 3 } ),

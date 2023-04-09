@@ -27,7 +27,7 @@ namespace EffectProcessors
         DelayUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
             dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
-            registerListeners();
+            registerListener(this);
         }
 
         ~DelayUnit() {}
@@ -81,6 +81,18 @@ namespace EffectProcessors
             dryWetMixer.mixWetSamples(audioBlock);
         }
 
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.addParameterListener(id, listener);
+            }
+        }
+
         void updateDelayParameters()
         {
             if(getSampleRate() > 0)
@@ -96,6 +108,11 @@ namespace EffectProcessors
             }
         }
 
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            updateDelayParameters();
+        }
+        
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
         {
             std::unique_ptr<juce::AudioProcessorParameterGroup> delayGroup (
@@ -114,7 +131,7 @@ namespace EffectProcessors
             auto feedback = std::make_unique<juce::AudioParameterFloat>(
                 "delayFeedback",
                 "Feedback",
-                juce::NormalisableRange<float>(0.f, 100.f, 1.f), 
+                juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
                 40.f);
             delayGroup.get()->addChild(std::move(feedback));
 
@@ -135,7 +152,7 @@ namespace EffectProcessors
             auto filterQ = std::make_unique<juce::AudioParameterFloat>(
                 "delayFilterQ",
                 "Q",
-                juce::NormalisableRange<float>(0.05, 5.f, 0.001),
+                juce::NormalisableRange<float>(0.05, 5.f, 0.001, 0.4),
                 0.5);
             delayGroup.get()->addChild(std::move(filterQ));
             
@@ -148,20 +165,6 @@ namespace EffectProcessors
         Filter filter[2];
 
         float feedback = 0;
-
-        void registerListeners() override
-        {
-            apvts.addParameterListener("delayMix", this);
-            apvts.addParameterListener("delayFeedback", this);
-            apvts.addParameterListener("delayTime", this);
-            apvts.addParameterListener("delayFilterFrequency", this);
-            apvts.addParameterListener("delayFilterQ", this);
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            updateDelayParameters();
-        }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DelayUnit)
     };

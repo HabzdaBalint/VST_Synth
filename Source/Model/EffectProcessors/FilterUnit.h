@@ -42,7 +42,7 @@ namespace EffectProcessors
         FilterUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
             dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
-            registerListeners();
+            registerListener(this);
         }
 
         ~FilterUnit(){}
@@ -81,6 +81,18 @@ namespace EffectProcessors
             dryWetMixer.mixWetSamples(audioBlock);
         }
 
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.addParameterListener(id, listener);
+            }
+        }
+
         void updateFilterParameters()
         {
             if(getSampleRate() > 0)
@@ -110,6 +122,11 @@ namespace EffectProcessors
             }
         }
 
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            updateFilterParameters();
+        }
+        
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
         {
             std::unique_ptr<juce::AudioProcessorParameterGroup> filterGroup (
@@ -150,14 +167,6 @@ namespace EffectProcessors
         PassFilter leftChain;
         PassFilter rightChain;
         juce::dsp::DryWetMixer<float> dryWetMixer;
-
-        void registerListeners() override
-        {
-            apvts.addParameterListener("filterMix", this);
-            apvts.addParameterListener("filterCutoff", this);
-            apvts.addParameterListener("filterType", this);
-            apvts.addParameterListener("filterSlope", this);
-        }
 
         juce::ReferenceCountedArray<Coefficients> makeLowPassCoefficients(float frequency, int slope)
         {
@@ -205,11 +214,6 @@ namespace EffectProcessors
         void updateCoefficients(juce::ReferenceCountedObjectPtr<Coefficients> &oldCoefficients, const juce::ReferenceCountedObjectPtr<Coefficients> &newCoefficients)
         {
             *oldCoefficients = *newCoefficients;
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            updateFilterParameters();
         }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FilterUnit);

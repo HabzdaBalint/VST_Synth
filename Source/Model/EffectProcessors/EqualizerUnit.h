@@ -27,7 +27,7 @@ namespace EffectProcessors
                 leftFilters[i] = new Filter();
                 rightFilters[i] = new Filter();
             }
-            registerListeners();
+            registerListener(this);
         }
 
         ~EqualizerUnit()
@@ -72,6 +72,18 @@ namespace EffectProcessors
             }
         }
 
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.addParameterListener(id, listener);
+            }
+        }
+
         /// @brief Sets the new coefficients for the peak filters
         void updateEqualizerParameters()
         {
@@ -86,6 +98,11 @@ namespace EffectProcessors
             }
         }
 
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            updateEqualizerParameters();
+        }
+        
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
         {
             std::unique_ptr<juce::AudioProcessorParameterGroup> eqGroup (
@@ -139,14 +156,6 @@ namespace EffectProcessors
         Filter* leftFilters[10] = {};
         Filter* rightFilters[10] = {};
 
-        void registerListeners() override
-        {
-            for (size_t i = 0; i < 10; i++)
-            {
-                apvts.addParameterListener(getBandGainParameterName(i), this);
-            }
-        }
-
         /// @brief Scales the peak filter's Q to it's gain. Q starts at 0.5 at 0dB gain and goes up linearly to 3 at +/-12dB
         /// @param gain The gain level (in dB) to use for scaling
         /// @return The proportional Q factor of the peak filter
@@ -154,11 +163,6 @@ namespace EffectProcessors
         {
             float q = ((2.5 * std::abs(gain)) / 12) + 0.5;
             return q;
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            updateEqualizerParameters();
         }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EqualizerUnit)

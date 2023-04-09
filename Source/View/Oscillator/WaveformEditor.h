@@ -29,7 +29,15 @@ public:
 
     ~WaveformEditor() override {}
 
-    void paint(juce::Graphics& g) override {}
+    void paint(juce::Graphics& g) override
+    {
+        g.setColour(findColour(juce::GroupComponent::outlineColourId));
+        for(auto partial : partialSliders)
+        {
+            auto bounds = partial->getBounds();
+            //g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+        }
+    }
 
     void resized() override
     {
@@ -46,14 +54,15 @@ public:
             grid.items.add( juce::GridItem( partialSliders[i] ).withColumn( { i + 1 } ).withRow( { 1 } ) );
         }
 
-        auto bounds = getLocalBounds();
-        bounds.setWidth(Synthesizer::HARMONIC_N * ( WIDTH_PARTIAL_SLIDERS_PX + PADDING_PX ) + PADDING_PX );
+        auto bounds = getLocalBounds(); //viewport width
+        bounds.setWidth(Synthesizer::HARMONIC_N * ( WIDTH_PARTIAL_SLIDERS_PX + PADDING_PX/2 ) + PADDING_PX/2 );
         setBounds(bounds);
 
-        grid.setGap( Px( PADDING_PX ) );
+        grid.setGap( Px( PADDING_PX/2 ) );    //grid
         bounds = getLocalBounds();
-        bounds.reduce(PADDING_PX, PADDING_PX);
+        bounds.reduce(PADDING_PX/2, PADDING_PX/2);
         grid.performLayout(bounds);
+        
     }
     
 private:

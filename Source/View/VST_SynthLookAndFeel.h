@@ -20,19 +20,19 @@ public:
     VST_SynthLookAndFeel() : LookAndFeel_V4(getMidnightColourScheme())
     {
         setColourScheme( {
-                        0xff'2e2e2e, /* windowBackground */
-                        0xff'1b1b1b, /* widgetBackground */
-                        0xff'2e2e2e, /* menuBackground */
-                        0xff'797979, /* outline */
-                        0xff'b6b6b6, /* defaultText */
-                        0xff'b6b6b6, /* defaultFill */
-                        0xff'1a1a1a, /* highlightedText */
-                        0xff'cc3401, /* highlightedFill */
-                        0xff'b6b6b6  /* menuText */
+                        0xff'2e2044, /* windowBackground */
+                        0x73'000000, /* widgetBackground */
+                        0xff'2e2044, /* menuBackground */
+                        0x5e'007956, /* outline */
+                        0xff'ffffff, /* defaultText */
+                        0xff'c3dad2, /* defaultFill */
+                        0xff'ffffff, /* highlightedText */
+                        0xff'36a785, /* highlightedFill */
+                        0xff'ffffff  /* menuText */
                         } );
 
-        setColour( juce::MidiKeyboardComponent::mouseOverKeyOverlayColourId, juce::Colour( 0x8d'cc3401 ) );
-        setColour( juce::MidiKeyboardComponent::keyDownOverlayColourId, juce::Colour( 0xff'cc3401 ) );
+        setColour( juce::MidiKeyboardComponent::mouseOverKeyOverlayColourId, juce::Colour( 0x8d'00a876 ) );
+        setColour( juce::MidiKeyboardComponent::keyDownOverlayColourId, juce::Colour( 0xff'00a876 ) );
     }
 
     ~VST_SynthLookAndFeel() {}

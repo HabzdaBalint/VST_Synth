@@ -21,7 +21,7 @@ namespace EffectProcessors
     public:
         ReverbUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
-            registerListeners();
+            registerListener(this);
         }
 
         ~ReverbUnit() {}
@@ -47,6 +47,18 @@ namespace EffectProcessors
             reverb.process(context);
         }
 
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.addParameterListener(id, listener);
+            }
+        }
+
         void updateReverbParameters()
         {
             Reverb::Parameters newParams;
@@ -56,6 +68,11 @@ namespace EffectProcessors
             newParams.damping = apvts.getRawParameterValue("reverbDamping")->load()/100;
             newParams.width = apvts.getRawParameterValue("reverbWidth")->load()/100;
             reverb.setParameters(newParams);
+        }        
+        
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            updateReverbParameters();
         }
 
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
@@ -105,20 +122,6 @@ namespace EffectProcessors
         }    
     private:
         Reverb reverb;
-
-        void registerListeners() override
-        {
-            apvts.addParameterListener("reverbWet", this);
-            apvts.addParameterListener("reverbDry", this);
-            apvts.addParameterListener("reverbRoom", this);
-            apvts.addParameterListener("reverbDamping", this);
-            apvts.addParameterListener("reverbWidth", this);
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            updateReverbParameters();
-        }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ReverbUnit)
     };

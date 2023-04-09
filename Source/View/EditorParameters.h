@@ -23,8 +23,8 @@ constexpr int LABEL_HEIGHT = 20;
 constexpr int IDX_OFFSET = 1;   //necessary for combo boxes
 
 //============== OSC ==============//
-constexpr int HEIGHT_PARTIAL_PHASE_PX = 40;
-constexpr int WIDTH_PARTIAL_SLIDERS_PX = 55;
+constexpr int HEIGHT_PARTIAL_PHASE_PX = 45;
+constexpr int WIDTH_PARTIAL_SLIDERS_PX = 60;
 
 //============== SYNTH ==============//
 constexpr int HEIGHT_TUNING_KNOB_PX = 110;

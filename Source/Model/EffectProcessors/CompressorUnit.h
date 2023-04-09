@@ -23,7 +23,7 @@ namespace EffectProcessors
         CompressorUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
             dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
-            registerListeners();
+            registerListener(this);
         }
 
         ~CompressorUnit() {}
@@ -52,6 +52,18 @@ namespace EffectProcessors
             dryWetMixer.mixWetSamples(audioBlock);
         }
 
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.addParameterListener(id, listener);
+            }
+        }
+
         void updateCompressorParameters()
         {
             dryWetMixer.setWetMixProportion(apvts.getRawParameterValue("compressorMix")->load()/100);
@@ -61,6 +73,11 @@ namespace EffectProcessors
             compressor.setRelease(apvts.getRawParameterValue("compressorRelease")->load());
         }
 
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            updateCompressorParameters();
+        }
+        
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
         {
             std::unique_ptr<juce::AudioProcessorParameterGroup> compressorGroup (
@@ -116,20 +133,6 @@ namespace EffectProcessors
     private:
         DryWetMixer dryWetMixer;
         Compressor compressor;
-
-        void registerListeners() override
-        {
-            apvts.addParameterListener("compressorMix", this);
-            apvts.addParameterListener("compressorThreshold", this);
-            apvts.addParameterListener("compressorRatio", this);
-            apvts.addParameterListener("compressorAttack", this);
-            apvts.addParameterListener("compressorRelease", this);
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            updateCompressorParameters();
-        }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorUnit)
     };

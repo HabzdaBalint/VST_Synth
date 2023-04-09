@@ -21,7 +21,7 @@ namespace EffectProcessors
     public:
         ChorusUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
-            registerListeners();
+            registerListener(this);
         }
 
         ~ChorusUnit() {}
@@ -47,6 +47,18 @@ namespace EffectProcessors
             chorus.process(context);
         }
 
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.addParameterListener(id, listener);
+            }
+        }
+
         void updateChorusParameters()
         {
             chorus.setMix(apvts.getRawParameterValue("chorusMix")->load()/100);
@@ -56,6 +68,11 @@ namespace EffectProcessors
             chorus.setFeedback(apvts.getRawParameterValue("chorusFeedback")->load()/100);
         }
 
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            updateChorusParameters();
+        }
+        
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
         {
             std::unique_ptr<juce::AudioProcessorParameterGroup> chorusGroup (
@@ -104,20 +121,6 @@ namespace EffectProcessors
 
     private:
         Chorus chorus;
-        
-        void registerListeners() override
-        {
-            apvts.addParameterListener("chorusMix", this);
-            apvts.addParameterListener("chorusRate", this);
-            apvts.addParameterListener("chorusDelay", this);
-            apvts.addParameterListener("chorusDepth", this);
-            apvts.addParameterListener("chorusFeedback", this);
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            updateChorusParameters();
-        }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChorusUnit)
     };

@@ -84,12 +84,19 @@ namespace Synthesizer
                     "Synthesizer", 
                     "|"));
 
+            juce::AudioParameterFloatAttributes attr;
+
             //Gain for the oscillator. All voices are affected by this value
             auto synthGain = std::make_unique<juce::AudioParameterFloat>(
                 "synthGain",
                 "Gain",
-                juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-                70.f);
+                juce::NormalisableRange<float>(0.f, 100.f, 0.1, 0.4), 
+                30.f,
+                attr.withStringFromValueFunction([] (float value, int maximumStringLength)
+                    {
+                        juce::String string = juce::String(value, 1) + "%, " + juce::String(juce::Decibels::gainToDecibels(value/100), 1) + " dB";
+                        return string;
+                    }));
             synthGroup.get()->addChild(std::move(synthGain));
 
             //Tuning of the generated notes in octaves
@@ -220,5 +227,7 @@ namespace Synthesizer
     private:
         juce::AudioProcessorValueTreeState& apvts;
         std::unordered_map<juce::String, std::atomic<float>> paramMap;
+
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AdditiveSynthParameters)
     };
 }

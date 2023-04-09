@@ -34,7 +34,7 @@ public:
 
         auto bounds = getLocalBounds().toFloat();
         bounds.reduce(PADDING_PX, PADDING_PX);
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
+        g.setColour(findColour(juce::TextButton::buttonColourId));
         g.fillRoundedRectangle(bounds, 4.f);
 
         auto scaledValue = juce::jmap(level, -60.f, 0.f, 0.f, bounds.getWidth());

@@ -113,7 +113,7 @@ namespace Synthesizer
                 auto partialPhase = std::make_unique<juce::AudioParameterFloat>(
                     getPartialPhaseParameterName(i),
                     namePrefix + "Phase",
-                    juce::NormalisableRange<float>(0.f, 99.f, 1.f), 
+                    juce::NormalisableRange<float>(0.f, 99.9, 0.1), 
                     0.f,
                     attr.withAutomatable(false).withMeta(true));
                 oscGroup.get()->addChild(std::move(partialPhase));
@@ -143,5 +143,7 @@ namespace Synthesizer
     private:
         juce::AudioProcessorValueTreeState& apvts;
         std::unordered_map<juce::String, std::atomic<float>> paramMap;
+
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscillatorParameters)
     };
 }

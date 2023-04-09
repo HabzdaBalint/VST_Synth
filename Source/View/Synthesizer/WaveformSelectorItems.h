@@ -181,7 +181,7 @@ public:
             previewPath.lineTo( r.getX() + i, juce::jmap( -1 * amplitudes[i], -1.f, 1.f, (float)r.getY(), (float)( r.getHeight()+r.getY() ) ) );
         }
 
-        g.strokePath(previewPath, juce::PathStrokeType(1.f));
+        g.strokePath(previewPath, juce::PathStrokeType(1.5));
     }
 
 private:
@@ -229,7 +229,7 @@ public:
         previewPath.lineTo( r.getX() + ( 3.f * r.getWidth() / 4.f ), r.getY() + r.getHeight() );
         previewPath.lineTo( r.getX() + r.getWidth(), r.getY() + ( r.getHeight() / 2.f ) );
 
-        g.strokePath(previewPath, juce::PathStrokeType(1.f));
+        g.strokePath(previewPath, juce::PathStrokeType(1.5));
     }
 
 private:
@@ -279,7 +279,7 @@ public:
         previewPath.lineTo( r.getX() + r.getWidth(), r.getY() + r.getHeight() );
         previewPath.lineTo( r.getX() + r.getWidth(), r.getY() + ( r.getHeight() / 2.f ) );
 
-        g.strokePath(previewPath, juce::PathStrokeType(1.f));
+        g.strokePath(previewPath, juce::PathStrokeType(1.5));
     }
 
 private:
@@ -327,7 +327,7 @@ public:
         previewPath.lineTo( r.getX() + ( r.getWidth() / 2.f ), r.getY() + r.getHeight() );
         previewPath.lineTo( r.getX() + r.getWidth(), r.getY() + ( r.getHeight() / 2.f ) );
 
-        g.strokePath(previewPath, juce::PathStrokeType(1.f));
+        g.strokePath(previewPath, juce::PathStrokeType(1.5));
     }
 
 private:
@@ -377,7 +377,7 @@ public:
         previewPath.lineTo( r.getX() + r.getWidth(), r.getY() + r.getHeight() );
         previewPath.lineTo( r.getX() + r.getWidth(), r.getY() + ( r.getHeight() / 2.f ) );
 
-        g.strokePath(previewPath, juce::PathStrokeType(1.f));
+        g.strokePath(previewPath, juce::PathStrokeType(1.5));
     }
 
 private:

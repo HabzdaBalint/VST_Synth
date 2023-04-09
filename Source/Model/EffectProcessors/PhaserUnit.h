@@ -21,7 +21,7 @@ namespace EffectProcessors
     public:
         PhaserUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
-            registerListeners();
+            registerListener(this);
         }
 
         ~PhaserUnit() {}
@@ -47,6 +47,18 @@ namespace EffectProcessors
             phaser.process(context);
         }
 
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.addParameterListener(id, listener);
+            }
+        }
+
         void updatePhaserParameters()
         {
             phaser.setMix(apvts.getRawParameterValue("phaserMix")->load()/100);
@@ -56,6 +68,11 @@ namespace EffectProcessors
             phaser.setFeedback(apvts.getRawParameterValue("phaserFeedback")->load()/100);
         }
 
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            updatePhaserParameters();
+        }
+        
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
         {
             std::unique_ptr<juce::AudioProcessorParameterGroup> phaserGroup (
@@ -103,20 +120,6 @@ namespace EffectProcessors
         }
     private:
         Phaser phaser;
-
-        void registerListeners() override
-        {
-            apvts.addParameterListener("phaserMix", this);
-            apvts.addParameterListener("phaserRate", this);
-            apvts.addParameterListener("phaserDepth", this);
-            apvts.addParameterListener("phaserFrequency", this);
-            apvts.addParameterListener("phaserFeedback", this);
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            updatePhaserParameters();
-        }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PhaserUnit)
     };
