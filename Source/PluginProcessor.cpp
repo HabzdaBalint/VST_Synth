@@ -172,14 +172,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
     layout.push_back(Synthesizer::OscillatorParameters::createParameterLayout());
     layout.push_back(Synthesizer::AdditiveSynthParameters::createParameterLayout());
     layout.push_back(EffectsChain::FXProcessorChain::createParameterLayout());
-    layout.push_back(EffectProcessors::EqualizerUnit::createParameterLayout());
-    layout.push_back(EffectProcessors::FilterUnit::createParameterLayout());
-    layout.push_back(EffectProcessors::CompressorUnit::createParameterLayout());
-    layout.push_back(EffectProcessors::DelayUnit::createParameterLayout());
-    layout.push_back(EffectProcessors::ReverbUnit::createParameterLayout());
-    layout.push_back(EffectProcessors::ChorusUnit::createParameterLayout());
-    layout.push_back(EffectProcessors::PhaserUnit::createParameterLayout());
-    layout.push_back(EffectProcessors::TremoloUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::Equalizer::EqualizerUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::Filter::FilterUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::Compressor::CompressorUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::Delay::DelayUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::Reverb::ReverbUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::Chorus::ChorusUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::Phaser::PhaserUnit::createParameterLayout());
+    layout.push_back(EffectProcessors::Tremolo::TremoloUnit::createParameterLayout());
 
     return { layout.begin(), layout.end() };
 }

@@ -12,7 +12,7 @@
 
 #include "FXProcessorUnit.h"
 
-namespace EffectProcessors
+namespace EffectProcessors::Tremolo
 {
     using DryWetMixer = juce::dsp::DryWetMixer<float>;
 
@@ -62,8 +62,7 @@ namespace EffectProcessors
 
                 if(isAutoPan)
                 {
-                    amplitudeMultiplier = sin(currentAngle + juce::MathConstants<float>::pi);
-                    amplitudeMultiplier = ( ( -1 * depth * amplitudeMultiplier ) + ( ( -1 * depth ) + 2 ) ) / 2;
+                    amplitudeMultiplier = -1 * amplitudeMultiplier - depth + 2;
                 }
 
                 rightBufferPointer[sample] *= amplitudeMultiplier;

@@ -25,53 +25,42 @@ namespace EffectsChain
         }
 
         processors.add(nullptr);
-        processors.add(std::make_unique<EffectProcessors::EqualizerUnit>(apvts));
-        processors.add(std::make_unique<EffectProcessors::FilterUnit>(apvts));
-        processors.add(std::make_unique<EffectProcessors::CompressorUnit>(apvts));
-        processors.add(std::make_unique<EffectProcessors::DelayUnit>(apvts));
-        processors.add(std::make_unique<EffectProcessors::ReverbUnit>(apvts));
-        processors.add(std::make_unique<EffectProcessors::ChorusUnit>(apvts));
-        processors.add(std::make_unique<EffectProcessors::PhaserUnit>(apvts));
-        processors.add(std::make_unique<EffectProcessors::TremoloUnit>(apvts));
+        processors.add(std::make_unique<EffectProcessors::Equalizer::EqualizerUnit>(apvts));
+        processors.add(std::make_unique<EffectProcessors::Filter::FilterUnit>(apvts));
+        processors.add(std::make_unique<EffectProcessors::Compressor::CompressorUnit>(apvts));
+        processors.add(std::make_unique<EffectProcessors::Delay::DelayUnit>(apvts));
+        processors.add(std::make_unique<EffectProcessors::Reverb::ReverbUnit>(apvts));
+        processors.add(std::make_unique<EffectProcessors::Chorus::ChorusUnit>(apvts));
+        processors.add(std::make_unique<EffectProcessors::Phaser::PhaserUnit>(apvts));
+        processors.add(std::make_unique<EffectProcessors::Tremolo::TremoloUnit>(apvts));
     }
 
     FXProcessorChain::~FXProcessorChain() {}
 
-    double FXProcessorChain::getTailLengthSeconds() const
-    {
-        double tailLength = 0.f;
-        for (size_t i = 0; i < FX_MAX_SLOTS; i++)
-        {
-            if( chain[i] != nullptr )
-                tailLength += chain[i]->getTailLengthSeconds();
-        }
-        return tailLength;
-    }
-
     void FXProcessorChain::prepareToPlay(double sampleRate, int samplesPerBlock)
     {
         setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
-        for (size_t i = 0; i < processors.size(); i++)
+        for(auto processor : processors)
         {
-            if( processors[i] != nullptr )
-                processors[i]->prepareToPlay(sampleRate, samplesPerBlock);
+            if( processor != nullptr )
+                processor->prepareToPlay(sampleRate, samplesPerBlock);
         }
     }
 
     void FXProcessorChain::releaseResources()
     {
-        for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+        for(auto processor : processors)
         {
-            if( processors[i] != nullptr )
-                processors[i]->releaseResources();
+            if( processor != nullptr )
+                processor->releaseResources();
         }
     }
 
     void FXProcessorChain::processBlock(juce::AudioSampleBuffer &buffer, juce::MidiBuffer &midiMessages)
     {
-        for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+        for(size_t i = 0; i < FX_MAX_SLOTS; i++)
         {
-            if (!bypasses[i] && chain[i] != nullptr)
+            if ( !bypasses[i] && chain[i] != nullptr )
                 chain[i]->processBlock(buffer, midiMessages);
         }
     }
@@ -95,30 +84,40 @@ namespace EffectsChain
         for (size_t i = 0; i < FX_MAX_SLOTS; i++)
         {
             //Bypasses for each loaded Effect
-            auto bypassProcessor = std::make_unique<juce::AudioParameterBool>(
+            auto processorBypass = std::make_unique<juce::AudioParameterBool>(
                 getFXBypassParameterName(i),
                 "Bypass " + juce::String(i+1),
                 false);
-            fxChainGroup.get()->addChild(std::move(bypassProcessor));
+            fxChainGroup.get()->addChild(std::move(processorBypass));
             
             //Choices for each loaded Effect
-            auto choiceProcessor = std::make_unique<juce::AudioParameterChoice>(
+            auto processorChoice = std::make_unique<juce::AudioParameterChoice>(
                 getFXChoiceParameterName(i),
                 "FX Slot " + juce::String(i+1),
                 choices,
                 0,
                 attr.withAutomatable(false).withMeta(true));
-            fxChainGroup.get()->addChild(std::move(choiceProcessor));
+            fxChainGroup.get()->addChild(std::move(processorChoice));
         }
 
         return fxChainGroup;
     }
 
+    const juce::String FXProcessorChain::getFXBypassParameterName(size_t index)
+    {
+        return "fxBypass" + juce::String(index);
+    }
+
+    const juce::String FXProcessorChain::getFXChoiceParameterName(size_t index)
+    {
+        return "fxSlot" + juce::String(index);
+    }
+
     void FXProcessorChain::parameterChanged(const juce::String &parameterID, float newValue)
     {
-        if(parameterID.contains("bypass"))
+        if(parameterID.contains("fxBypass"))
         {
-            int idx = std::stoi(parameterID.trimCharactersAtStart("bypass").toStdString());
+            int idx = std::stoi(parameterID.trimCharactersAtStart("fxBypass").toStdString());
             bypasses[idx] = (bool)newValue;
         }
         else

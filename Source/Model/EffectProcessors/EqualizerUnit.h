@@ -12,32 +12,27 @@
 
 #include "FXProcessorUnit.h"
 
-namespace EffectProcessors
+namespace EffectProcessors::Equalizer
 {
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
+
+    constexpr int NUM_BANDS = 10;
 
     class EqualizerUnit : public FXProcessorUnit
     {
     public:
         EqualizerUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
-            for (size_t i = 0; i < 10; i++)
+            for (size_t i = 0; i < NUM_BANDS; i++)
             {
-                leftFilters[i] = new Filter();
-                rightFilters[i] = new Filter();
+                leftFilters.add(std::make_unique<Filter>());
+                leftFilters.add(std::make_unique<Filter>());
             }
             registerListener(this);
         }
 
-        ~EqualizerUnit()
-        {
-            for (size_t i = 0; i < 10; i++)
-            {
-                delete(leftFilters[i]);
-                delete(rightFilters[i]);
-            }
-        }
+        ~EqualizerUnit() {}
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override
         {
@@ -48,7 +43,7 @@ namespace EffectProcessors
             processSpec.numChannels = 1;
             processSpec.sampleRate = sampleRate;
 
-            for (size_t i = 0; i < 10; i++)
+            for (size_t i = 0; i < NUM_BANDS; i++)
             {
                 leftFilters[i]->prepare(processSpec);
                 rightFilters[i]->prepare(processSpec);
@@ -65,7 +60,7 @@ namespace EffectProcessors
             juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
             juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
 
-            for (size_t i = 0; i < 10; i++)
+            for (size_t i = 0; i < NUM_BANDS; i++)
             {
                 leftFilters[i]->process(leftContext);
                 rightFilters[i]->process(rightContext);
@@ -89,7 +84,7 @@ namespace EffectProcessors
         {
             if(getSampleRate() > 0)
             {            
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < NUM_BANDS; i++)
                 {
                     float gain = apvts.getRawParameterValue(getBandGainParameterName(i))->load();
                     leftFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
@@ -111,7 +106,7 @@ namespace EffectProcessors
                     "Equalizer", 
                     "|"));
 
-            for (size_t i = 0; i < 10; i++)
+            for (size_t i = 0; i < NUM_BANDS; i++)
             {
                 auto bandGain = std::make_unique<juce::AudioParameterFloat>(
                     getBandGainParameterName(i),
@@ -153,8 +148,8 @@ namespace EffectProcessors
         }
 
     private:
-        Filter* leftFilters[10] = {};
-        Filter* rightFilters[10] = {};
+        juce::OwnedArray<Filter> leftFilters;
+        juce::OwnedArray<Filter> rightFilters;
 
         /// @brief Scales the peak filter's Q to it's gain. Q starts at 0.5 at 0dB gain and goes up linearly to 3 at +/-12dB
         /// @param gain The gain level (in dB) to use for scaling

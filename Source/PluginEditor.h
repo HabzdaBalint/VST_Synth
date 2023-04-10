@@ -11,9 +11,9 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "View/EditorParameters.h"
-#include "View/Oscillator/OscillatorEditor.h"
-#include "View/Synthesizer/SynthEditor.h"
-#include "View/Effects/EffectsEditor.h"
+#include "View/Oscillator/OscillatorTab.h"
+#include "View/Synthesizer/SynthesizerTab.h"
+#include "View/Effects/EffectsTab.h"
 
 #include "View/VST_SynthLookAndFeel.h"
 

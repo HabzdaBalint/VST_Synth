@@ -12,7 +12,7 @@
 
 #include "FXProcessorUnit.h"
 
-namespace EffectProcessors
+namespace EffectProcessors::Reverb
 {
     using Reverb = juce::dsp::Reverb;
 

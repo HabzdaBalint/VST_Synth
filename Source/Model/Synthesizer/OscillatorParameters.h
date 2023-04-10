@@ -138,8 +138,8 @@ namespace Synthesizer
             return "partial" + juce::String(index) + "phase";
         }
 
-        const std::atomic<float>* partialGains[HARMONIC_N];
-        const std::atomic<float>* partialPhases[HARMONIC_N];
+        std::array<const std::atomic<float>*, HARMONIC_N> partialGains;
+        std::array<const std::atomic<float>*, HARMONIC_N> partialPhases;
     private:
         juce::AudioProcessorValueTreeState& apvts;
         std::unordered_map<juce::String, std::atomic<float>> paramMap;

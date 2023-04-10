@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    EffectsEditor.h
+    EffectsTab.h
     Created: 4 Apr 2023 1:40:29pm
     Author:  Habama10
 
@@ -17,11 +17,11 @@
 #include "FXChainEditor.h"
 #include "FXChainSelector.h"
 
-class EffectsEditor : public juce::Component,
+class EffectsTab : public juce::Component,
                       public juce::AudioProcessorParameter::Listener
 {
 public:
-    EffectsEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
+    EffectsTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         addAndMakeVisible(*chainSelector);
         chainEditorViewport->setViewedComponent(new FXChainEditor(p, selectedEffects), true);
@@ -33,7 +33,7 @@ public:
         }
     }
 
-    ~EffectsEditor() override
+    ~EffectsTab() override
     {
         for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
         {
@@ -90,5 +90,5 @@ private:
     std::unique_ptr<FXChainSelector> chainSelector = std::make_unique<FXChainSelector>(audioProcessor, selectedEffects);
     std::unique_ptr<juce::Viewport> chainEditorViewport = std::make_unique<juce::Viewport>();
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectsEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectsTab)
 };

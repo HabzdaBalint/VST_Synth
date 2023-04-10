@@ -12,7 +12,7 @@
 
 #include "FXProcessorUnit.h"
 
-namespace EffectProcessors
+namespace EffectProcessors::Compressor
 {
     using Compressor = juce::dsp::Compressor<float>;
     using DryWetMixer = juce::dsp::DryWetMixer<float>;
@@ -44,7 +44,6 @@ namespace EffectProcessors
         void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override
         {
             juce::dsp::AudioBlock<float> audioBlock(buffer);
-            
             juce::dsp::ProcessContextReplacing<float> context(audioBlock);
 
             dryWetMixer.pushDrySamples(audioBlock);

@@ -55,8 +55,8 @@ struct PartialState
 
     PartialState(float gain, float phase) : gain(gain), phase(phase) {}
 
-    float gain = 0;
-    float phase = 0;
+    float gain = 0.f;
+    float phase = 0.f;
 };
 
 class WaveformMenuItem : public juce::PopupMenu::CustomComponent
@@ -82,7 +82,7 @@ public:
         addAndMakeVisible(waveformButton);
     }
 
-    ~WaveformMenuItem()
+    virtual ~WaveformMenuItem()
     {
         removeMouseListener(&waveformButton);
     }

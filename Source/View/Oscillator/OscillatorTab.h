@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    OscillatorEditor.h
+    OscillatorTab.h
     Created: 18 Mar 2023 8:34:04pm
     Author:  Habama10
 
@@ -16,17 +16,17 @@
 #include "WaveformViewer.h"
 #include "WaveformEditor.h"
 
-class OscillatorEditor : public juce::Component
+class OscillatorTab : public juce::Component
 {
 public:
-    OscillatorEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
+    OscillatorTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         addAndMakeVisible(*waveformViewer);
         waveformEditorViewport->setViewedComponent(new WaveformEditor(p), true);
         addAndMakeVisible(*waveformEditorViewport);
     }
 
-    ~OscillatorEditor() override {}
+    ~OscillatorTab() override {}
 
     void paint(juce::Graphics& g) override
     {
@@ -67,5 +67,5 @@ private:
     std::unique_ptr<WaveformViewer> waveformViewer = std::make_unique<WaveformViewer>(audioProcessor);
     std::unique_ptr<juce::Viewport> waveformEditorViewport = std::make_unique<juce::Viewport>();
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscillatorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscillatorTab)
 };

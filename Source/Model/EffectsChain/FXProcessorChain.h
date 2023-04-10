@@ -50,7 +50,7 @@ namespace EffectsChain
         void getStateInformation(juce::MemoryBlock&) override {}
         void setStateInformation(const void*, int) override {}
 
-        double getTailLengthSeconds() const override;
+        double getTailLengthSeconds() const override { return 0; }
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override;
         void releaseResources() override;
@@ -63,26 +63,20 @@ namespace EffectsChain
         /// @brief Used for making the parameter ids of the the FX slots' bypass parameters consistent
         /// @param index The index of the effect
         /// @return A consistent parameter id
-        static const juce::String getFXBypassParameterName(size_t index)
-        {
-            return "bypass" + juce::String(index);
-        }
+        static const juce::String getFXBypassParameterName(size_t index);
 
         /// @brief Used for making the parameter ids of the the FX slots' choice parameters consistent
         /// @param index The index of the effect
         /// @return A consistent parameter id
-        static const juce::String getFXChoiceParameterName(size_t index)
-        {
-            return "fxSlot" + juce::String(index);
-        }
+        static const juce::String getFXChoiceParameterName(size_t index);
 
     private:
         juce::AudioProcessorValueTreeState& apvts;
         
-        //juce::AudioProcessorGraph graph;
-        juce::Array<juce::AudioProcessor*> chain;
         juce::OwnedArray<juce::AudioProcessor> processors;
-        //std::vector<std::unique_ptr<juce::AudioProcessor>> processors;
+        
+        //todo make a single struct of a processor ptr and a bool
+        juce::Array<juce::AudioProcessor*> chain;
         std::vector<bool> bypasses;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;

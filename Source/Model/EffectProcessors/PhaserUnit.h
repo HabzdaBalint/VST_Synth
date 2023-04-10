@@ -12,7 +12,7 @@
 
 #include "FXProcessorUnit.h"
 
-namespace EffectProcessors
+namespace EffectProcessors::Phaser
 {
     using Phaser = juce::dsp::Phaser<float>;
 

@@ -18,6 +18,8 @@
 
 namespace Synthesizer
 {
+    using Gain = juce::dsp::Gain<float>;
+
     struct LUTUpdater : juce::Thread
     {
         LUTUpdater(std::function<void()> func) :
@@ -56,7 +58,7 @@ namespace Synthesizer
 
         void getStateInformation(juce::MemoryBlock& destData) override {}
         void setStateInformation(const void* data, int sizeInBytes) override {}
-        double getTailLengthSeconds() const override { return synthParameters->amplitudeADSRRelease->load() / 1000; }
+        double getTailLengthSeconds() const override { return synthParameters.amplitudeADSRRelease->load() / 1000; }
 
         void prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock) override;
         void releaseResources() override {};
@@ -66,16 +68,17 @@ namespace Synthesizer
 
         void timerCallback() override;
 
-        std::unique_ptr<AdditiveSynthParameters> synthParameters;
-        std::unique_ptr<OscillatorParameters> oscParameters;
+        AdditiveSynthParameters synthParameters;
+        OscillatorParameters oscParameters;
     private:
-        std::unique_ptr<juce::Synthesiser> synth = std::make_unique<juce::Synthesiser>();
+        Gain synthGain;
+
+        juce::Synthesiser synth;
         juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
         LUTUpdater lutUpdater { [&] () { updateLookupTable(); } };
         std::atomic<bool> missedUpdate = { false };
         std::atomic<bool> needUpdate = { false };
 
-        std::unique_ptr<juce::dsp::Gain<float>> synthGain = std::make_unique<juce::dsp::Gain<float>>();
 
         /// @brief Generates the lookup table with the current parameters
         void updateLookupTable();

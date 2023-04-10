@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    SynthEditor.h
+    SynthesizerTab.h
     Created: 30 Mar 2023 11:41:33pm
     Author:  Habama10
 
@@ -21,10 +21,10 @@
 #include "ADSRComponent.h"
 #include "Gain/SynthGainComponent.h"
 
-class SynthEditor : public juce::Component
+class SynthesizerTab : public juce::Component
 {
 public:
-    SynthEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
+    SynthesizerTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         addAndMakeVisible(*waveformSelector);
         addAndMakeVisible(*tuningComponent);
@@ -34,7 +34,7 @@ public:
         addAndMakeVisible(*synthGainComponent);
     }
 
-    ~SynthEditor() override {}
+    ~SynthesizerTab() override {}
 
     void paint(juce::Graphics& g) override
     {
@@ -80,5 +80,5 @@ private:
     std::unique_ptr<SynthGainComponent> synthGainComponent = std::make_unique<SynthGainComponent>(audioProcessor);
     std::unique_ptr<ADSRComponent> adsrComponent = std::make_unique<ADSRComponent>(audioProcessor);
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthesizerTab)
 };

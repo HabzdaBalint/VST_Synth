@@ -12,12 +12,13 @@
 
 #include "FXProcessorUnit.h"
 
-namespace EffectProcessors
+namespace EffectProcessors::Filter
 {
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
     using FilterDesign = juce::dsp::FilterDesign<float>;
     using PassFilter = juce::dsp::ProcessorChain<Filter, Filter>;
+    using DryWetMixer = juce::dsp::DryWetMixer<float>;
 
     enum FilterSlope
     {
@@ -41,6 +42,8 @@ namespace EffectProcessors
     public:
         FilterUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
+            filters.add(PassFilter());
+            filters.add(PassFilter());
             dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
             registerListener(this);
         }
@@ -55,8 +58,11 @@ namespace EffectProcessors
             filterSpec.maximumBlockSize = samplesPerBlock;
             filterSpec.numChannels = 1;
             filterSpec.sampleRate = sampleRate;
-            leftChain.prepare(filterSpec);
-            rightChain.prepare(filterSpec);
+
+            for(auto& filter : filters)
+            {
+                filter.prepare(filterSpec);
+            }
 
             juce::dsp::ProcessSpec dryWetSpec;
             dryWetSpec.maximumBlockSize = samplesPerBlock;
@@ -69,15 +75,16 @@ namespace EffectProcessors
         void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override
         {
             juce::dsp::AudioBlock<float> audioBlock(buffer);
-            auto leftBlock = audioBlock.getSingleChannelBlock(0);
-            auto rightBlock = audioBlock.getSingleChannelBlock(1);
-            
-            juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
-            juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
 
             dryWetMixer.pushDrySamples(audioBlock);
-            leftChain.process(leftContext);
-            rightChain.process(rightContext);
+
+            for(size_t channel = 0; channel < buffer.getNumChannels(); channel++)
+            {
+                auto singleBlock = audioBlock.getSingleChannelBlock(channel);
+                juce::dsp::ProcessContextReplacing<float> singleContext(singleBlock);
+                filters[channel].process(singleContext);
+            }
+
             dryWetMixer.mixWetSamples(audioBlock);
         }
 
@@ -117,8 +124,10 @@ namespace EffectProcessors
                         return;
                 }
 
-                updatePassFilter(leftChain, coeffs, slope);
-                updatePassFilter(rightChain, coeffs, slope);
+                for(auto& filter : filters)
+                {
+                    updatePassFilter(filter, coeffs, slope);
+                }
             }
         }
 
@@ -164,9 +173,8 @@ namespace EffectProcessors
         }
 
     private:
-        PassFilter leftChain;
-        PassFilter rightChain;
-        juce::dsp::DryWetMixer<float> dryWetMixer;
+        juce::Array<PassFilter> filters;
+        DryWetMixer dryWetMixer;
 
         juce::ReferenceCountedArray<Coefficients> makeLowPassCoefficients(float frequency, int slope)
         {

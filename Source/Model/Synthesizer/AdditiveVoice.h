@@ -25,7 +25,7 @@ namespace Synthesizer
 
         bool canPlaySound(juce::SynthesiserSound* sound) override { return sound != nullptr; }
 
-        void controllerMoved(int controllerNumber, int newControllerValue) override { }
+        void controllerMoved(int controllerNumber, int newControllerValue) override {}
 
         bool isVoiceActive() const override
         {
@@ -138,6 +138,7 @@ namespace Synthesizer
         juce::Random rng;
 
         juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap;
+        int mipMapIndex = 0;
 
         float velocityGain = 0;
         float currentNote = 0;
@@ -154,7 +155,6 @@ namespace Synthesizer
         float unisonFrequencyOffsets[5] = { 0,0,0,0,0 };
 
         float highestCurrentFrequency = 0;
-        int mipMapIndex = 0;
 
         juce::ADSR amplitudeADSR;
 

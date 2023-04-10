@@ -24,8 +24,8 @@ namespace Synthesizer
     public:
         AdditiveSynthParameters(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
         {
-            registerListener(this);
             linkParameters();
+            registerListener(this);
         }
 
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)

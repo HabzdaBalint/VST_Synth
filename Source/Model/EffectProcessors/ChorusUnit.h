@@ -12,7 +12,7 @@
 
 #include "FXProcessorUnit.h"
 
-namespace EffectProcessors
+namespace EffectProcessors::Chorus
 {
     using Chorus = juce::dsp::Chorus<float>;
 
