@@ -54,6 +54,12 @@ namespace EffectProcessors::Compressor
             dryWetMixer.mixWetSamples(audioBlock);
         }
 
+        void releaseResources() override
+        {
+            dryWetMixer.reset();
+            compressor.reset();
+        }
+
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
         {
             auto paramLayoutSchema = createParameterLayout();

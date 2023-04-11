@@ -182,12 +182,13 @@ namespace EffectsChain
                 newProcessor = nullptr;
                 break;
             }
-            chain[idx]->processor = std::move(newProcessor);
-
-            if(chain[idx]->processor.load() && getSampleRate() > 0)
+            
+            if(newProcessor && getSampleRate() > 0)
             {
-                chain[idx]->processor.load()->prepareToPlay(getSampleRate(), getBlockSize());
+                newProcessor->prepareToPlay(getSampleRate(), getBlockSize());
             }
+
+            chain[idx]->processor = std::move(newProcessor);
         }
     }
 }

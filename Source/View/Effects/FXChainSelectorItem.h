@@ -25,7 +25,7 @@ public:
             EffectsChain::FXProcessorChain::getFXChoiceParameterName(idx),
             *selector);
         selector->addItemList(EffectsChain::choices, IDX_OFFSET);
-        selector->setSelectedItemIndex(0);
+        selector->setSelectedItemIndex(p.apvts.getRawParameterValue(EffectsChain::FXProcessorChain::getFXChoiceParameterName(idx))->load());
         addAndMakeVisible(*selector);
         
         bypass = std::make_unique<juce::ToggleButton>( "Bypass" );
@@ -68,13 +68,13 @@ public:
 
         for(size_t i = 0; i < selector->getNumItems(); i++)
         {
-            selector->setItemEnabled(i + IDX_OFFSET, true); //setItemEnabled works with item IDs and not indexes, so the offset is needed to address them
+            selector->setItemEnabled(selector->getItemId(i), true);
         }
 
         for(auto idx : selectedIndexes)
         {
             if(idx != choice && idx != 0)
-                selector->setItemEnabled(idx + IDX_OFFSET, false);
+                selector->setItemEnabled(selector->getItemId(idx), false);
         }
     }
 

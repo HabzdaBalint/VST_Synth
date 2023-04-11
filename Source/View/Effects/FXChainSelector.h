@@ -76,9 +76,9 @@ public:
         }
     }
 
-    FXChainSelectorItem& getItem(const int idx)
+    juce::OwnedArray<FXChainSelectorItem>& getItems()
     {
-        return *items[idx];
+        return items;
     }
 
 private:

@@ -18,7 +18,8 @@
 #include "FXChainSelector.h"
 
 class EffectsTab : public juce::Component,
-                   public juce::AudioProcessorValueTreeState::Listener
+                   public juce::AudioProcessorValueTreeState::Listener,
+                   public juce::ComboBox::Listener
 {
 public:
     EffectsTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
@@ -31,6 +32,12 @@ public:
         {
             p.apvts.addParameterListener(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
         }
+
+        auto& items = chainSelector->getItems();
+        for (auto item : items)
+        {
+            item->getSelector().addListener(this);
+        }
     }
 
     ~EffectsTab() override
@@ -38,6 +45,12 @@ public:
         for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
         {
             audioProcessor.apvts.removeParameterListener(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
+        }
+
+        auto& items = chainSelector->getItems();
+        for (auto item : items)
+        {
+            item->getSelector().removeListener(this);
         }
     }
 
@@ -75,9 +88,16 @@ public:
 
     void parameterChanged(const juce::String &parameterID, float newValue) override
     {
-        int idx = std::stoi(parameterID.trimCharactersAtStart("fxChoice").toStdString());
+        updateEffectChain();
+    }
 
-        chainSelector->getItem(idx).getSelector().setSelectedItemIndex((int)newValue);
+    void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override
+    {
+        updateEffectChain();
+    }
+
+    void updateEffectChain()
+    {
         chainSelector->updateSelectors();
         auto editor = dynamic_cast<FXChainEditor*>(chainEditorViewport->getViewedComponent());
         editor->updateChainEditor();
