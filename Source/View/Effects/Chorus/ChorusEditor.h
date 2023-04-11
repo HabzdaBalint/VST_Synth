@@ -14,9 +14,9 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "../EffectEditor.h"
+#include "../EffectEditorUnit.h"
 
-class ChorusEditor : public EffectEditor
+class ChorusEditor : public EffectEditorUnit
 {
 public:
     ChorusEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)

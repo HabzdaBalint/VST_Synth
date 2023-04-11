@@ -14,9 +14,9 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "../EffectEditor.h"
+#include "../EffectEditorUnit.h"
 
-class FilterEditor : public EffectEditor
+class FilterEditor : public EffectEditorUnit
 {
 public:
     FilterEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)

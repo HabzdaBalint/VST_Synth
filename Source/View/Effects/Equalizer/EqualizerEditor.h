@@ -14,9 +14,9 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "../EffectEditor.h"
+#include "../EffectEditorUnit.h"
 
-class EqualizerEditor : public EffectEditor
+class EqualizerEditor : public EffectEditorUnit
 {
 public:
     EqualizerEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)

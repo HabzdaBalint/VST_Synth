@@ -14,9 +14,9 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "../EffectEditor.h"
+#include "../EffectEditorUnit.h"
 
-class PhaserEditor : public EffectEditor
+class PhaserEditor : public EffectEditorUnit
 {
 public:
     PhaserEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)

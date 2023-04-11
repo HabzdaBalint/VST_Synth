@@ -14,7 +14,7 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "EffectEditor.h"
+#include "EffectEditorUnit.h"
 
 #include "Equalizer/EqualizerEditor.h"
 #include "Filter/FilterEditor.h"
@@ -110,7 +110,7 @@ private:
 
     const juce::Array<int>& loadedFx;
 
-    juce::OwnedArray<EffectEditor> editors;
+    juce::OwnedArray<EffectEditorUnit> editors;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXChainEditor)
 };

@@ -14,9 +14,9 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "../EffectEditor.h"
+#include "../EffectEditorUnit.h"
 
-class TremoloEditor : public EffectEditor
+class TremoloEditor : public EffectEditorUnit
 {
 public:
     TremoloEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)

@@ -14,8 +14,8 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "FXChainEditor.h"
-#include "FXChainSelector.h"
+#include "EffectUnitEditors.h"
+#include "EffectUnitSelectors.h"
 
 class EffectsTab : public juce::Component,
                    public juce::AudioProcessorValueTreeState::Listener,
@@ -108,7 +108,7 @@ private:
 
     juce::Array<int> selectedEffects;
 
-    std::unique_ptr<FXChainSelector> chainSelector = std::make_unique<FXChainSelector>(audioProcessor, selectedEffects);
+    std::unique_ptr<EffectUnitSelectors> chainSelector = std::make_unique<EffectUnitSelectors>(audioProcessor, selectedEffects);
     std::unique_ptr<juce::Viewport> chainEditorViewport = std::make_unique<juce::Viewport>();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectsTab)

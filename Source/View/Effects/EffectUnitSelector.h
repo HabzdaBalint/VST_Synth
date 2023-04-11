@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    FXChainSelectorItem.h
+    EffectUnitSelector.h
     Created: 4 Apr 2023 3:39:42pm
     Author:  Habama10
 
@@ -14,10 +14,10 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-class FXChainSelectorItem : public juce::Component
+class EffectUnitSelector : public juce::Component
 {
 public:
-    FXChainSelectorItem(VST_SynthAudioProcessor& p, int idx, juce::Array<int>& selectedIndexes) : audioProcessor(p), selectedIndexes(selectedIndexes)
+    EffectUnitSelector(VST_SynthAudioProcessor& p, int idx, juce::Array<int>& selectedIndexes) : audioProcessor(p), selectedIndexes(selectedIndexes)
     {
         selector = std::make_unique<juce::ComboBox>();
         selectorAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
@@ -39,7 +39,7 @@ public:
         addAndMakeVisible(*label);
     }
 
-    ~FXChainSelectorItem() override {}
+    ~EffectUnitSelector() override {}
 
     void paint(juce::Graphics& g) override {}
 
@@ -101,5 +101,5 @@ private:
     std::unique_ptr<juce::ToggleButton> bypass;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttachment;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXChainSelectorItem)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectUnitSelector)
 };

@@ -14,9 +14,9 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "../EffectEditor.h"
+#include "../EffectEditorUnit.h"
 
-class DelayEditor : public EffectEditor
+class DelayEditor : public EffectEditorUnit
 {
 public:
     DelayEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)

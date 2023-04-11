@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    EffectEditor.h
+    EffectEditorUnit.h
     Created: 6 Apr 2023 4:46:50pm
     Author:  Habama10
 
@@ -12,12 +12,12 @@
 
 #include <JuceHeader.h>
 
-class EffectEditor : public juce::Component
+class EffectEditorUnit : public juce::Component
 {
 public:
-    EffectEditor() {}
+    EffectEditorUnit() {}
 
-    ~EffectEditor() override {}
+    ~EffectEditorUnit() override {}
 
     void paint(juce::Graphics& g) override = 0;
 

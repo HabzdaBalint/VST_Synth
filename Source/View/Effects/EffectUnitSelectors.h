@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    FXChainSelector.h
+    EffectUnitSelectors.h
     Created: 4 Apr 2023 1:38:03pm
     Author:  Habama10
 
@@ -14,21 +14,21 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "FXChainSelectorItem.h"
+#include "EffectUnitSelector.h"
 
-class FXChainSelector : public juce::Component
+class EffectUnitSelectors : public juce::Component
 {
 public:
-    FXChainSelector(VST_SynthAudioProcessor& p, juce::Array<int>& selectedItems) : audioProcessor(p), selectedItems(selectedItems)
+    EffectUnitSelectors(VST_SynthAudioProcessor& p, juce::Array<int>& selectedItems) : audioProcessor(p), selectedItems(selectedItems)
     {
         for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
         {
-            items.add(std::make_unique<FXChainSelectorItem>(p, i, selectedItems));
+            items.add(std::make_unique<EffectUnitSelector>(p, i, selectedItems));
             addAndMakeVisible(*items[i]);
         }
     }
 
-    ~FXChainSelector() override {}
+    ~EffectUnitSelectors() override {}
 
     void paint(juce::Graphics& g) override
     {
@@ -76,7 +76,7 @@ public:
         }
     }
 
-    juce::OwnedArray<FXChainSelectorItem>& getItems()
+    juce::OwnedArray<EffectUnitSelector>& getItems()
     {
         return items;
     }
@@ -86,7 +86,7 @@ private:
 
     juce::Array<int>& selectedItems;
 
-    juce::OwnedArray<FXChainSelectorItem> items;
+    juce::OwnedArray<EffectUnitSelector> items;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXChainSelector)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectUnitSelectors)
 };

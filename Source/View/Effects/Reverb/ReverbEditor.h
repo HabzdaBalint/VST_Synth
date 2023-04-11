@@ -14,9 +14,9 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "../EffectEditor.h"
+#include "../EffectEditorUnit.h"
 
-class ReverbEditor : public EffectEditor
+class ReverbEditor : public EffectEditorUnit
 {
 public:
     ReverbEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
