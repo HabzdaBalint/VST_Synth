@@ -17,42 +17,17 @@
 #include "EffectUnitEditors.h"
 #include "EffectUnitSelectors.h"
 
-class EffectsTab : public juce::Component,
-                   public juce::AudioProcessorValueTreeState::Listener,
-                   public juce::ComboBox::Listener
+class EffectsTab : public juce::Component
 {
 public:
     EffectsTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         addAndMakeVisible(*chainSelector);
-        chainEditorViewport->setViewedComponent(new FXChainEditor(p, selectedEffects), true);
+        chainEditorViewport->setViewedComponent(new EffectUnitEditors(p), true);
         addAndMakeVisible(*chainEditorViewport);
-
-        for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
-        {
-            p.apvts.addParameterListener(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
-        }
-
-        auto& items = chainSelector->getItems();
-        for (auto item : items)
-        {
-            item->getSelector().addListener(this);
-        }
     }
 
-    ~EffectsTab() override
-    {
-        for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
-        {
-            audioProcessor.apvts.removeParameterListener(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
-        }
-
-        auto& items = chainSelector->getItems();
-        for (auto item : items)
-        {
-            item->getSelector().removeListener(this);
-        }
-    }
+    ~EffectsTab() override {}
 
     void paint(juce::Graphics& g) override
     {
@@ -86,29 +61,10 @@ public:
         chainEditorViewport->getViewedComponent()->setBounds(bounds);
     }
 
-    void parameterChanged(const juce::String &parameterID, float newValue) override
-    {
-        updateEffectChain();
-    }
-
-    void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override
-    {
-        updateEffectChain();
-    }
-
-    void updateEffectChain()
-    {
-        chainSelector->updateSelectors();
-        auto editor = dynamic_cast<FXChainEditor*>(chainEditorViewport->getViewedComponent());
-        editor->updateChainEditor();
-    }
-
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    juce::Array<int> selectedEffects;
-
-    std::unique_ptr<EffectUnitSelectors> chainSelector = std::make_unique<EffectUnitSelectors>(audioProcessor, selectedEffects);
+    std::unique_ptr<EffectUnitSelectors> chainSelector = std::make_unique<EffectUnitSelectors>(audioProcessor);
     std::unique_ptr<juce::Viewport> chainEditorViewport = std::make_unique<juce::Viewport>();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectsTab)

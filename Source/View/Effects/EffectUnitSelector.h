@@ -22,16 +22,16 @@ public:
         selector = std::make_unique<juce::ComboBox>();
         selectorAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
             p.apvts,
-            EffectsChain::FXProcessorChain::getFXChoiceParameterName(idx),
+            Effects::EffectsChain::FXProcessorChain::getFXChoiceParameterName(idx),
             *selector);
-        selector->addItemList(EffectsChain::choices, IDX_OFFSET);
-        selector->setSelectedItemIndex(p.apvts.getRawParameterValue(EffectsChain::FXProcessorChain::getFXChoiceParameterName(idx))->load());
+        selector->addItemList(Effects::EffectsChain::choices, IDX_OFFSET);
+        selector->setSelectedItemIndex(p.apvts.getRawParameterValue(Effects::EffectsChain::FXProcessorChain::getFXChoiceParameterName(idx))->load());
         addAndMakeVisible(*selector);
         
         bypass = std::make_unique<juce::ToggleButton>( "Bypass" );
         bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
             p.apvts,
-            EffectsChain::FXProcessorChain::getFXBypassParameterName(idx),
+            Effects::EffectsChain::FXProcessorChain::getFXBypassParameterName(idx),
             *bypass);
         addAndMakeVisible(*bypass);
         

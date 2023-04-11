@@ -16,19 +16,38 @@
 
 #include "EffectUnitSelector.h"
 
-class EffectUnitSelectors : public juce::Component
+class EffectUnitSelectors : public juce::Component,
+                            public juce::AudioProcessorValueTreeState::Listener,
+                            public juce::ComboBox::Listener
 {
 public:
-    EffectUnitSelectors(VST_SynthAudioProcessor& p, juce::Array<int>& selectedItems) : audioProcessor(p), selectedItems(selectedItems)
+    EffectUnitSelectors(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
-        for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
+        for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
         {
             items.add(std::make_unique<EffectUnitSelector>(p, i, selectedItems));
             addAndMakeVisible(*items[i]);
+            items[i]->getSelector().addListener(this);
+        }
+
+        for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
+        {
+            audioProcessor.apvts.addParameterListener(Effects::EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
         }
     }
 
-    ~EffectUnitSelectors() override {}
+    ~EffectUnitSelectors() override
+    {
+        for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
+        {
+            audioProcessor.apvts.removeParameterListener(Effects::EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
+        }
+
+        for (auto item : items)
+        {
+            item->getSelector().removeListener(this);
+        }
+    }
 
     void paint(juce::Graphics& g) override
     {
@@ -76,15 +95,20 @@ public:
         }
     }
 
-    juce::OwnedArray<EffectUnitSelector>& getItems()
+    void parameterChanged(const juce::String &parameterID, float newValue) override
     {
-        return items;
+        updateSelectors();
+    }
+
+    void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override
+    {
+        updateSelectors();
     }
 
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    juce::Array<int>& selectedItems;
+    juce::Array<int> selectedItems;
 
     juce::OwnedArray<EffectUnitSelector> items;
 

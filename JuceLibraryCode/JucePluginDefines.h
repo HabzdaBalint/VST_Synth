@@ -110,7 +110,7 @@
  #define JucePlugin_AUManufacturerCode     JucePlugin_ManufacturerCode
 #endif
 #ifndef  JucePlugin_CFBundleIdentifier
- #define JucePlugin_CFBundleIdentifier     com.yourcompany.VST_Synth
+ #define JucePlugin_CFBundleIdentifier     com.HabzdaBalint.VST_Synth
 #endif
 #ifndef  JucePlugin_AAXIdentifier
  #define JucePlugin_AAXIdentifier          https://github.com/HabzdaBalint/VST_Synth
@@ -152,10 +152,10 @@
  #define JucePlugin_ARATransformationFlags  0
 #endif
 #ifndef  JucePlugin_ARAFactoryID
- #define JucePlugin_ARAFactoryID           "com.yourcompany.VST_Synth.factory"
+ #define JucePlugin_ARAFactoryID           "com.HabzdaBalint.VST_Synth.factory"
 #endif
 #ifndef  JucePlugin_ARADocumentArchiveID
- #define JucePlugin_ARADocumentArchiveID   "com.yourcompany.VST_Synth.aradocumentarchive.1.0.0"
+ #define JucePlugin_ARADocumentArchiveID   "com.HabzdaBalint.VST_Synth.aradocumentarchive.1.0.0"
 #endif
 #ifndef  JucePlugin_ARACompatibleArchiveIDs
  #define JucePlugin_ARACompatibleArchiveIDs  ""

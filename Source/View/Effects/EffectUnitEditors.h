@@ -1,7 +1,7 @@
 /*
 ==============================================================================
 
-    FXChainEditor.h
+    EffectUnitEditors.h
     Created: 18 Mar 2023 8:33:31pm
     Author:  Habama10
 
@@ -14,40 +14,43 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "EffectEditorUnit.h"
+#include "EffectEditors/Chorus/ChorusEditor.h"
+#include "EffectEditors/Compressor/CompressorEditor.h"
+#include "EffectEditors/Delay/DelayEditor.h"
+#include "EffectEditors/Equalizer/EqualizerEditor.h"
+#include "EffectEditors/Filter/FilterEditor.h"
+#include "EffectEditors/Phaser/PhaserEditor.h"
+#include "EffectEditors/Reverb/ReverbEditor.h"
+#include "EffectEditors/Tremolo/TremoloEditor.h"
 
-#include "Equalizer/EqualizerEditor.h"
-#include "Filter/FilterEditor.h"
-#include "Compressor/CompressorEditor.h"
-#include "Delay/DelayEditor.h"
-#include "Reverb/ReverbEditor.h"
-#include "Chorus/ChorusEditor.h"
-#include "Phaser/PhaserEditor.h"
-#include "Tremolo/TremoloEditor.h"
-
-class FXChainEditor : public juce::Component
+class EffectUnitEditors : public juce::Component,
+                          public juce::AudioProcessorValueTreeState::Listener
 {
 public:
-    FXChainEditor(VST_SynthAudioProcessor& p, juce::Array<int>& loadedFx) : audioProcessor(p), loadedFx(loadedFx)
+    EffectUnitEditors(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
-        editors.add(nullptr);
-        editors.add(std::make_unique<EqualizerEditor>(p));
-        editors.add(std::make_unique<FilterEditor>(p));
-        editors.add(std::make_unique<CompressorEditor>(p));
-        editors.add(std::make_unique<DelayEditor>(p));
-        editors.add(std::make_unique<ReverbEditor>(p));
-        editors.add(std::make_unique<ChorusEditor>(p));
-        editors.add(std::make_unique<PhaserEditor>(p));
-        editors.add(std::make_unique<TremoloEditor>(p));
+        for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
+        {
+            audioProcessor.apvts.addParameterListener(Effects::EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
+        }
+
+        auto loadedEditors = audioProcessor.fxChain->getLoadedEffectEditors();
+        editors.addArray(loadedEditors);
 
         for (auto editor : editors)
         {
-            if(editor != nullptr)
-                addAndMakeVisible(editor);
+            if (editor)
+                addAndMakeVisible(*editor);
         }
     }
 
-    ~FXChainEditor() override {}
+    ~EffectUnitEditors() override
+    {
+        for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
+        {
+            audioProcessor.apvts.removeParameterListener(Effects::EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
+        }
+    }
 
     void paint(juce::Graphics& g) override
     {
@@ -77,13 +80,15 @@ public:
         grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
 
         int height = 0, counter = 0;
-        for (auto idx : loadedFx)
+
+        for (auto editor : editors)
         {
-            if(idx > 0 && idx < editors.size())
+            if(editor)
             {
-                grid.items.add( juce::GridItem( *editors[idx] ) );
-                grid.templateRows.add ( TrackInfo( Px( editors[idx]->getIdealHeight() ) ) );
-                height += editors[idx]->getIdealHeight();
+                grid.items.add( juce::GridItem( *editor ) );
+                auto editorHeight = editor->getIdealHeight();
+                grid.templateRows.add ( TrackInfo( Px( editorHeight ) ) );
+                height += editorHeight;
                 counter++;
             }
         }
@@ -100,17 +105,61 @@ public:
         grid.performLayout(bounds);
     }
 
-    void updateChainEditor()
+    void parameterChanged(const juce::String &parameterID, float newValue) override
     {
+        //Querying fxProcessor via getLoadedEffectEditors doesn't work because parameterChanged calls might happen in the wrong order, where this component gets a list of components that doesn't yet include the newly selected fx unit's editor
+        jassert(juce::isPositiveAndBelow(newValue, Effects::EffectsChain::choices.size()));
+
+        int idx = std::stoi(parameterID.trimCharactersAtStart("fxChoice").toStdString());
+
+        std::unique_ptr<EffectEditorUnit> newEditor;
+        switch ((int)newValue)
+        {
+        case 0:
+            newEditor = nullptr;
+            break;
+        case 1:
+            newEditor = std::make_unique<EqualizerEditor>(audioProcessor.apvts);
+            break;
+        case 2:
+            newEditor = std::make_unique<FilterEditor>(audioProcessor.apvts);
+            break;
+        case 3:
+            newEditor = std::make_unique<CompressorEditor>(audioProcessor.apvts);
+            break;
+        case 4:
+            newEditor = std::make_unique<DelayEditor>(audioProcessor.apvts);
+            break;
+        case 5:
+            newEditor = std::make_unique<ReverbEditor>(audioProcessor.apvts);
+            break;
+        case 6:
+            newEditor = std::make_unique<ChorusEditor>(audioProcessor.apvts);
+            break;
+        case 7:
+            newEditor = std::make_unique<PhaserEditor>(audioProcessor.apvts);
+            break;
+        case 8:
+            newEditor = std::make_unique<TremoloEditor>(audioProcessor.apvts);
+            break;
+        default:
+            newEditor = nullptr;
+            break;
+        }
+
+        editors.remove(idx);
+        editors.insert(idx, std::move(newEditor));
+
+        if(editors[idx])
+            addAndMakeVisible(*editors[idx]);
+
         resized();
     }
 
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    const juce::Array<int>& loadedFx;
-
     juce::OwnedArray<EffectEditorUnit> editors;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FXChainEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectUnitEditors)
 };
