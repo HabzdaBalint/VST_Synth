@@ -73,16 +73,16 @@ public:
             child->setBounds(bounds);
         }
 
-        juce::Grid effectsEditorsGrid;
-        effectsEditorsGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+        juce::Grid grid;
+        grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
 
         int height = 0, counter = 0;
         for (auto idx : loadedFx)
         {
             if(idx > 0 && idx < editors.size())
             {
-                effectsEditorsGrid.items.add( juce::GridItem( *editors[idx] ) );
-                effectsEditorsGrid.templateRows.add ( TrackInfo( Px( editors[idx]->getIdealHeight() ) ) );
+                grid.items.add( juce::GridItem( *editors[idx] ) );
+                grid.templateRows.add ( TrackInfo( Px( editors[idx]->getIdealHeight() ) ) );
                 height += editors[idx]->getIdealHeight();
                 counter++;
             }
@@ -94,10 +94,10 @@ public:
         setBounds(bounds);
 
         //gird
-        effectsEditorsGrid.setGap( Px( PADDING_PX ) );
+        grid.setGap( Px( PADDING_PX ) );
         bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
-        effectsEditorsGrid.performLayout(bounds);
+        grid.performLayout(bounds);
     }
 
     void updateChainEditor()

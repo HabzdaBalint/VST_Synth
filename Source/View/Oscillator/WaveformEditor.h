@@ -22,22 +22,14 @@ public:
     {
         for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
-            partialSliders.add(new PartialSlider(audioProcessor, i));
+            partialSliders.add(std::make_unique<PartialSlider>(audioProcessor, i));
             addAndMakeVisible(partialSliders[i]);
         }
     }
 
     ~WaveformEditor() override {}
 
-    void paint(juce::Graphics& g) override
-    {
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        for(auto partial : partialSliders)
-        {
-            auto bounds = partial->getBounds();
-            //g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
-        }
-    }
+    void paint(juce::Graphics& g) override {}
 
     void resized() override
     {
@@ -62,7 +54,6 @@ public:
         bounds = getLocalBounds();
         bounds.reduce(PADDING_PX/2, PADDING_PX/2);
         grid.performLayout(bounds);
-        
     }
     
 private:
