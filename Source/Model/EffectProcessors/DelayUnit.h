@@ -19,15 +19,15 @@ namespace EffectProcessors::Delay
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
     using DryWetMixer = juce::dsp::DryWetMixer<float>;
 
-    constexpr int MAX_LENGTH_MS = 1000;
+    constexpr float MAX_LENGTH_MS = 1000.f;
 
     class DelayUnit : public FXProcessorUnit
     {
     public:
         DelayUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
-            filters.add(Filter());
-            filters.add(Filter());
+            filters.add(std::make_unique<Filter>());
+            filters.add(std::make_unique<Filter>());
             dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
             registerListener(this);
         }
@@ -44,7 +44,7 @@ namespace EffectProcessors::Delay
             processSpec.sampleRate = sampleRate;
             dryWetMixer.prepare(processSpec);
             delay.prepare(processSpec);
-            delay.setMaximumDelayInSamples( MAX_LENGTH_MS * sampleRate );
+            delay.setMaximumDelayInSamples( int(MAX_LENGTH_MS / 1000.f) * sampleRate );
 
             juce::dsp::ProcessSpec filterSpec;
             filterSpec.maximumBlockSize = samplesPerBlock;
@@ -53,7 +53,7 @@ namespace EffectProcessors::Delay
             
             for(auto& filter : filters)
             {
-                filter.prepare(filterSpec);
+                filter->prepare(filterSpec);
             }
 
             updateDelayParameters();
@@ -75,15 +75,21 @@ namespace EffectProcessors::Delay
                 {
                     float delayedSample = delay.popSample(channel, delay.getDelay(), true);
 
-                    float filteredSample = filters[channel].processSample(delayedSample);
+                    float filteredSample = filters[channel]->processSample(delayedSample);
 
                     delay.pushSample(channel, bufferPointer[sample] + filteredSample*feedback);
 
                     bufferPointer[sample] = filteredSample;
                 }
-                filters[channel].snapToZero();
+                filters[channel]->snapToZero();
             }
             dryWetMixer.mixWetSamples(audioBlock);
+        }
+
+        void releaseResources() override
+        {
+            dryWetMixer.reset();
+            delay.reset();
         }
 
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
@@ -110,7 +116,7 @@ namespace EffectProcessors::Delay
 
                 for(auto& filter : filters)
                 {
-                    filter.coefficients = Coefficients::makeBandPass(getSampleRate(), freq, q);
+                    filter->coefficients = Coefficients::makeBandPass(getSampleRate(), freq, q);
                 }
             }
         }
@@ -169,7 +175,7 @@ namespace EffectProcessors::Delay
     private:
         DryWetMixer dryWetMixer;
         Delay delay;
-        juce::Array<Filter> filters;
+        juce::OwnedArray<Filter> filters;
 
         float feedback = 0;
 

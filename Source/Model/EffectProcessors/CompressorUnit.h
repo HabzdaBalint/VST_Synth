@@ -26,7 +26,10 @@ namespace EffectProcessors::Compressor
             registerListener(this);
         }
 
-        ~CompressorUnit() {}
+        ~CompressorUnit() override 
+        {
+            removeListener(this);
+        }
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override
         {
@@ -60,6 +63,18 @@ namespace EffectProcessors::Compressor
             {
                 auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
                 apvts.addParameterListener(id, listener);
+            }
+        }
+
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.removeParameterListener(id, listener);
             }
         }
 

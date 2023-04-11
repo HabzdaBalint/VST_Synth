@@ -29,7 +29,7 @@ class FXChainEditor : public juce::Component
 {
 public:
     FXChainEditor(VST_SynthAudioProcessor& p, juce::Array<int>& loadedFx) : audioProcessor(p), loadedFx(loadedFx)
-    {   //construct items in order, editors can simply be indexed with the processors' index
+    {
         editors.add(nullptr);
         editors.add(std::make_unique<EqualizerEditor>(p));
         editors.add(std::make_unique<FilterEditor>(p));

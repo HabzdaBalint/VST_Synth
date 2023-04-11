@@ -24,7 +24,10 @@ namespace EffectProcessors::Phaser
             registerListener(this);
         }
 
-        ~PhaserUnit() {}
+        ~PhaserUnit() override
+        {
+            removeListener(this);
+        }
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override
         {
@@ -47,6 +50,11 @@ namespace EffectProcessors::Phaser
             phaser.process(context);
         }
 
+        void releaseResources() override
+        {
+            phaser.reset();
+        }
+
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
         {
             auto paramLayoutSchema = createParameterLayout();
@@ -56,6 +64,18 @@ namespace EffectProcessors::Phaser
             {
                 auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
                 apvts.addParameterListener(id, listener);
+            }
+        }
+
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.removeParameterListener(id, listener);
             }
         }
 

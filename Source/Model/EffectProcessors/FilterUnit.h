@@ -42,13 +42,16 @@ namespace EffectProcessors::Filter
     public:
         FilterUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
-            filters.add(PassFilter());
-            filters.add(PassFilter());
+            filters.add(std::make_unique<PassFilter>());
+            filters.add(std::make_unique<PassFilter>());
             dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
             registerListener(this);
         }
 
-        ~FilterUnit(){}
+        ~FilterUnit() override
+        {
+            removeListener(this);
+        }
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override
         {
@@ -61,7 +64,7 @@ namespace EffectProcessors::Filter
 
             for(auto& filter : filters)
             {
-                filter.prepare(filterSpec);
+                filter->prepare(filterSpec);
             }
 
             juce::dsp::ProcessSpec dryWetSpec;
@@ -82,10 +85,19 @@ namespace EffectProcessors::Filter
             {
                 auto singleBlock = audioBlock.getSingleChannelBlock(channel);
                 juce::dsp::ProcessContextReplacing<float> singleContext(singleBlock);
-                filters[channel].process(singleContext);
+                filters[channel]->process(singleContext);
             }
 
             dryWetMixer.mixWetSamples(audioBlock);
+        }
+        
+        void releaseResources() override
+        {
+            dryWetMixer.reset();
+            for(auto filter : filters)
+            {
+                filter->reset();
+            }
         }
 
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
@@ -97,6 +109,18 @@ namespace EffectProcessors::Filter
             {
                 auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
                 apvts.addParameterListener(id, listener);
+            }
+        }
+
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.removeParameterListener(id, listener);
             }
         }
 
@@ -124,9 +148,9 @@ namespace EffectProcessors::Filter
                         return;
                 }
 
-                for(auto& filter : filters)
+                for(auto filter : filters)
                 {
-                    updatePassFilter(filter, coeffs, slope);
+                    updatePassFilter(*filter, coeffs, slope);
                 }
             }
         }
@@ -166,14 +190,14 @@ namespace EffectProcessors::Filter
                 "filterCutoff",
                 "Cutoff Frequency",
                 juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.25), 
-                500.f);
+                1000.f);
             filterGroup.get()->addChild(std::move(cutoffFrequency));
 
             return filterGroup;
         }
 
     private:
-        juce::Array<PassFilter> filters;
+        juce::OwnedArray<PassFilter> filters;
         DryWetMixer dryWetMixer;
 
         juce::ReferenceCountedArray<Coefficients> makeLowPassCoefficients(float frequency, int slope)

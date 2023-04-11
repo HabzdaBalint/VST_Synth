@@ -171,7 +171,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
 
     layout.push_back(Synthesizer::OscillatorParameters::createParameterLayout());
     layout.push_back(Synthesizer::AdditiveSynthParameters::createParameterLayout());
+
     layout.push_back(EffectsChain::FXProcessorChain::createParameterLayout());
+    
     layout.push_back(EffectProcessors::Equalizer::EqualizerUnit::createParameterLayout());
     layout.push_back(EffectProcessors::Filter::FilterUnit::createParameterLayout());
     layout.push_back(EffectProcessors::Compressor::CompressorUnit::createParameterLayout());

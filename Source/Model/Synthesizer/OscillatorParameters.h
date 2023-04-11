@@ -25,6 +25,11 @@ namespace Synthesizer
             linkParameters();
         }
 
+        ~OscillatorParameters() override
+        {
+            removeListener(this);
+        }
+
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
         {
             auto paramLayoutSchema = createParameterLayout();
@@ -34,6 +39,18 @@ namespace Synthesizer
             {
                 auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
                 apvts.addParameterListener(id, listener);
+            }
+        }
+
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.removeParameterListener(id, listener);
             }
         }
 

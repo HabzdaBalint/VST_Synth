@@ -24,15 +24,22 @@ namespace EffectProcessors::Equalizer
     public:
         EqualizerUnit(juce::AudioProcessorValueTreeState& apvts) : FXProcessorUnit(apvts)
         {
-            for (size_t i = 0; i < NUM_BANDS; i++)
+            for (size_t i = 0; i < 2; i++)
             {
-                leftFilters.add(std::make_unique<Filter>());
-                leftFilters.add(std::make_unique<Filter>());
+                equalizers.add(std::make_unique<juce::OwnedArray<Filter>>());
+                for (size_t j = 0; j < NUM_BANDS; j++)
+                {
+                    equalizers[i]->add(std::make_unique<Filter>());
+                }
             }
+            
             registerListener(this);
         }
 
-        ~EqualizerUnit() {}
+        ~EqualizerUnit() override
+        {
+            removeListener(this);
+        }
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override
         {
@@ -43,27 +50,41 @@ namespace EffectProcessors::Equalizer
             processSpec.numChannels = 1;
             processSpec.sampleRate = sampleRate;
 
-            for (size_t i = 0; i < NUM_BANDS; i++)
+            for(auto equalizer : equalizers)
             {
-                leftFilters[i]->prepare(processSpec);
-                rightFilters[i]->prepare(processSpec);
+                for(auto filter : *equalizer)
+                {
+                    filter->prepare(processSpec);
+                }
             }
+
             updateEqualizerParameters();
         }
 
         void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override
         {
             juce::dsp::AudioBlock<float> audioBlock(buffer);
-            auto leftBlock = audioBlock.getSingleChannelBlock(0);
-            auto rightBlock = audioBlock.getSingleChannelBlock(1);
-            
-            juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
-            juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
 
-            for (size_t i = 0; i < NUM_BANDS; i++)
+            for(size_t channel = 0; channel < buffer.getNumChannels(); channel++)
             {
-                leftFilters[i]->process(leftContext);
-                rightFilters[i]->process(rightContext);
+                auto singleBlock = audioBlock.getSingleChannelBlock(channel);
+                juce::dsp::ProcessContextReplacing<float> singleContext(singleBlock);
+
+                for(auto filter : *equalizers[channel])
+                {
+                    filter->process(singleContext);
+                }
+            }
+        }
+
+        void releaseResources() override
+        {
+            for(auto equalizer : equalizers)
+            {
+                for(auto filter : *equalizer)
+                {
+                    filter->reset();
+                }
             }
         }
 
@@ -79,16 +100,26 @@ namespace EffectProcessors::Equalizer
             }
         }
 
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.removeParameterListener(id, listener);
+            }
+        }
+
         /// @brief Sets the new coefficients for the peak filters
         void updateEqualizerParameters()
         {
             if(getSampleRate() > 0)
-            {            
-                for (int i = 0; i < NUM_BANDS; i++)
+            {
+                for(auto equalizer : equalizers)
                 {
-                    float gain = apvts.getRawParameterValue(getBandGainParameterName(i))->load();
-                    leftFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
-                    rightFilters[i]->coefficients = Coefficients::makePeakFilter(getSampleRate(), 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
+                    updateEqualizerBands(*equalizer);
                 }
             }
         }
@@ -148,11 +179,30 @@ namespace EffectProcessors::Equalizer
         }
 
     private:
-        juce::OwnedArray<Filter> leftFilters;
-        juce::OwnedArray<Filter> rightFilters;
+        juce::OwnedArray<juce::OwnedArray<Filter>> equalizers;
+
+        void updateEqualizerBands(const juce::OwnedArray<Filter> &equalizer)
+        {
+            for (size_t i = 0; i < NUM_BANDS; i++)
+            {
+                float gain = apvts.getRawParameterValue(getBandGainParameterName(i))->load();
+                updateBand(*equalizer[i], 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
+            }
+        }
+
+        void updateBand(Filter& band, const float frequency, const float q, const float gain)
+        {
+            auto newCoeffs = Coefficients::makePeakFilter(getSampleRate(), frequency, q, gain);
+            updateCoefficients(band.coefficients, newCoeffs);
+        }
+        
+        void updateCoefficients(juce::ReferenceCountedObjectPtr<Coefficients> &oldCoefficients, const juce::ReferenceCountedObjectPtr<Coefficients> &newCoefficients)
+        {
+            *oldCoefficients = *newCoefficients;
+        }
 
         /// @brief Scales the peak filter's Q to it's gain. Q starts at 0.5 at 0dB gain and goes up linearly to 3 at +/-12dB
-        /// @param gain The gain level (in dB) to use for scaling
+        /// @param gain The gain level (dB) to use for scaling
         /// @return The proportional Q factor of the peak filter
         float proportionalQ(float gain)
         {

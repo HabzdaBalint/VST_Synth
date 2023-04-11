@@ -83,6 +83,11 @@ public:
         return selector->getSelectedItemIndex();
     }
 
+    juce::ComboBox& getSelector()
+    {
+        return *selector;
+    }
+
 private:
     VST_SynthAudioProcessor& audioProcessor;
 

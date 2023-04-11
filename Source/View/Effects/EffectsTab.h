@@ -18,7 +18,7 @@
 #include "FXChainSelector.h"
 
 class EffectsTab : public juce::Component,
-                      public juce::AudioProcessorParameter::Listener
+                   public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     EffectsTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
@@ -29,7 +29,7 @@ public:
 
         for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
         {
-            p.apvts.getParameter(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i))->addListener(this);
+            p.apvts.addParameterListener(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
         }
     }
 
@@ -37,7 +37,7 @@ public:
     {
         for (size_t i = 0; i < EffectsChain::FX_MAX_SLOTS; i++)
         {
-            audioProcessor.apvts.getParameter(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i))->removeListener(this);
+            audioProcessor.apvts.removeParameterListener(EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
         }
     }
 
@@ -73,14 +73,15 @@ public:
         chainEditorViewport->getViewedComponent()->setBounds(bounds);
     }
 
-    void parameterValueChanged (int parameterIndex, float newValue) override
+    void parameterChanged(const juce::String &parameterID, float newValue) override
     {
+        int idx = std::stoi(parameterID.trimCharactersAtStart("fxChoice").toStdString());
+
+        chainSelector->getItem(idx).getSelector().setSelectedItemIndex((int)newValue);
         chainSelector->updateSelectors();
         auto editor = dynamic_cast<FXChainEditor*>(chainEditorViewport->getViewedComponent());
         editor->updateChainEditor();
     }
-
-    void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override {}
 
 private:
     VST_SynthAudioProcessor& audioProcessor;

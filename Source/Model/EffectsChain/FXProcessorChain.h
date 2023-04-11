@@ -26,6 +26,19 @@ namespace EffectsChain
     static const juce::StringArray choices = { "Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo" };
     const int FX_MAX_SLOTS = choices.size() - 1;
 
+    struct FXProcessor
+    {
+        FXProcessor(bool bypass, std::shared_ptr<juce::AudioProcessor> processor) :
+            bypass(bypass),
+            processor(processor)
+        {}
+
+        FXProcessor() {}
+
+        std::atomic<bool> bypass{false};
+        std::atomic<std::shared_ptr<juce::AudioProcessor>> processor{nullptr};
+    };
+
     class FXProcessorChain : public juce::AudioProcessor,
                              public juce::AudioProcessorValueTreeState::Listener
     {
@@ -56,7 +69,8 @@ namespace EffectsChain
         void releaseResources() override;
         void processBlock(juce::AudioSampleBuffer &buffer, juce::MidiBuffer &midiMessages) override;
 
-        void registerListeners();
+        void registerListener(juce::AudioProcessorValueTreeState::Listener*);
+        void removeListener(juce::AudioProcessorValueTreeState::Listener*);
 
         static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout();
 
@@ -72,12 +86,8 @@ namespace EffectsChain
 
     private:
         juce::AudioProcessorValueTreeState& apvts;
-        
-        juce::OwnedArray<juce::AudioProcessor> processors;
-        
-        //todo make a single struct of a processor ptr and a bool
-        juce::Array<juce::AudioProcessor*> chain;
-        std::vector<bool> bypasses;
+               
+        juce::OwnedArray<FXProcessor> chain;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

@@ -41,6 +41,7 @@ namespace Synthesizer
     {
         synth.clearVoices();
         synth.clearSounds();
+        oscParameters.removeListener(this);
         lutUpdater.stopThread(10);
     }
 

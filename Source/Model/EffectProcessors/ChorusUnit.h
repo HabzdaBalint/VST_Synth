@@ -24,7 +24,10 @@ namespace EffectProcessors::Chorus
             registerListener(this);
         }
 
-        ~ChorusUnit() {}
+        ~ChorusUnit() override
+        {
+            removeListener(this);
+        }
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override
         {
@@ -47,6 +50,11 @@ namespace EffectProcessors::Chorus
             chorus.process(context);
         }
 
+        void releaseResources() override
+        {
+            chorus.reset();
+        }
+
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
         {
             auto paramLayoutSchema = createParameterLayout();
@@ -56,6 +64,18 @@ namespace EffectProcessors::Chorus
             {
                 auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
                 apvts.addParameterListener(id, listener);
+            }
+        }
+
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.removeParameterListener(id, listener);
             }
         }
 
@@ -92,7 +112,7 @@ namespace EffectProcessors::Chorus
                 "chorusRate", 
                 "Rate",
                 juce::NormalisableRange<float>(0.1, 20.f, 0.01, 0.35), 
-                2.f);
+                3.f);
             chorusGroup.get()->addChild(std::move(rate));
 
             auto delay = std::make_unique<juce::AudioParameterFloat>(
@@ -106,7 +126,7 @@ namespace EffectProcessors::Chorus
                 "chorusDepth", 
                 "Depth",
                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-                50.f);
+                20.f);
             chorusGroup.get()->addChild(std::move(depth));
 
             auto feedback = std::make_unique<juce::AudioParameterFloat>(

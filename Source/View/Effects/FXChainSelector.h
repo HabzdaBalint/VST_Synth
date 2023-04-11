@@ -62,7 +62,6 @@ public:
         chainSelectorGrid.performLayout(bounds);
     }
 
-
     void updateSelectors()
     {
         selectedItems.clearQuick();
@@ -75,6 +74,11 @@ public:
         {
             item->updateChoices();
         }
+    }
+
+    FXChainSelectorItem& getItem(const int idx)
+    {
+        return *items[idx];
     }
 
 private:

@@ -24,7 +24,10 @@ namespace EffectProcessors::Reverb
             registerListener(this);
         }
 
-        ~ReverbUnit() {}
+        ~ReverbUnit() override
+        {
+            removeListener(this);
+        }
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override
         {
@@ -47,6 +50,11 @@ namespace EffectProcessors::Reverb
             reverb.process(context);
         }
 
+        void releaseResources() override
+        {
+            reverb.reset();
+        }
+
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
         {
             auto paramLayoutSchema = createParameterLayout();
@@ -56,6 +64,18 @@ namespace EffectProcessors::Reverb
             {
                 auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
                 apvts.addParameterListener(id, listener);
+            }
+        }
+
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.removeParameterListener(id, listener);
             }
         }
 
@@ -87,14 +107,14 @@ namespace EffectProcessors::Reverb
                 "reverbWet", 
                 "Wet%",
                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-                35.f);
+                20.f);
             reverbGroup.get()->addChild(std::move(wetLevel));
 
             auto dryLevel = std::make_unique<juce::AudioParameterFloat>(
                 "reverbDry", 
                 "Dry%",
                 juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-                100.f);
+                80.f);
             reverbGroup.get()->addChild(std::move(dryLevel));
 
             auto roomSize = std::make_unique<juce::AudioParameterFloat>(

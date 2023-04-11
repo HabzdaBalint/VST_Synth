@@ -41,7 +41,7 @@ namespace Synthesizer
     {
     public:
         AdditiveSynthesizer(juce::AudioProcessorValueTreeState&);
-        ~AdditiveSynthesizer();
+        ~AdditiveSynthesizer() override;
 
         const juce::String getName() const override { return "Additive Synthesizer"; }
         bool acceptsMidi() const override { return true; }

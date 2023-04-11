@@ -25,7 +25,10 @@ namespace EffectProcessors::Tremolo
             registerListener(this);
         }
 
-        ~TremoloUnit() {}
+        ~TremoloUnit() override
+        {
+            removeListener(this);
+        }
 
         void prepareToPlay(double sampleRate, int samplesPerBlock) override
         {
@@ -73,6 +76,11 @@ namespace EffectProcessors::Tremolo
             dryWetMixer.mixWetSamples(audioBlock);
         }
 
+        void releaseResources() override
+        {
+            dryWetMixer.reset();
+        }
+        
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
         {
             auto paramLayoutSchema = createParameterLayout();
@@ -82,6 +90,18 @@ namespace EffectProcessors::Tremolo
             {
                 auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
                 apvts.addParameterListener(id, listener);
+            }
+        }
+
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        {
+            auto paramLayoutSchema = createParameterLayout();
+            auto params = paramLayoutSchema->getParameters(false);
+
+            for(auto param : params)
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                apvts.removeParameterListener(id, listener);
             }
         }
 
