@@ -16,7 +16,6 @@ namespace Effects::EffectProcessors::Tremolo
 {
     TremoloUnit::TremoloUnit(juce::AudioProcessorValueTreeState& apvts) : EffectProcessorUnit(apvts)
     {
-        dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
         registerListener(this);
     }
 
@@ -33,7 +32,6 @@ namespace Effects::EffectProcessors::Tremolo
         processSpec.maximumBlockSize = samplesPerBlock;
         processSpec.numChannels = getMainBusNumOutputChannels();
         processSpec.sampleRate = sampleRate;
-        dryWetMixer.prepare(processSpec);
         updateTremoloParameters();
     }
 
@@ -41,8 +39,6 @@ namespace Effects::EffectProcessors::Tremolo
     {
         juce::dsp::AudioBlock<float> audioBlock(buffer);
         juce::dsp::ProcessContextReplacing<float> context(audioBlock);
-
-        dryWetMixer.pushDrySamples(audioBlock);
 
         float amplitudeMultiplier = 0;
 
@@ -67,8 +63,6 @@ namespace Effects::EffectProcessors::Tremolo
 
             currentAngle += angleDelta;
         }
-
-        dryWetMixer.mixWetSamples(audioBlock);
     }
 
     void TremoloUnit::releaseResources() 
@@ -113,13 +107,6 @@ namespace Effects::EffectProcessors::Tremolo
                 "Tremolo", 
                 "|"));
 
-        auto mix = std::make_unique<juce::AudioParameterFloat>(
-            "tremoloMix", 
-            "Wet%",
-            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-            100.f);
-        tremoloGroup.get()->addChild(std::move(mix));
-
         auto depth = std::make_unique<juce::AudioParameterFloat>(
             "tremoloDepth", 
             "Depth",
@@ -145,7 +132,6 @@ namespace Effects::EffectProcessors::Tremolo
     
     void TremoloUnit::updateTremoloParameters()
     {
-        dryWetMixer.setWetMixProportion(apvts.getRawParameterValue("tremoloMix")->load()/100);
         depth = apvts.getRawParameterValue("tremoloDepth")->load()/100;
         rate = apvts.getRawParameterValue("tremoloRate")->load();
         isAutoPan = apvts.getRawParameterValue("tremoloAutoPan")->load();

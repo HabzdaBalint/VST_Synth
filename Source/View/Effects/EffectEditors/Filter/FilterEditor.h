@@ -60,6 +60,10 @@ public:
             "filterType",
             *typeSelector);
         addAndMakeVisible(*typeSelector);
+        typeLabel = std::make_unique<juce::Label>();
+        typeLabel->setText("Type", juce::NotificationType::dontSendNotification);
+        typeLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*typeLabel);
 
         slopeSelector = std::make_unique<juce::ComboBox>();
         slopeSelector->addItemList(Effects::EffectProcessors::Filter::filterSlopeChoices, IDX_OFFSET);
@@ -68,6 +72,10 @@ public:
             "filterSlope",
             *slopeSelector);
         addAndMakeVisible(*slopeSelector);
+        slopeLabel = std::make_unique<juce::Label>();
+        slopeLabel->setText("Slope", juce::NotificationType::dontSendNotification);
+        slopeLabel->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(*slopeLabel);
 
         nameLabel = std::make_unique<juce::Label>();
         nameLabel->setText("Filter", juce::NotificationType::dontSendNotification);
@@ -87,18 +95,26 @@ public:
         using Px = juce::Grid::Px;
 
         juce::Grid grid;
-        grid.templateRows = { TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 2 ) ), TrackInfo( Fr( 3 ) ),TrackInfo( Fr( 2 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
+        grid.templateRows = { TrackInfo( Px( LABEL_HEIGHT ) ),
+                              TrackInfo( Fr( 1 ) ),
+                              TrackInfo( Px( LABEL_HEIGHT ) ),
+                              TrackInfo( Fr( 5 ) ),
+                              TrackInfo( Px( LABEL_HEIGHT ) ),
+                              TrackInfo( Fr( 1 ) ),
+                              TrackInfo( Px( LABEL_HEIGHT ) ) };
         grid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         grid.items = {
-            juce::GridItem( *mixKnob ).withColumn( { 1 } ).withRow( { 2, 5 } ),
-            juce::GridItem( *mixLabel ).withColumn( { 1 } ).withRow( { 5 } ),
+            juce::GridItem( *mixKnob ).withColumn( { 1 } ).withRow( { 2, 7 } ),
+            juce::GridItem( *mixLabel ).withColumn( { 1 } ).withRow( { 7 } ),
 
-            juce::GridItem( *typeSelector ).withColumn( { 2 } ).withRow( { 3 } ),
+            juce::GridItem( *typeSelector ).withColumn( { 2 } ).withRow( { 4 } ),
+            juce::GridItem( *typeLabel ).withColumn( { 2 } ).withRow( { 5 } ),
 
-            juce::GridItem( *slopeSelector ).withColumn( { 3 } ).withRow( { 3 } ),
+            juce::GridItem( *slopeSelector ).withColumn( { 3 } ).withRow( { 4 } ),
+            juce::GridItem( *slopeLabel ).withColumn( { 3 } ).withRow( { 5 } ),
 
-            juce::GridItem( *frequencyKnob ).withColumn( { 4 } ).withRow( { 2, 5 } ), 
-            juce::GridItem( *frequencyLabel ).withColumn( { 4 } ).withRow( { 5 } ),
+            juce::GridItem( *frequencyKnob ).withColumn( { 4 } ).withRow( { 2, 7 } ), 
+            juce::GridItem( *frequencyLabel ).withColumn( { 4 } ).withRow( { 7 } ),
 
             juce::GridItem( *nameLabel ).withColumn( { 1, 5 } ).withRow( { 1 } ) };
 
@@ -122,7 +138,7 @@ private:
     std::unique_ptr<juce::ComboBox> typeSelector, slopeSelector;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> typeAttachment, slopeAttachment;
 
-    std::unique_ptr<juce::Label> mixLabel, frequencyLabel, nameLabel;
+    std::unique_ptr<juce::Label> mixLabel, typeLabel, slopeLabel, frequencyLabel, nameLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FilterEditor)
 };

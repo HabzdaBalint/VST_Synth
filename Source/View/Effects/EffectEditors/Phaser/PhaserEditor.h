@@ -110,12 +110,7 @@ public:
 
     ~PhaserEditor() override {}
 
-    void paint(juce::Graphics& g) override
-    {
-        auto bounds = getLocalBounds();
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-        g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
-    }
+    void paint(juce::Graphics& g) override {}
 
     void resized() override
     {

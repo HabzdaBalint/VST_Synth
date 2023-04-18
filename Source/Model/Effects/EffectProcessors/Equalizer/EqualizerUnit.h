@@ -59,10 +59,11 @@ namespace Effects::EffectProcessors::Equalizer
         
         void updateCoefficients(juce::ReferenceCountedObjectPtr<Coefficients> &oldCoefficients, const juce::ReferenceCountedObjectPtr<Coefficients> &newCoefficients);
 
-        /// @brief Scales the peak filter's Q to it's gain. Q starts at 0.5 at 0dB gain and goes up linearly to 3 at +/-12dB
+        /// @brief Scales the peak filter's Q to it's gain.
         /// @param gain The gain level (dB) to use for scaling
+        /// @param constant The value gain is multiplied by
         /// @return The proportional Q factor of the peak filter
-        float proportionalQ(float gain);
+        float proportionalQ(const float gain, const float constant);
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EqualizerUnit)
     };

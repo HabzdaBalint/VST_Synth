@@ -21,22 +21,6 @@ class TremoloEditor : public EffectEditorUnit
 public:
     TremoloEditor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
-        mixKnob = std::make_unique<juce::Slider>(
-            juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-            juce::Slider::TextEntryBoxPosition::TextBoxBelow);
-        mixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            apvts,
-            "tremoloMix",
-            *mixKnob);
-        mixKnob->setScrollWheelEnabled(false);
-        mixKnob->setTextValueSuffix("%");
-        mixKnob->setTextBoxIsEditable(true);
-        addAndMakeVisible(*mixKnob);
-        mixLabel = std::make_unique<juce::Label>();
-        mixLabel->setText("Mix", juce::NotificationType::dontSendNotification);
-        mixLabel->setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(*mixLabel);
-
         rateKnob = std::make_unique<juce::Slider>(
             juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
             juce::Slider::TextEntryBoxPosition::TextBoxBelow);
@@ -95,20 +79,17 @@ public:
 
         juce::Grid grid;
         grid.templateRows = { TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
-        grid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
+        grid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         grid.items = { 
-            juce::GridItem( *mixKnob ).withColumn( { 1 } ).withRow( { 2 } ),
-            juce::GridItem( *mixLabel ).withColumn( { 1 } ).withRow( { 3 } ),
+            juce::GridItem( *depthKnob ).withColumn( { 1 } ).withRow( { 2 } ),
+            juce::GridItem( *depthLabel ).withColumn( { 1 } ).withRow( { 3 } ),
 
             juce::GridItem( *rateKnob ).withColumn( { 2 } ).withRow( { 2 } ),
             juce::GridItem( *rateLabel ).withColumn( { 2 } ).withRow( { 3 } ),
-            
-            juce::GridItem( *depthKnob ).withColumn( { 3 } ).withRow( { 2 } ),
-            juce::GridItem( *depthLabel ).withColumn( { 3 } ).withRow( { 3 } ),
 
-            juce::GridItem( *autoPanToggle ).withColumn( { 4 } ).withRow( { 2 } ),
+            juce::GridItem( *autoPanToggle ).withColumn( { 3 } ).withRow( { 2 } ),
             
-            juce::GridItem( *nameLabel ).withColumn( { 1, 6 } ).withRow( { 1 } ) };
+            juce::GridItem( *nameLabel ).withColumn( { 1, 4 } ).withRow( { 1 } ) };
 
         grid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
@@ -124,9 +105,9 @@ public:
 private:
     juce::AudioProcessorValueTreeState& apvts;
 
-    std::unique_ptr<juce::Slider> mixKnob, rateKnob, depthKnob;
+    std::unique_ptr<juce::Slider> rateKnob, depthKnob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment, rateAttachment, depthAttachment;
-    std::unique_ptr<juce::Label> mixLabel, rateLabel, depthLabel, nameLabel;
+    std::unique_ptr<juce::Label> rateLabel, depthLabel, nameLabel;
 
     std::unique_ptr<juce::ToggleButton> autoPanToggle;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> autoPanAttachment;

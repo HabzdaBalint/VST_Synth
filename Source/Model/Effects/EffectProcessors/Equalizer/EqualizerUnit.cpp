@@ -168,7 +168,7 @@ namespace Effects::EffectProcessors::Equalizer
         for (size_t i = 0; i < NUM_BANDS; i++)
         {
             float gain = apvts.getRawParameterValue(getBandGainParameterName(i))->load();
-            updateBand(*equalizer[i], 31.25 * pow(2, i), proportionalQ(gain), juce::Decibels::decibelsToGain(gain));
+            updateBand(*equalizer[i], 31.25 * pow(2, i), proportionalQ(gain, 0.25), juce::Decibels::decibelsToGain(gain));
         }
     }
 
@@ -183,9 +183,9 @@ namespace Effects::EffectProcessors::Equalizer
         *oldCoefficients = *newCoefficients;
     }
 
-    float EqualizerUnit::proportionalQ(float gain)
+    float EqualizerUnit::proportionalQ(const float gain, const float constant)
     {
-        float q = ((2.5 * std::abs(gain)) / 12) + 0.5;
+        float q = constant * std::abs(gain);
         return q;
     }
 
