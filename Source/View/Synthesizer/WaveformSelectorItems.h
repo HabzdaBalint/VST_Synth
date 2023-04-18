@@ -106,6 +106,8 @@ public:
 
         for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->beginChangeGesture();
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->beginChangeGesture();
             if( i >= dataset.size() )
             {
                 audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->setValueNotifyingHost(0.f);
@@ -116,6 +118,8 @@ public:
                 audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->setValueNotifyingHost(dataset[i].gain);
                 audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(dataset[i].phase);
             }
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->endChangeGesture();
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->endChangeGesture();
         }
     }
 

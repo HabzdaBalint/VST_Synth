@@ -27,10 +27,10 @@ public:
     SynthesizerTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
         addAndMakeVisible(*waveformSelector);
-        addAndMakeVisible(*tuningComponent);
-        addAndMakeVisible(*phaseComponent);
         addAndMakeVisible(*unisonComponent);
         addAndMakeVisible(*adsrComponent);
+        addAndMakeVisible(*phaseComponent);
+        addAndMakeVisible(*tuningComponent);
         addAndMakeVisible(*synthGainComponent);
     }
 
@@ -58,10 +58,10 @@ public:
         grid.templateColumns = { TrackInfo( Fr( 1 ) ), TrackInfo( Fr( 1 ) ) };
         grid.items = {
             juce::GridItem( *waveformSelector ).withColumn( { 1 } ).withRow( { 1 } ),
-            juce::GridItem( *unisonComponent ).withColumn( { 2 } ).withRow( { 1 } ), 
-            juce::GridItem( *tuningComponent ).withColumn( { 1 } ).withRow( { 2 } ),
-            juce::GridItem( *adsrComponent ).withColumn( { 2 } ).withRow( { 2 } ),
-            juce::GridItem( *phaseComponent ).withColumn( { 1 } ).withRow( { 3 } ),
+            juce::GridItem( *unisonComponent ).withColumn( { 1 } ).withRow( { 2 } ), 
+            juce::GridItem( *adsrComponent ).withColumn( { 1 } ).withRow( { 3 } ),
+            juce::GridItem( *phaseComponent ).withColumn( { 2 } ).withRow( { 1 } ),
+            juce::GridItem( *tuningComponent ).withColumn( { 2 } ).withRow( { 2 } ),
             juce::GridItem( *synthGainComponent ).withColumn( { 2 } ).withRow( { 3 } ) };
 
         grid.setGap( Px( PADDING_PX ) );

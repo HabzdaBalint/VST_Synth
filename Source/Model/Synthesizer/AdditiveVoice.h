@@ -141,7 +141,7 @@ namespace Synthesizer
         int mipMapIndex = 0;
 
         float velocityGain = 0;
-        float currentNote = 0;
+        int currentNote = 0;
         bool bypassPlaying = false;
 
         float pitchWheelOffset = 0;

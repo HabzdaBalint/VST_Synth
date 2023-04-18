@@ -111,8 +111,6 @@ namespace Synthesizer
                     "Oscillator", 
                     "|"));
 
-            juce::AudioParameterFloatAttributes attr;
-
             for (size_t i = 0; i < HARMONIC_N; i++)
             {
                 juce::String namePrefix = "Partial " + juce::String(i + 1) + " ";
@@ -122,8 +120,7 @@ namespace Synthesizer
                     getPartialGainParameterName(i),
                     namePrefix + "Gain",
                     juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-                    0.f,
-                    attr.withAutomatable(false).withMeta(true));
+                    0.f);
                 oscGroup.get()->addChild(std::move(partialGain));
 
                 // Generating parameters to represent the phase of the partials. These are represented as a percentage value of 2 * pi radians 
@@ -131,8 +128,7 @@ namespace Synthesizer
                     getPartialPhaseParameterName(i),
                     namePrefix + "Phase",
                     juce::NormalisableRange<float>(0.f, 99.9, 0.1), 
-                    0.f,
-                    attr.withAutomatable(false).withMeta(true));
+                    0.f);
                 oscGroup.get()->addChild(std::move(partialPhase));
             }
 

@@ -38,4 +38,12 @@ public:
     ~VST_SynthLookAndFeel() {}
 
 private:
+
+    int getTabButtonBestWidth(TabBarButton& button, int tabDepth) override
+    {
+        auto& tabBar = button.getTabbedButtonBar();
+        auto width = ( tabBar.isVertical() ? tabBar.getHeight() : tabBar.getWidth() ) / tabBar.getNumTabs();
+
+        return width;
+    }
 };

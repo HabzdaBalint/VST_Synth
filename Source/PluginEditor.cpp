@@ -69,6 +69,10 @@ VST_SynthTabbedComponent::VST_SynthTabbedComponent(VST_SynthAudioProcessor& p)
     addTab("Oscillator", color, new OscillatorTab(p), true);
     addTab("Synthesizer", color, new SynthesizerTab(p), true);  
     addTab("Effects", color, new EffectsTab(p), true);
+
+    setOrientation(juce::TabbedButtonBar::Orientation::TabsAtTop);
+    setCurrentTabIndex(1);
+    setTabBarDepth(35);
 }
 
 VST_SynthTabbedComponent::~VST_SynthTabbedComponent() {}
