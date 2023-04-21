@@ -66,7 +66,7 @@ int VST_SynthAudioProcessor::getCurrentProgram() { return 0; }
 
 void VST_SynthAudioProcessor::setCurrentProgram (int index) {}
 
-const juce::String VST_SynthAudioProcessor::getProgramName (int index) { return {}; }
+const juce::String VST_SynthAudioProcessor::getProgramName (int index) { return "None"; }
 
 void VST_SynthAudioProcessor::changeProgramName (int index, const juce::String& newName) { }
 

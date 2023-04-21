@@ -186,7 +186,7 @@ namespace Effects::EffectProcessors::Equalizer
     float EqualizerUnit::proportionalQ(const float gain, const float constant)
     {
         float q = constant * std::abs(gain);
-        return q;
+        return (q == 0.f) ? 1.f : q;
     }
 
     EffectEditorUnit* EqualizerUnit::createEditorUnit()
