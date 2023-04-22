@@ -58,9 +58,10 @@ namespace Synthesizer
 
         void stopNote(float velocity, bool allowTailOff) override
         {
-            amplitudeADSR.noteOff();
+            if( !isSustainPedalDown() && !isSostenutoPedalDown() )
+                amplitudeADSR.noteOff();
             
-            if (!allowTailOff || !amplitudeADSR.isActive())
+            if( !allowTailOff || !amplitudeADSR.isActive() )
             {
                 clearCurrentNote();
                 resetProperties();
@@ -138,7 +139,6 @@ namespace Synthesizer
         juce::Random rng;
 
         juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap;
-        int mipMapIndex = 0;
 
         float velocityGain = 0;
         int currentNote = 0;
@@ -155,6 +155,7 @@ namespace Synthesizer
         float unisonFrequencyOffsets[5] = { 0,0,0,0,0 };
 
         float highestCurrentFrequency = 0;
+        int mipMapIndex = 0;
 
         juce::ADSR amplitudeADSR;
 

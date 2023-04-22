@@ -12,7 +12,7 @@
 
 #include "../EffectProcessorUnit.h"
 
-namespace Effects::EffectProcessors::Filter
+namespace Effects::Filter
 {
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
@@ -36,6 +36,42 @@ namespace Effects::EffectProcessors::Filter
 
     static const juce::StringArray filterTypeChoices = {"Low-pass", "High-pass"};
     static const juce::StringArray filterSlopeChoices = {"6dB/Oct", "12dB/Oct", "18dB/Oct", "24dB/Oct"};
+    
+    static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
+    {
+        std::unique_ptr<juce::AudioProcessorParameterGroup> filterGroup (
+            std::make_unique<juce::AudioProcessorParameterGroup>("filterGroup", "Filter", "|"));
+
+        auto dryWetMix = std::make_unique<juce::AudioParameterFloat>(
+            "filterMix",
+            "Wet%",
+            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
+            100.f);
+        filterGroup.get()->addChild(std::move(dryWetMix));
+        
+        auto filterType = std::make_unique<juce::AudioParameterChoice>(
+            "filterType", 
+            "Filter Type", 
+            filterTypeChoices, 
+            0);
+        filterGroup.get()->addChild(std::move(filterType));
+
+        auto filterSlope = std::make_unique<juce::AudioParameterChoice>(
+            "filterSlope",
+            "Filter Slope", 
+            filterSlopeChoices, 
+            0);
+        filterGroup.get()->addChild(std::move(filterSlope));
+
+        auto cutoffFrequency = std::make_unique<juce::AudioParameterFloat>(
+            "filterCutoff",
+            "Cutoff Frequency",
+            juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.25), 
+            1000.f);
+        filterGroup.get()->addChild(std::move(cutoffFrequency));
+
+        return filterGroup;
+    }
 
     class FilterUnit : public EffectProcessorUnit
     {
@@ -51,7 +87,6 @@ namespace Effects::EffectProcessors::Filter
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener);
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
-        static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout();
         
         EffectEditorUnit* createEditorUnit() override;
 

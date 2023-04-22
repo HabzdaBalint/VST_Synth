@@ -32,5 +32,3 @@ constexpr int HEIGHT_UNISON_KNOB_PX = 115;
 
 constexpr int WIDTH_WAVEFORM_SELECTOR_PX = 120;
 constexpr int HEIGHT_WAVEFORM_SELECTOR_PX = 50;
-
-//============== EFFECTS ==============//

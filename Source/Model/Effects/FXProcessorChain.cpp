@@ -35,7 +35,7 @@ namespace Effects::EffectsChain
         setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
         for(auto item : chain)
         {
-            std::shared_ptr<Effects::EffectProcessors::EffectProcessorUnit> localProcessor = item->processor;
+            std::shared_ptr<Effects::EffectProcessorUnit> localProcessor = item->processor;
             if( localProcessor != nullptr )
                 localProcessor->prepareToPlay(sampleRate, samplesPerBlock);
         }
@@ -45,7 +45,7 @@ namespace Effects::EffectsChain
     {
         for(auto item : chain)
         {
-            std::shared_ptr<Effects::EffectProcessors::EffectProcessorUnit> localProcessor = item->processor;
+            std::shared_ptr<Effects::EffectProcessorUnit> localProcessor = item->processor;
             if( localProcessor != nullptr )
                 localProcessor->releaseResources();
         }
@@ -57,7 +57,7 @@ namespace Effects::EffectsChain
         {
             if( !item->bypass )
             {
-                std::shared_ptr<Effects::EffectProcessors::EffectProcessorUnit> localProcessor = item->processor;
+                std::shared_ptr<Effects::EffectProcessorUnit> localProcessor = item->processor;
                 if( localProcessor != nullptr )
                     localProcessor->processBlock(buffer, midiMessages);
             }
@@ -66,7 +66,7 @@ namespace Effects::EffectsChain
 
     void FXProcessorChain::registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
     {
-        auto paramLayoutSchema = FXProcessorChain::createParameterLayout();
+        auto paramLayoutSchema = createParameterLayout();
         auto params = paramLayoutSchema->getParameters(false);
 
         for(auto param : params)
@@ -78,7 +78,7 @@ namespace Effects::EffectsChain
 
     void FXProcessorChain::removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
     {
-        auto paramLayoutSchema = FXProcessorChain::createParameterLayout();
+        auto paramLayoutSchema = createParameterLayout();
         auto params = paramLayoutSchema->getParameters(false);
 
         for(auto param : params)
@@ -86,45 +86,6 @@ namespace Effects::EffectsChain
             auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
             apvts.removeParameterListener(id, listener);
         }
-    }
-
-    std::unique_ptr<juce::AudioProcessorParameterGroup> FXProcessorChain::createParameterLayout()
-    {
-        std::unique_ptr<juce::AudioProcessorParameterGroup> fxChainGroup (
-            std::make_unique<juce::AudioProcessorParameterGroup>("fxChainGroup", "Effect Chain", "|"));
-
-        juce::AudioParameterChoiceAttributes attr;
-
-        for (size_t i = 0; i < FX_MAX_SLOTS; i++)
-        {
-            //Bypasses for each loaded Effect
-            auto processorBypass = std::make_unique<juce::AudioParameterBool>(
-                getFXBypassParameterName(i),
-                "Bypass " + juce::String(i+1),
-                false);
-            fxChainGroup.get()->addChild(std::move(processorBypass));
-            
-            //Choices for each loaded Effect
-            auto processorChoice = std::make_unique<juce::AudioParameterChoice>(
-                getFXChoiceParameterName(i),
-                "FX Slot " + juce::String(i+1),
-                choices,
-                0,
-                attr.withAutomatable(false).withMeta(true));
-            fxChainGroup.get()->addChild(std::move(processorChoice));
-        }
-
-        return fxChainGroup;
-    }
-
-    const juce::String FXProcessorChain::getFXBypassParameterName(size_t index)
-    {
-        return "fxBypass" + juce::String(index);
-    }
-
-    const juce::String FXProcessorChain::getFXChoiceParameterName(size_t index)
-    {
-        return "fxChoice" + juce::String(index);
     }
 
     juce::Array<EffectEditorUnit*> FXProcessorChain::getLoadedEffectEditors()
@@ -163,35 +124,35 @@ namespace Effects::EffectsChain
 
             int idx = std::stoi(parameterID.trimCharactersAtStart("fxChoice").toStdString());
 
-            std::unique_ptr<Effects::EffectProcessors::EffectProcessorUnit> newProcessor;
+            std::unique_ptr<Effects::EffectProcessorUnit> newProcessor;
             switch ((int)newValue)
             {
             case 0:
                 newProcessor = nullptr;
                 break;
             case 1:
-                newProcessor = std::make_unique<Effects::EffectProcessors::Equalizer::EqualizerUnit>(apvts);
+                newProcessor = std::make_unique<Effects::Equalizer::EqualizerUnit>(apvts);
                 break;
             case 2:
-                newProcessor = std::make_unique<Effects::EffectProcessors::Filter::FilterUnit>(apvts);
+                newProcessor = std::make_unique<Effects::Filter::FilterUnit>(apvts);
                 break;
             case 3:
-                newProcessor = std::make_unique<Effects::EffectProcessors::Compressor::CompressorUnit>(apvts);
+                newProcessor = std::make_unique<Effects::Compressor::CompressorUnit>(apvts);
                 break;
             case 4:
-                newProcessor = std::make_unique<Effects::EffectProcessors::Delay::DelayUnit>(apvts);
+                newProcessor = std::make_unique<Effects::Delay::DelayUnit>(apvts);
                 break;
             case 5:
-                newProcessor = std::make_unique<Effects::EffectProcessors::Reverb::ReverbUnit>(apvts);
+                newProcessor = std::make_unique<Effects::Reverb::ReverbUnit>(apvts);
                 break;
             case 6:
-                newProcessor = std::make_unique<Effects::EffectProcessors::Chorus::ChorusUnit>(apvts);
+                newProcessor = std::make_unique<Effects::Chorus::ChorusUnit>(apvts);
                 break;
             case 7:
-                newProcessor = std::make_unique<Effects::EffectProcessors::Phaser::PhaserUnit>(apvts);
+                newProcessor = std::make_unique<Effects::Phaser::PhaserUnit>(apvts);
                 break;
             case 8:
-                newProcessor = std::make_unique<Effects::EffectProcessors::Tremolo::TremoloUnit>(apvts);
+                newProcessor = std::make_unique<Effects::Tremolo::TremoloUnit>(apvts);
                 break;
             default:
                 newProcessor = nullptr;

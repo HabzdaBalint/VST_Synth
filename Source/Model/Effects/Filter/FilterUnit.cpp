@@ -10,9 +10,9 @@
 
 #include "FilterUnit.h"
 
-#include "../../../../View/Effects/EffectEditors/Filter/FilterEditor.h"
+#include "../../../View/Effects/EffectEditors/Filter/FilterEditor.h"
 
-namespace Effects::EffectProcessors::Filter
+namespace Effects::Filter
 {
     FilterUnit::FilterUnit(juce::AudioProcessorValueTreeState& apvts) : EffectProcessorUnit(apvts)
     {
@@ -132,42 +132,6 @@ namespace Effects::EffectProcessors::Filter
     void FilterUnit::parameterChanged(const juce::String &parameterID, float newValue) 
     {
         updateFilterParameters();
-    }
-    
-    std::unique_ptr<juce::AudioProcessorParameterGroup> FilterUnit::createParameterLayout()
-    {
-        std::unique_ptr<juce::AudioProcessorParameterGroup> filterGroup (
-            std::make_unique<juce::AudioProcessorParameterGroup>("filterGroup", "Filter", "|"));
-
-        auto dryWetMix = std::make_unique<juce::AudioParameterFloat>(
-            "filterMix",
-            "Wet%",
-            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-            100.f);
-        filterGroup.get()->addChild(std::move(dryWetMix));
-        
-        auto filterType = std::make_unique<juce::AudioParameterChoice>(
-            "filterType", 
-            "Filter Type", 
-            filterTypeChoices, 
-            0);
-        filterGroup.get()->addChild(std::move(filterType));
-
-        auto filterSlope = std::make_unique<juce::AudioParameterChoice>(
-            "filterSlope",
-            "Filter Slope", 
-            filterSlopeChoices, 
-            0);
-        filterGroup.get()->addChild(std::move(filterSlope));
-
-        auto cutoffFrequency = std::make_unique<juce::AudioParameterFloat>(
-            "filterCutoff",
-            "Cutoff Frequency",
-            juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.25), 
-            1000.f);
-        filterGroup.get()->addChild(std::move(cutoffFrequency));
-
-        return filterGroup;
     }
 
     juce::ReferenceCountedArray<Coefficients> FilterUnit::makeLowPassCoefficients(float frequency, int slope)

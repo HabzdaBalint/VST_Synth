@@ -54,51 +54,9 @@ namespace Synthesizer
             }
         }
 
-        void linkParameters()
-        {
-            auto paramLayoutSchema = createParameterLayout();
-
-            auto params = paramLayoutSchema->getParameters(false);
-            for ( auto param : params )
-            {
-                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
-                auto value = dynamic_cast<juce::RangedAudioParameter*>(param)->getNormalisableRange().convertFrom0to1(param->getDefaultValue());
-                paramMap.emplace(id, value);
-            }
-
-            for (size_t i = 0; i < HARMONIC_N; i++)
-            {
-                partialGains[i] = &paramMap[getPartialGainParameterName(i)];
-                partialPhases[i] = &paramMap[getPartialPhaseParameterName(i)];
-            }
-        }
-
         void parameterChanged(const juce::String &parameterID, float newValue) override
         {
             paramMap[parameterID] = newValue;
-        }
-
-        /// @brief Generates a sample of the waveform defined by the parameters of the synthesizer. Used for maintaining the lookup table. This function could also be used for accurate rendering, with any number of harmonics, if time is not a constraint
-        /// @param angle The angle at which the sample is generated (in radians)
-        /// @param harmonics The number of harmonics that are included in the calculation of the sample. Use lower numbers to avoid aliasing
-        /// @return The generated sample
-        const float getSample(float angle, int harmonics)
-        {
-            jassert(harmonics <= HARMONIC_N);
-
-            float sample = 0.f;
-
-            for (size_t i = 0; i < harmonics; i++)
-            {
-                float gain = partialGains[i]->load() / 100;
-                float phase = partialPhases[i]->load() / 100;
-                if (gain != 0.f)
-                {
-                    sample += gain * sin((i + 1) * angle + phase * juce::MathConstants<float>::twoPi);
-                }
-            }
-
-            return sample;
         }
 
         /// @brief Creates and adds the synthesizer's parameters into a parameter group
@@ -137,7 +95,7 @@ namespace Synthesizer
 
         /// @brief Used for making the parameter ids of the the partials' gain parameters consistent
         /// @param index The index of the harmonic
-        /// @return A consistent parameter id
+        /// @return A parameter id
         static const juce::String getPartialGainParameterName(size_t index)
         {
             return "partial" + juce::String(index) + "gain";
@@ -145,7 +103,7 @@ namespace Synthesizer
 
         /// @brief Used for making the parameter ids of the the partials' phase parameters consistent
         /// @param index The index of the harmonic
-        /// @return A consistent parameter id
+        /// @return A parameter id
         static const juce::String getPartialPhaseParameterName(size_t index)
         {
             return "partial" + juce::String(index) + "phase";
@@ -156,6 +114,25 @@ namespace Synthesizer
     private:
         juce::AudioProcessorValueTreeState& apvts;
         std::unordered_map<juce::String, std::atomic<float>> paramMap;
+
+        void linkParameters()
+        {
+            auto paramLayoutSchema = createParameterLayout();
+
+            auto params = paramLayoutSchema->getParameters(false);
+            for ( auto param : params )
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                auto value = dynamic_cast<juce::RangedAudioParameter*>(param)->getNormalisableRange().convertFrom0to1(param->getDefaultValue());
+                paramMap.emplace(id, value);
+            }
+
+            for (size_t i = 0; i < HARMONIC_N; i++)
+            {
+                partialGains[i] = &paramMap[getPartialGainParameterName(i)];
+                partialPhases[i] = &paramMap[getPartialPhaseParameterName(i)];
+            }
+        }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscillatorParameters)
     };

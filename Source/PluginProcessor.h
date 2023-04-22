@@ -10,7 +10,7 @@
 
 #include <JuceHeader.h>
 #include "Model/Synthesizer/AdditiveSynthesizer.h"
-#include "Model/Effects/EffectsChain/FXProcessorChain.h"
+#include "Model/Effects/FXProcessorChain.h"
 
 //==============================================================================
 /**

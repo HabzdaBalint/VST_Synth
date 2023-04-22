@@ -57,34 +57,6 @@ namespace Synthesizer
             }
         }
 
-        void linkParameters()
-        {
-            auto paramLayoutSchema = createParameterLayout();
-
-            auto params = paramLayoutSchema->getParameters(false);
-            for ( auto param : params )
-            {
-                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
-                auto value = dynamic_cast<juce::RangedAudioParameter*>(param)->getNormalisableRange().convertFrom0to1(param->getDefaultValue());
-                paramMap.emplace(id, value);
-            }
-
-            synthGain = &paramMap["synthGain"];
-            oscillatorOctaves = &paramMap["oscillatorOctaves"];
-            oscillatorSemitones = &paramMap["oscillatorSemitones"];
-            oscillatorFine = &paramMap["oscillatorFine"];
-            pitchWheelRange = &paramMap["pitchWheelRange"];
-            globalPhase = &paramMap["globalPhase"];
-            randomPhaseRange = &paramMap["randomPhaseRange"];
-            unisonCount = &paramMap["unisonCount"];
-            unisonDetune = &paramMap["unisonDetune"];
-            unisonGain = &paramMap["unisonGain"];
-            amplitudeADSRAttack = &paramMap["amplitudeADSRAttack"];
-            amplitudeADSRDecay = &paramMap["amplitudeADSRDecay"];
-            amplitudeADSRSustain = &paramMap["amplitudeADSRSustain"];
-            amplitudeADSRRelease = &paramMap["amplitudeADSRRelease"];
-        }
-
         void parameterChanged(const juce::String &parameterID, float newValue) override
         {
             paramMap[parameterID] = newValue;
@@ -244,6 +216,34 @@ namespace Synthesizer
     private:
         juce::AudioProcessorValueTreeState& apvts;
         std::unordered_map<juce::String, std::atomic<float>> paramMap;
+
+        void linkParameters()
+        {
+            auto paramLayoutSchema = createParameterLayout();
+
+            auto params = paramLayoutSchema->getParameters(false);
+            for ( auto param : params )
+            {
+                auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
+                auto value = dynamic_cast<juce::RangedAudioParameter*>(param)->getNormalisableRange().convertFrom0to1(param->getDefaultValue());
+                paramMap.emplace(id, value);
+            }
+
+            synthGain = &paramMap["synthGain"];
+            oscillatorOctaves = &paramMap["oscillatorOctaves"];
+            oscillatorSemitones = &paramMap["oscillatorSemitones"];
+            oscillatorFine = &paramMap["oscillatorFine"];
+            pitchWheelRange = &paramMap["pitchWheelRange"];
+            globalPhase = &paramMap["globalPhase"];
+            randomPhaseRange = &paramMap["randomPhaseRange"];
+            unisonCount = &paramMap["unisonCount"];
+            unisonDetune = &paramMap["unisonDetune"];
+            unisonGain = &paramMap["unisonGain"];
+            amplitudeADSRAttack = &paramMap["amplitudeADSRAttack"];
+            amplitudeADSRDecay = &paramMap["amplitudeADSRDecay"];
+            amplitudeADSRSustain = &paramMap["amplitudeADSRSustain"];
+            amplitudeADSRRelease = &paramMap["amplitudeADSRRelease"];
+        }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AdditiveSynthParameters)
     };

@@ -10,9 +10,9 @@
 
 #include "TremoloUnit.h"
 
-#include "../../../../View/Effects/EffectEditors/Tremolo/TremoloEditor.h"
+#include "../../../View/Effects/EffectEditors/Tremolo/TremoloEditor.h"
 
-namespace Effects::EffectProcessors::Tremolo
+namespace Effects::Tremolo
 {
     TremoloUnit::TremoloUnit(juce::AudioProcessorValueTreeState& apvts) : EffectProcessorUnit(apvts)
     {
@@ -97,37 +97,6 @@ namespace Effects::EffectProcessors::Tremolo
     void TremoloUnit::parameterChanged(const juce::String &parameterID, float newValue) 
     {
         updateTremoloParameters();
-    }
-
-    std::unique_ptr<juce::AudioProcessorParameterGroup> TremoloUnit::createParameterLayout()
-    {
-        std::unique_ptr<juce::AudioProcessorParameterGroup> tremoloGroup (
-            std::make_unique<juce::AudioProcessorParameterGroup>(
-                "tremoloGroup", 
-                "Tremolo", 
-                "|"));
-
-        auto depth = std::make_unique<juce::AudioParameterFloat>(
-            "tremoloDepth", 
-            "Depth",
-            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-            50.f);
-        tremoloGroup.get()->addChild(std::move(depth));
-
-        auto rate = std::make_unique<juce::AudioParameterFloat>(
-            "tremoloRate", 
-            "Rate",
-            juce::NormalisableRange<float>(0.1, 15.f, 0.01, 0.35), 
-            2.f);
-        tremoloGroup.get()->addChild(std::move(rate));
-
-        auto isAutoPan = std::make_unique<juce::AudioParameterBool>(
-            "tremoloAutoPan", 
-            "Auto-Pan",
-            false);
-        tremoloGroup.get()->addChild(std::move(isAutoPan));
-
-        return tremoloGroup;
     }
     
     void TremoloUnit::updateTremoloParameters()

@@ -74,6 +74,25 @@ namespace Synthesizer
         synthGain.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
     }
 
+    const float AdditiveSynthesizer::getSample(float angle, int harmonics)
+    {
+        jassert(harmonics <= HARMONIC_N);
+
+        float sample = 0.f;
+
+        for (size_t i = 0; i < harmonics; i++)
+        {
+            float gain = oscParameters.partialGains[i]->load() / 100;
+            float phase = oscParameters.partialPhases[i]->load() / 100;
+            if (gain != 0.f)
+            {
+                sample += gain * sin((i + 1) * angle + phase * juce::MathConstants<float>::twoPi);
+            }
+        }
+
+        return sample;
+    }
+
     void AdditiveSynthesizer::parameterChanged(const juce::String &parameterID, float newValue)
     {
         needUpdate = true;
@@ -98,7 +117,7 @@ namespace Synthesizer
             for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
             {
                 mipMap[i]->initialise(
-                    [this, i, gainToNormalize] (float x) { return gainToNormalize * oscParameters.getSample( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
+                    [this, i, gainToNormalize] (float x) { return gainToNormalize * getSample( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
                     0, juce::MathConstants<float>::twoPi,
                     LOOKUP_POINTS / pow(2, i));
             }
@@ -121,7 +140,7 @@ namespace Synthesizer
         float gainToNormalize = 1.f;
         for (size_t i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the lut
         {
-            float sample = oscParameters.getSample( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
+            float sample = getSample( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
 
             if( std::fabs(sample) > peakAmplitude)
             {

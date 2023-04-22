@@ -32,7 +32,7 @@ public:
 
         for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
         {
-            audioProcessor.apvts.addParameterListener(Effects::EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
+            audioProcessor.apvts.addParameterListener(Effects::EffectsChain::getFXChoiceParameterName(i), this);
         }
     }
 
@@ -40,7 +40,7 @@ public:
     {
         for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
         {
-            audioProcessor.apvts.removeParameterListener(Effects::EffectsChain::FXProcessorChain::getFXChoiceParameterName(i), this);
+            audioProcessor.apvts.removeParameterListener(Effects::EffectsChain::getFXChoiceParameterName(i), this);
         }
 
         for (auto item : items)

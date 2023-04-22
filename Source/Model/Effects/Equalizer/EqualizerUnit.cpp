@@ -10,9 +10,9 @@
 
 #include "EqualizerUnit.h"
 
-#include "../../../../View/Effects/EffectEditors/Equalizer/EqualizerEditor.h"
+#include "../../../View/Effects/EffectEditors/Equalizer/EqualizerEditor.h"
 
-namespace Effects::EffectProcessors::Equalizer
+namespace Effects::Equalizer
 {
     EqualizerUnit::EqualizerUnit(juce::AudioProcessorValueTreeState& apvts) : EffectProcessorUnit(apvts)
     {
@@ -118,49 +118,6 @@ namespace Effects::EffectProcessors::Equalizer
     void EqualizerUnit::parameterChanged(const juce::String &parameterID, float newValue) 
     {
         updateEqualizerParameters();
-    }
-    
-    std::unique_ptr<juce::AudioProcessorParameterGroup> EqualizerUnit::createParameterLayout()
-    {
-        std::unique_ptr<juce::AudioProcessorParameterGroup> eqGroup (
-            std::make_unique<juce::AudioProcessorParameterGroup>(
-                "eqGroup", 
-                "Equalizer", 
-                "|"));
-
-        for (size_t i = 0; i < NUM_BANDS; i++)
-        {
-            auto bandGain = std::make_unique<juce::AudioParameterFloat>(
-                getBandGainParameterName(i),
-                getBandFrequencyLabel(i),
-                juce::NormalisableRange<float>(-12.f, 12.f, 0.1), 
-                0.f);
-            eqGroup.get()->addChild(std::move(bandGain));
-        }
-        
-        return eqGroup;
-    }
-
-    const juce::String EqualizerUnit::getBandGainParameterName(size_t index)
-    {
-        return "band" + juce::String(index) + "gain";
-    }
-
-    const juce::String EqualizerUnit::getBandFrequencyLabel(size_t index)
-    {
-        float frequency = 31.25 * pow(2, index);
-        juce::String suffix;
-        if(frequency >= 1000)
-        {
-            suffix = " kHz";
-            frequency /= 1000;
-        }
-        else
-        {
-            suffix = " Hz";
-        }
-        juce::String label(frequency, 0, false);
-        return label + suffix;
     }
 
     void EqualizerUnit::updateEqualizerBands(const juce::OwnedArray<Filter> &equalizer)

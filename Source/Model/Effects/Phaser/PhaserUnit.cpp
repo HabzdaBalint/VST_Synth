@@ -10,9 +10,9 @@
 
 #include "PhaserUnit.h"
 
-#include "../../../../View/Effects/EffectEditors/Phaser/PhaserEditor.h"
+#include "../../../View/Effects/EffectEditors/Phaser/PhaserEditor.h"
 
-namespace Effects::EffectProcessors::Phaser
+namespace Effects::Phaser
 {
     PhaserUnit::PhaserUnit(juce::AudioProcessorValueTreeState& apvts) : EffectProcessorUnit(apvts)
     {
@@ -88,52 +88,6 @@ namespace Effects::EffectProcessors::Phaser
         updatePhaserParameters();
     }
     
-    std::unique_ptr<juce::AudioProcessorParameterGroup> PhaserUnit::createParameterLayout()
-    {
-        std::unique_ptr<juce::AudioProcessorParameterGroup> phaserGroup (
-            std::make_unique<juce::AudioProcessorParameterGroup>(
-                "phaserGroup", 
-                "Phaser", 
-                "|"));
-
-        auto mix = std::make_unique<juce::AudioParameterFloat>(
-            "phaserMix", 
-            "Wet%",
-            juce::NormalisableRange<float>(0.f, 100.f, 0.1),
-            35.f);
-        phaserGroup.get()->addChild(std::move(mix));
-
-        auto rate = std::make_unique<juce::AudioParameterFloat>(
-            "phaserRate", 
-            "Rate",
-            juce::NormalisableRange<float>(0.1, 20.f, 0.01, 0.35),
-            2.f);
-        phaserGroup.get()->addChild(std::move(rate));
-
-        auto depth = std::make_unique<juce::AudioParameterFloat>(
-            "phaserDepth", 
-            "Depth",
-            juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
-            30.f);
-        phaserGroup.get()->addChild(std::move(depth));
-
-        auto frequency = std::make_unique<juce::AudioParameterFloat>(
-            "phaserFrequency", 
-            "Frequency",
-            juce::NormalisableRange<float>(10.f, 22000.f, 0.1, 0.25),
-            1000.f);
-        phaserGroup.get()->addChild(std::move(frequency));
-
-        auto feedback = std::make_unique<juce::AudioParameterFloat>(
-            "phaserFeedback", 
-            "Feedback",
-            juce::NormalisableRange<float>(0.f, 100.f, 0.1),
-            40.f);
-        phaserGroup.get()->addChild(std::move(feedback));
-
-        return phaserGroup;
-    }
-
     EffectEditorUnit* PhaserUnit::createEditorUnit()
     {
         return new PhaserEditor(apvts);

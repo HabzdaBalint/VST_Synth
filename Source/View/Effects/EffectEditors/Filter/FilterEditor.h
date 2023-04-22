@@ -54,7 +54,7 @@ public:
         addAndMakeVisible(*frequencyLabel);
 
         typeSelector = std::make_unique<juce::ComboBox>();
-        typeSelector->addItemList(Effects::EffectProcessors::Filter::filterTypeChoices, IDX_OFFSET);
+        typeSelector->addItemList(Effects::Filter::filterTypeChoices, IDX_OFFSET);
         typeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
             apvts,
             "filterType",
@@ -66,7 +66,7 @@ public:
         addAndMakeVisible(*typeLabel);
 
         slopeSelector = std::make_unique<juce::ComboBox>();
-        slopeSelector->addItemList(Effects::EffectProcessors::Filter::filterSlopeChoices, IDX_OFFSET);
+        slopeSelector->addItemList(Effects::Filter::filterSlopeChoices, IDX_OFFSET);
         slopeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
             apvts,
             "filterSlope",

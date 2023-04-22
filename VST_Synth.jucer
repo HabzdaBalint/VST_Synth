@@ -9,62 +9,58 @@
   <MAINGROUP id="LS9iqU" name="VST_Synth">
     <GROUP id="{CC94BD7A-A5C5-68F8-3841-4DEE09832232}" name="Model">
       <GROUP id="{5CFE8B18-4805-72F5-5AAD-8ECCF0C44030}" name="Effects">
-        <GROUP id="{2B83DE65-9F46-88E6-0F3B-5D7ECB7148F2}" name="EffectProcessors">
-          <GROUP id="{AAD624A1-BD07-7666-2384-ECA82545D329}" name="Chorus">
-            <FILE id="TzqHPk" name="ChorusUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/EffectProcessors/Chorus/ChorusUnit.cpp"/>
-            <FILE id="J9WUDs" name="ChorusUnit.h" compile="0" resource="0" file="Source/Model/Effects/EffectProcessors/Chorus/ChorusUnit.h"/>
-          </GROUP>
-          <GROUP id="{0FA561F0-E791-9CBD-E400-693E2481E853}" name="Compressor">
-            <FILE id="D0FYRc" name="CompressorUnit.cpp" compile="1" resource="0"
-                  file="Source/Model/Effects/EffectProcessors/Compressor/CompressorUnit.cpp"/>
-            <FILE id="tMsI7o" name="CompressorUnit.h" compile="0" resource="0"
-                  file="Source/Model/Effects/EffectProcessors/Compressor/CompressorUnit.h"/>
-          </GROUP>
-          <GROUP id="{F2FC5A23-B750-B6E3-2A67-5906F35B349E}" name="Delay">
-            <FILE id="WzxV2m" name="DelayUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/EffectProcessors/Delay/DelayUnit.cpp"/>
-            <FILE id="DkUIKo" name="DelayUnit.h" compile="0" resource="0" file="Source/Model/Effects/EffectProcessors/Delay/DelayUnit.h"/>
-          </GROUP>
-          <GROUP id="{78C25D85-C0B2-9157-0BD3-4B8C5A0C77CE}" name="Equalizer">
-            <FILE id="y051BG" name="EqualizerUnit.cpp" compile="1" resource="0"
-                  file="Source/Model/Effects/EffectProcessors/Equalizer/EqualizerUnit.cpp"/>
-            <FILE id="GrU299" name="EqualizerUnit.h" compile="0" resource="0" file="Source/Model/Effects/EffectProcessors/Equalizer/EqualizerUnit.h"/>
-          </GROUP>
-          <GROUP id="{1B40BB9D-C016-5DDB-33A9-01D1C28EC23D}" name="Filter">
-            <FILE id="RYA5DF" name="FilterUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/EffectProcessors/Filter/FilterUnit.cpp"/>
-            <FILE id="OIAOXa" name="FilterUnit.h" compile="0" resource="0" file="Source/Model/Effects/EffectProcessors/Filter/FilterUnit.h"/>
-          </GROUP>
-          <GROUP id="{EC57562D-1F26-793D-89C4-37628A85C74F}" name="Phaser">
-            <FILE id="l9kORi" name="PhaserUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/EffectProcessors/Phaser/PhaserUnit.cpp"/>
-            <FILE id="DSBKol" name="PhaserUnit.h" compile="0" resource="0" file="Source/Model/Effects/EffectProcessors/Phaser/PhaserUnit.h"/>
-          </GROUP>
-          <GROUP id="{2F64FBFD-507D-54E3-BE02-F07CBD5BA4FD}" name="Reverb">
-            <FILE id="qGT4SU" name="ReverbUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/EffectProcessors/Reverb/ReverbUnit.cpp"/>
-            <FILE id="eQjFzm" name="ReverbUnit.h" compile="0" resource="0" file="Source/Model/Effects/EffectProcessors/Reverb/ReverbUnit.h"/>
-          </GROUP>
-          <GROUP id="{41EFA909-58C4-F19B-E96D-B2C92DA94D6A}" name="Tremolo">
-            <FILE id="HROBuc" name="TremoloUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/EffectProcessors/Tremolo/TremoloUnit.cpp"/>
-            <FILE id="M52xQu" name="TremoloUnit.h" compile="0" resource="0" file="Source/Model/Effects/EffectProcessors/Tremolo/TremoloUnit.h"/>
-          </GROUP>
-          <FILE id="SxGUXU" name="EffectProcessorUnit.h" compile="0" resource="0"
-                file="Source/Model/Effects/EffectProcessors/EffectProcessorUnit.h"/>
+        <GROUP id="{56870E44-5051-8DB0-3764-14865CF922D4}" name="Chorus">
+          <FILE id="WS4yBa" name="ChorusUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Chorus/ChorusUnit.cpp"/>
+          <FILE id="f6tTC2" name="ChorusUnit.h" compile="0" resource="0" file="Source/Model/Effects/Chorus/ChorusUnit.h"/>
         </GROUP>
-        <GROUP id="{38DA5853-A5A1-4F15-033C-4DB5F5EC9FA0}" name="EffectsChain">
-          <FILE id="AyUeTf" name="FXProcessorChain.cpp" compile="1" resource="0"
-                file="Source/Model/Effects/EffectsChain/FXProcessorChain.cpp"/>
-          <FILE id="zHQWi5" name="FXProcessorChain.h" compile="0" resource="0"
-                file="Source/Model/Effects/EffectsChain/FXProcessorChain.h"/>
+        <GROUP id="{4FD34DF4-0E4B-0840-5CF3-2047B7B7B755}" name="Compressor">
+          <FILE id="xiQLom" name="CompressorUnit.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Compressor/CompressorUnit.cpp"/>
+          <FILE id="mpd8Kk" name="CompressorUnit.h" compile="0" resource="0"
+                file="Source/Model/Effects/Compressor/CompressorUnit.h"/>
         </GROUP>
+        <GROUP id="{74D2169D-AD40-099F-ABED-7B980FC5DFEC}" name="Delay">
+          <FILE id="n8LGRz" name="DelayUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Delay/DelayUnit.cpp"/>
+          <FILE id="Q0AKjj" name="DelayUnit.h" compile="0" resource="0" file="Source/Model/Effects/Delay/DelayUnit.h"/>
+        </GROUP>
+        <GROUP id="{0163080F-F578-BB22-EF72-BDCC6668D02C}" name="Equalizer">
+          <FILE id="e8QD0W" name="EqualizerUnit.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Equalizer/EqualizerUnit.cpp"/>
+          <FILE id="hdhcpu" name="EqualizerUnit.h" compile="0" resource="0" file="Source/Model/Effects/Equalizer/EqualizerUnit.h"/>
+        </GROUP>
+        <GROUP id="{70BFDE9A-9104-14B9-0601-6F6C46F8AEDA}" name="Filter">
+          <FILE id="KXDASi" name="FilterUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Filter/FilterUnit.cpp"/>
+          <FILE id="S8G8uf" name="FilterUnit.h" compile="0" resource="0" file="Source/Model/Effects/Filter/FilterUnit.h"/>
+        </GROUP>
+        <GROUP id="{C5F305ED-5EDA-F4DD-C88A-76E549AF76DA}" name="Phaser">
+          <FILE id="XqPbBE" name="PhaserUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Phaser/PhaserUnit.cpp"/>
+          <FILE id="iFofN6" name="PhaserUnit.h" compile="0" resource="0" file="Source/Model/Effects/Phaser/PhaserUnit.h"/>
+        </GROUP>
+        <GROUP id="{481B344A-7273-EF81-B9B5-52055B11C363}" name="Reverb">
+          <FILE id="oHkPkB" name="ReverbUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Reverb/ReverbUnit.cpp"/>
+          <FILE id="WycaRu" name="ReverbUnit.h" compile="0" resource="0" file="Source/Model/Effects/Reverb/ReverbUnit.h"/>
+        </GROUP>
+        <GROUP id="{A0A6A796-9E99-E246-E3B0-749EBB67725F}" name="Tremolo">
+          <FILE id="WkagpG" name="TremoloUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Tremolo/TremoloUnit.cpp"/>
+          <FILE id="Gq7WnK" name="TremoloUnit.h" compile="0" resource="0" file="Source/Model/Effects/Tremolo/TremoloUnit.h"/>
+        </GROUP>
+        <FILE id="h6rsFJ" name="EffectProcessorUnit.h" compile="0" resource="0"
+              file="Source/Model/Effects/EffectProcessorUnit.h"/>
+        <FILE id="svguIv" name="FXProcessorChain.cpp" compile="1" resource="0"
+              file="Source/Model/Effects/FXProcessorChain.cpp"/>
+        <FILE id="EWwhE5" name="FXProcessorChain.h" compile="0" resource="0"
+              file="Source/Model/Effects/FXProcessorChain.h"/>
       </GROUP>
       <GROUP id="{7A0550A8-9AF6-EDE7-5674-51D583DC5AAB}" name="Synthesizer">
-        <FILE id="o4xHQz" name="AdditiveSound.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveSound.h"/>
-        <FILE id="NxVGmw" name="AdditiveSynthesizer.cpp" compile="1" resource="0"
+        <FILE id="kAE8zv" name="AdditiveSound.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveSound.h"/>
+        <FILE id="ihleU0" name="AdditiveSynthesizer.cpp" compile="1" resource="0"
               file="Source/Model/Synthesizer/AdditiveSynthesizer.cpp"/>
-        <FILE id="iIgPni" name="AdditiveSynthesizer.h" compile="0" resource="0"
+        <FILE id="KkdlWG" name="AdditiveSynthesizer.h" compile="0" resource="0"
               file="Source/Model/Synthesizer/AdditiveSynthesizer.h"/>
-        <FILE id="s4BT4m" name="AdditiveSynthParameters.h" compile="0" resource="0"
+        <FILE id="Jq971l" name="AdditiveSynthParameters.h" compile="0" resource="0"
               file="Source/Model/Synthesizer/AdditiveSynthParameters.h"/>
-        <FILE id="GlUsih" name="AdditiveVoice.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveVoice.h"/>
-        <FILE id="KIR9ej" name="OscillatorParameters.h" compile="0" resource="0"
+        <FILE id="vj74Uw" name="AdditiveVoice.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveVoice.h"/>
+        <FILE id="XqWYhZ" name="OscillatorParameters.h" compile="0" resource="0"
               file="Source/Model/Synthesizer/OscillatorParameters.h"/>
       </GROUP>
     </GROUP>

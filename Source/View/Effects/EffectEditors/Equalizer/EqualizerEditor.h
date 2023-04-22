@@ -33,11 +33,11 @@ public:
 
             bandSliderAttachments.add(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
                 apvts,
-                Effects::EffectProcessors::Equalizer::EqualizerUnit::getBandGainParameterName(i),
+                Effects::Equalizer::getBandGainParameterName(i),
                 *bandSliders[i]));
             bandLabels.add(std::make_unique<juce::Label>());
 
-            bandLabels[i]->setText(Effects::EffectProcessors::Equalizer::EqualizerUnit::getBandFrequencyLabel(i), juce::NotificationType::dontSendNotification);
+            bandLabels[i]->setText(Effects::Equalizer::getBandFrequencyLabel(i), juce::NotificationType::dontSendNotification);
             bandLabels[i]->setJustificationType(juce::Justification::centred);
             addAndMakeVisible(*bandLabels[i]);
 
@@ -64,7 +64,7 @@ public:
 
         grid.items.add( juce::GridItem( *nameLabel ).withColumn( { 1, 11 } ).withRow( { 1 } ) );
 
-        for (int i = 0; i < Effects::EffectProcessors::Equalizer::NUM_BANDS; i++)
+        for (int i = 0; i < Effects::Equalizer::NUM_BANDS; i++)
         {
             grid.templateColumns.add( TrackInfo( Fr( 1 ) ) );
             grid.items.add( juce::GridItem(*bandSliders[i]).withColumn( { i + 1 } ).withRow( { 2 } ) );

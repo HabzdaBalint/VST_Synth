@@ -12,9 +12,7 @@
 
 #include <JuceHeader.h>
 
-using namespace juce;
-
-class VST_SynthLookAndFeel : public LookAndFeel_V4
+class VST_SynthLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
     VST_SynthLookAndFeel() : LookAndFeel_V4(getMidnightColourScheme())
@@ -39,7 +37,7 @@ public:
 
 private:
 
-    int getTabButtonBestWidth(TabBarButton& button, int tabDepth) override
+    int getTabButtonBestWidth(juce::TabBarButton& button, int tabDepth) override
     {
         auto& tabBar = button.getTabbedButtonBar();
         auto width = ( tabBar.isVertical() ? tabBar.getHeight() : tabBar.getWidth() ) / tabBar.getNumTabs();

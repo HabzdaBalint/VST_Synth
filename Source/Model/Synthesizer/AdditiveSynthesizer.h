@@ -20,10 +20,10 @@ namespace Synthesizer
 {
     using Gain = juce::dsp::Gain<float>;
 
-    struct LUTUpdater : juce::Thread
+    struct WorkerThread : juce::Thread
     {
-        LUTUpdater(std::function<void()> func) :
-            juce::Thread("LUT Updater"),
+        WorkerThread(std::function<void()> func) :
+            juce::Thread("Worker"),
             func(func)
         {}
 
@@ -48,7 +48,7 @@ namespace Synthesizer
         bool producesMidi() const override { return false; }
 
         juce::AudioProcessorEditor* createEditor() override { return nullptr; };
-        bool hasEditor() const override { return true; }
+        bool hasEditor() const override { return false; }
 
         int getNumPrograms() override { return 1; }
         int getCurrentProgram() override { return 0; }
@@ -68,23 +68,30 @@ namespace Synthesizer
 
         void timerCallback() override;
 
+        /// @brief Generates a sample of the waveform defined by the parameters of the oscillator.
+        /// @param angle The angle at which the sample is generated (in radians)
+        /// @param harmonics The number of harmonics that are included in the calculation of the sample. Use lower numbers to avoid aliasing
+        /// @return The generated sample
+        const float getSample(float angle, int harmonics);
+
+        /// @brief Calculates the peak amplitude of the waveform stored in the lookup table
+        /// @return The peak amplitude
+        const float getPeakAmplitude();
+
+    private:
         AdditiveSynthParameters synthParameters;
         OscillatorParameters oscParameters;
-    private:
+
         Gain synthGain;
 
         juce::Synthesiser synth;
         juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
-        LUTUpdater lutUpdater { [&] () { updateLookupTable(); } };
-        std::atomic<bool> missedUpdate = { false };
+        WorkerThread lutUpdater { [&] () { updateLookupTable(); } };
         std::atomic<bool> needUpdate = { false };
-
 
         /// @brief Generates the lookup table with the current parameters
         void updateLookupTable();
         
-        const float getPeakAmplitude();
-
         //==============================================================================
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AdditiveSynthesizer)
     };

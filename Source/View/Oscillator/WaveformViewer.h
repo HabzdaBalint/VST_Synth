@@ -93,7 +93,7 @@ private:
 
             for (size_t i = 0; i < amplitudes.size(); i++)
             {
-                amplitudes[i] = audioProcessor.additiveSynth->oscParameters.getSample(
+                amplitudes[i] = audioProcessor.additiveSynth->getSample(
                     juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1 ), 0.f, juce::MathConstants<float>::twoPi ), Synthesizer::HARMONIC_N);
             }
 

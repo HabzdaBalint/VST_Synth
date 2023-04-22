@@ -12,9 +12,9 @@
 
 #include <JuceHeader.h>
 
-#include "../../../View/Effects/EffectEditors/EffectEditorUnit.h"
+#include "../../View/Effects/EffectEditors/EffectEditorUnit.h"
 
-namespace Effects::EffectProcessors
+namespace Effects
 {
     class EffectProcessorUnit : public juce::AudioProcessor,
                                 public juce::AudioProcessorValueTreeState::Listener
@@ -30,7 +30,7 @@ namespace Effects::EffectProcessors
         void processBlock(juce::AudioSampleBuffer&, juce::MidiBuffer&) override {}
 
         juce::AudioProcessorEditor* createEditor() override { return nullptr; }
-        bool hasEditor() const override { return true; }
+        bool hasEditor() const override { return false; }
 
         const juce::String getName() const override { return {}; }
         bool acceptsMidi() const override { return true; }
