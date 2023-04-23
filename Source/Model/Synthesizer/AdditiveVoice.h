@@ -17,7 +17,7 @@ namespace Synthesizer
     class AdditiveVoice : public juce::SynthesiserVoice
     {
     public:
-        AdditiveVoice(AdditiveSynthParameters& synthParams, juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap) :
+        AdditiveVoice(AdditiveSynthParameters& synthParams, const juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap) :
             synthParameters(synthParams),
             mipMap(mipMap) {}
 
@@ -79,6 +79,9 @@ namespace Synthesizer
                 generatedBuffer.clear();
                 generatedBuffer.setSize(2, numSamples, false, false, true);
 
+                int unisonCount = (int)synthParameters.unisonCount->load();
+                float unisonGain = synthParameters.unisonGain->load();
+
                 /*render buffer, apply gain*/
                 for (size_t channel = 0; channel < 2; channel++)
                 {
@@ -92,21 +95,21 @@ namespace Synthesizer
                         }
 
                         //Generating the fundamental data for the sample
-                        bufferPointer[sample] += velocityGain * mipMap[mipMapIndex]->operator()(fundamentalCurrentAngle[channel]);
+                        bufferPointer[sample] += velocityGain * (*mipMap[mipMapIndex])(fundamentalCurrentAngle[channel]);
 
                         fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
 
                         //Generating unison data for the sample
-                        if(synthParameters.unisonGain->load() > 0.f)
+                        if( unisonGain > 0.f )
                         {
-                            for (size_t unison = 0; unison < synthParameters.unisonCount->load(); unison++)
+                            for (size_t unison = 0; unison < unisonCount; unison++)
                             {
                                 if (unisonCurrentAngles[channel][unison] > juce::MathConstants<float>::twoPi)
                                 {
                                     unisonCurrentAngles[channel][unison] -= juce::MathConstants<float>::twoPi;
                                 }
 
-                                bufferPointer[sample] += velocityGain * ( synthParameters.unisonGain->load() / 100 ) * mipMap[mipMapIndex]->operator()(unisonCurrentAngles[channel][unison]);
+                                bufferPointer[sample] += velocityGain * ( unisonGain / 100 ) * (*mipMap[mipMapIndex])(unisonCurrentAngles[channel][unison]);
 
                                 unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
                             }
@@ -138,7 +141,7 @@ namespace Synthesizer
         
         juce::Random rng;
 
-        juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap;
+        const juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap;
 
         float velocityGain = 0;
         int currentNote = 0;
@@ -174,7 +177,7 @@ namespace Synthesizer
 
         /// @brief Used to generate a random phase offset based on the configured starting position and range
         /// @return Returns the generated offset
-        float getRandomPhase()
+        const float getRandomPhase()
         {
             return (((rng.nextFloat() * synthParameters.randomPhaseRange->load() / 100) + ( synthParameters.globalPhase->load() / 100 ) ) * juce::MathConstants<float>::twoPi);
         }

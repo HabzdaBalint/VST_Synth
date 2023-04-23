@@ -16,41 +16,31 @@
 
 class WaveformViewer : public juce::Component,
                        public juce::Timer,
-                       public juce::AudioProcessorParameter::Listener
+                       public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     WaveformViewer(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
-        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
-        {
-            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->addListener(this);
-            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->addListener(this);
-        }
-
-        startTimerHz(60);
+        audioProcessor.additiveSynth.getOscParameters().registerListener(this);
 
         redrawPath();
+
+        startTimerHz(60);
     }
 
     ~WaveformViewer() override
     {
-        for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
-        {
-            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->removeListener(this);
-            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->removeListener(this);
-        }
+        audioProcessor.additiveSynth.getOscParameters().removeListener(this);
     }
-
-    void parameterValueChanged (int parameterIndex, float newValue) override
+    
+    void parameterChanged(const juce::String &parameterID, float newValue) override
     {
-        parameterChanged.set(true);
+        needUpdate.set(true);
     }
-
-    void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override {}
 
     void timerCallback() override
     {
-        if( parameterChanged.compareAndSetBool(false, true) )
+        if( needUpdate.compareAndSetBool(false, true) )
         {
             redrawPath();
             repaint();
@@ -71,7 +61,6 @@ public:
     void resized() override
     {
         redrawPath();
-        repaint();
     }
     
 private:
@@ -79,7 +68,7 @@ private:
 
     juce::Path waveformPath;
 
-    juce::Atomic<bool> parameterChanged { false };
+    juce::Atomic<bool> needUpdate { false };
 
     void redrawPath()
     {
@@ -93,7 +82,7 @@ private:
 
             for (size_t i = 0; i < amplitudes.size(); i++)
             {
-                amplitudes[i] = audioProcessor.additiveSynth->getSample(
+                amplitudes[i] = audioProcessor.additiveSynth.getOscParameters().getSample(
                     juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1 ), 0.f, juce::MathConstants<float>::twoPi ), Synthesizer::HARMONIC_N);
             }
 

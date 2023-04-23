@@ -106,20 +106,20 @@ public:
 
         for (size_t i = 0; i < Synthesizer::HARMONIC_N; i++)
         {
-            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->beginChangeGesture();
-            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->beginChangeGesture();
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterID(i))->beginChangeGesture();
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterID(i))->beginChangeGesture();
             if( i >= dataset.size() )
             {
-                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->setValueNotifyingHost(0.f);
-                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(0.f);
+                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterID(i))->setValueNotifyingHost(0.f);
+                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterID(i))->setValueNotifyingHost(0.f);
             }
             else
             {
-                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->setValueNotifyingHost(dataset[i].gain);
-                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->setValueNotifyingHost(dataset[i].phase);
+                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterID(i))->setValueNotifyingHost(dataset[i].gain);
+                audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterID(i))->setValueNotifyingHost(dataset[i].phase);
             }
-            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterName(i))->endChangeGesture();
-            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterName(i))->endChangeGesture();
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialGainParameterID(i))->endChangeGesture();
+            audioProcessor.apvts.getParameter(Synthesizer::OscillatorParameters::getPartialPhaseParameterID(i))->endChangeGesture();
         }
     }
 

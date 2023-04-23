@@ -16,8 +16,6 @@
 namespace Synthesizer
 {
     constexpr int SYNTH_MAX_VOICES = 32;                    //The number of voices the synth can handle simultaneously
-    constexpr int LOOKUP_POINTS = HARMONIC_N * 32;          //The number of calculated points in the lookup table
-    const int LOOKUP_SIZE = ceil(log2(HARMONIC_N) + 1);     //The number of mipmaps that need to be generated to avoid aliasing at a given harmonic count
 
     struct AdditiveSynthParameters : public juce::AudioProcessorValueTreeState::Listener
     {
@@ -33,7 +31,7 @@ namespace Synthesizer
             removeListener(this);
         }
 
-        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const
         {
             auto paramLayoutSchema = createParameterLayout();
             auto params = paramLayoutSchema->getParameters(false);
@@ -45,7 +43,7 @@ namespace Synthesizer
             }
         }
 
-        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const
         {
             auto paramLayoutSchema = createParameterLayout();
             auto params = paramLayoutSchema->getParameters(false);
@@ -56,12 +54,6 @@ namespace Synthesizer
                 apvts.removeParameterListener(id, listener);
             }
         }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            paramMap[parameterID] = newValue;
-        }
-
 
         /// @brief Creates and adds the synthesizer's parameters into a parameter group
         /// @return unique pointer to the group
@@ -216,6 +208,11 @@ namespace Synthesizer
     private:
         juce::AudioProcessorValueTreeState& apvts;
         std::unordered_map<juce::String, std::atomic<float>> paramMap;
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            paramMap[parameterID] = newValue;
+        }
 
         void linkParameters()
         {

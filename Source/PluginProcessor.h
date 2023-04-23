@@ -10,7 +10,7 @@
 
 #include <JuceHeader.h>
 #include "Model/Synthesizer/AdditiveSynthesizer.h"
-#include "Model/Effects/FXProcessorChain.h"
+#include "Model/Effects/EffectProcessorChain.h"
 
 //==============================================================================
 /**
@@ -60,8 +60,8 @@ public:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, juce::Identifier(JucePlugin_Name), createParameterLayout() };
 
-    std::unique_ptr<Synthesizer::AdditiveSynthesizer> additiveSynth = std::make_unique<Synthesizer::AdditiveSynthesizer>(apvts);
-    std::unique_ptr<Effects::EffectsChain::FXProcessorChain> fxChain = std::make_unique<Effects::EffectsChain::FXProcessorChain>(apvts);
+    Synthesizer::AdditiveSynthesizer additiveSynth = Synthesizer::AdditiveSynthesizer(apvts);
+    Effects::EffectsChain::EffectProcessorChain fxChain = Effects::EffectsChain::EffectProcessorChain(apvts);
 
     juce::LinearSmoothedValue<float> synthRMS[2];
     juce::Atomic<float> atomicSynthRMS[2];

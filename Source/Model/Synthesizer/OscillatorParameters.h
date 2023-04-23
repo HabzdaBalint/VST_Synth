@@ -11,26 +11,38 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "../../Utils/WorkerThread.h"
 
 namespace Synthesizer
 {
-    constexpr int HARMONIC_N = 256;             //The number of harmonics the oscillator uses
+    constexpr int HARMONIC_N = 256;                         //The number of harmonics the oscillator uses
+    constexpr int LOOKUP_POINTS = HARMONIC_N * 32;          //The number of calculated points in the lookup table
+    const int LOOKUP_SIZE = ceil(log2(HARMONIC_N) + 1);     //The number of mipmaps that need to be generated to avoid aliasing at a given harmonic count
 
-    struct OscillatorParameters : public juce::AudioProcessorValueTreeState::Listener
+    struct OscillatorParameters : public juce::AudioProcessorValueTreeState::Listener,
+                                  public juce::Timer
     {
     public:
         OscillatorParameters(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
         {
+            for (size_t i = 0; i < LOOKUP_SIZE; i++)
+            {
+                mipMap.add(new juce::dsp::LookupTableTransform<float>());
+            }
+
             registerListener(this);
             linkParameters();
+
+            startTimer(25);
         }
 
         ~OscillatorParameters() override
         {
             removeListener(this);
+            lutUpdater.stopThread(10);
         }
 
-        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const
         {
             auto paramLayoutSchema = createParameterLayout();
 
@@ -42,7 +54,7 @@ namespace Synthesizer
             }
         }
 
-        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener)
+        void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const
         {
             auto paramLayoutSchema = createParameterLayout();
             auto params = paramLayoutSchema->getParameters(false);
@@ -52,11 +64,6 @@ namespace Synthesizer
                 auto id = dynamic_cast<juce::RangedAudioParameter*>(param)->getParameterID();
                 apvts.removeParameterListener(id, listener);
             }
-        }
-
-        void parameterChanged(const juce::String &parameterID, float newValue) override
-        {
-            paramMap[parameterID] = newValue;
         }
 
         /// @brief Creates and adds the synthesizer's parameters into a parameter group
@@ -75,7 +82,7 @@ namespace Synthesizer
 
                 // Generating parameters to represent the amplitude percentage values of the partials
                 auto partialGain = std::make_unique<juce::AudioParameterFloat>(
-                    getPartialGainParameterName(i),
+                    getPartialGainParameterID(i),
                     namePrefix + "Gain",
                     juce::NormalisableRange<float>(0.f, 100.f, 0.1), 
                     0.f);
@@ -83,7 +90,7 @@ namespace Synthesizer
 
                 // Generating parameters to represent the phase of the partials. These are represented as a percentage value of 2 * pi radians 
                 auto partialPhase = std::make_unique<juce::AudioParameterFloat>(
-                    getPartialPhaseParameterName(i),
+                    getPartialPhaseParameterID(i),
                     namePrefix + "Phase",
                     juce::NormalisableRange<float>(0.f, 99.9, 0.1), 
                     0.f);
@@ -96,7 +103,7 @@ namespace Synthesizer
         /// @brief Used for making the parameter ids of the the partials' gain parameters consistent
         /// @param index The index of the harmonic
         /// @return A parameter id
-        static const juce::String getPartialGainParameterName(size_t index)
+        static const juce::String getPartialGainParameterID(size_t index)
         {
             return "partial" + juce::String(index) + "gain";
         }
@@ -104,9 +111,56 @@ namespace Synthesizer
         /// @brief Used for making the parameter ids of the the partials' phase parameters consistent
         /// @param index The index of the harmonic
         /// @return A parameter id
-        static const juce::String getPartialPhaseParameterName(size_t index)
+        static const juce::String getPartialPhaseParameterID(size_t index)
         {
             return "partial" + juce::String(index) + "phase";
+        }
+
+        /// @brief Generates a sample of the waveform defined by the parameters of the oscillator.
+        /// @param angle The angle at which the sample is generated (in radians)
+        /// @param harmonics The number of harmonics that are included in the calculation of the sample. Use lower numbers to avoid aliasing
+        /// @return The generated sample
+        const float getSample(float angle, int harmonics) const
+        {
+            jassert(harmonics <= HARMONIC_N);
+
+            float sample = 0.f;
+
+            for (size_t i = 0; i < harmonics; i++)
+            {
+                float gain = partialGains[i]->load() / 100;
+                float phase = partialPhases[i]->load() / 100;
+                if (gain != 0.f)
+                {
+                    sample += gain * sin((i + 1) * angle + phase * juce::MathConstants<float>::twoPi);
+                }
+            }
+
+            return sample;
+        }
+
+        /// @brief Calculates the peak amplitude of the waveform stored in the lookup table
+        /// @return The peak amplitude
+        const float getPeakAmplitude() const
+        {
+            float peakAmplitude = 0.f;
+            float gainToNormalize = 1.f;
+            for (size_t i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the lut
+            {
+                float sample = getSample( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
+
+                if( std::fabs(sample) > peakAmplitude)
+                {
+                    peakAmplitude = std::fabs(sample);
+                }
+            }
+
+            return peakAmplitude;
+        }
+
+        const juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& getLookupTable() const
+        {
+            return mipMap;
         }
 
         std::array<const std::atomic<float>*, HARMONIC_N> partialGains;
@@ -114,6 +168,25 @@ namespace Synthesizer
     private:
         juce::AudioProcessorValueTreeState& apvts;
         std::unordered_map<juce::String, std::atomic<float>> paramMap;
+
+        juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
+        WorkerThread lutUpdater { [&] () { updateLookupTable(); } };
+        std::atomic<bool> needUpdate = { false };
+
+        void parameterChanged(const juce::String &parameterID, float newValue) override
+        {
+            paramMap[parameterID] = newValue;
+            needUpdate = true;
+        }
+
+        void timerCallback()
+        {
+            if (!lutUpdater.isThreadRunning() && needUpdate)
+            {
+                needUpdate = false;
+                lutUpdater.startThread();
+            }
+        }
 
         void linkParameters()
         {
@@ -129,8 +202,36 @@ namespace Synthesizer
 
             for (size_t i = 0; i < HARMONIC_N; i++)
             {
-                partialGains[i] = &paramMap[getPartialGainParameterName(i)];
-                partialPhases[i] = &paramMap[getPartialPhaseParameterName(i)];
+                partialGains[i] = &paramMap[getPartialGainParameterID(i)];
+                partialPhases[i] = &paramMap[getPartialPhaseParameterID(i)];
+            }
+        }
+
+        /// @brief Generates the lookup table with the current parameters
+        void updateLookupTable()
+        {
+            float peakAmplitude = getPeakAmplitude();
+
+            if(peakAmplitude > 0.f)
+            {
+                float gainToNormalize = 1.f / peakAmplitude;
+                for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
+                {
+                    mipMap[i]->initialise(
+                        [this, i, gainToNormalize] (float x) { return gainToNormalize * getSample( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
+                        0, juce::MathConstants<float>::twoPi,
+                        LOOKUP_POINTS / pow(2, i));
+                }
+            }
+            else
+            {
+                for (size_t i = 0; i < LOOKUP_SIZE; i++)
+                {
+                    mipMap[i]->initialise(
+                        [] (float x) { return 0; },
+                        0, juce::MathConstants<float>::twoPi,
+                        2);
+                }
             }
         }
 

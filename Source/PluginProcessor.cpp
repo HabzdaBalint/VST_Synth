@@ -73,8 +73,8 @@ void VST_SynthAudioProcessor::changeProgramName (int index, const juce::String& 
 //==============================================================================
 void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    additiveSynth->prepareToPlay(sampleRate, samplesPerBlock);
-    fxChain->prepareToPlay(sampleRate, samplesPerBlock);
+    additiveSynth.prepareToPlay(sampleRate, samplesPerBlock);
+    fxChain.prepareToPlay(sampleRate, samplesPerBlock);
 
     for (size_t i = 0; i < 2; i++)
     {
@@ -118,7 +118,7 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     for (size_t i = totalNumInputChannels; i < totalNumOutputChannels; i++)
         buffer.clear (i, 0, numSamples);
 
-    additiveSynth->processBlock(buffer, midiMessages);
+    additiveSynth.processBlock(buffer, midiMessages);
 
     for (size_t i = 0; i < 2; i++)
     {
@@ -135,7 +135,7 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         atomicSynthRMS[i].set(synthRMS[i].getCurrentValue());
     }
 
-    fxChain->processBlock(buffer, midiMessages);
+    fxChain.processBlock(buffer, midiMessages);
  
     midiMessages.clear();
 }

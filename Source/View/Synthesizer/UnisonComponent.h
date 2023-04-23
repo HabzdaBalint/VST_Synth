@@ -71,10 +71,7 @@ public:
         addAndMakeVisible(*unisonGainLabel);
     }
 
-    ~UnisonComponent() override
-    {
-
-    }
+    ~UnisonComponent() override {}
 
     void paint(juce::Graphics& g) override {}
 

@@ -20,24 +20,7 @@ namespace Synthesizer
 {
     using Gain = juce::dsp::Gain<float>;
 
-    struct WorkerThread : juce::Thread
-    {
-        WorkerThread(std::function<void()> func) :
-            juce::Thread("Worker"),
-            func(func)
-        {}
-
-        void run() override
-        {
-            func();
-        }
-    private:
-        std::function<void()> func;
-    };
-
-    class AdditiveSynthesizer : public juce::AudioProcessor,
-                                public juce::AudioProcessorValueTreeState::Listener,
-                                public juce::Timer
+    class AdditiveSynthesizer : public juce::AudioProcessor
     {
     public:
         AdditiveSynthesizer(juce::AudioProcessorValueTreeState&);
@@ -64,33 +47,22 @@ namespace Synthesizer
         void releaseResources() override {};
         void processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) override;
 
-        void parameterChanged(const juce::String &parameterID, float newValue) override;
+        const OscillatorParameters& getOscParameters() const
+        {
+            return oscParameters;
+        }
 
-        void timerCallback() override;
-
-        /// @brief Generates a sample of the waveform defined by the parameters of the oscillator.
-        /// @param angle The angle at which the sample is generated (in radians)
-        /// @param harmonics The number of harmonics that are included in the calculation of the sample. Use lower numbers to avoid aliasing
-        /// @return The generated sample
-        const float getSample(float angle, int harmonics);
-
-        /// @brief Calculates the peak amplitude of the waveform stored in the lookup table
-        /// @return The peak amplitude
-        const float getPeakAmplitude();
+        const AdditiveSynthParameters& getSynthParameters() const
+        {
+            return synthParameters;
+        }
 
     private:
         AdditiveSynthParameters synthParameters;
         OscillatorParameters oscParameters;
 
         Gain synthGain;
-
         juce::Synthesiser synth;
-        juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
-        WorkerThread lutUpdater { [&] () { updateLookupTable(); } };
-        std::atomic<bool> needUpdate = { false };
-
-        /// @brief Generates the lookup table with the current parameters
-        void updateLookupTable();
         
         //==============================================================================
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AdditiveSynthesizer)

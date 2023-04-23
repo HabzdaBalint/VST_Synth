@@ -14,17 +14,17 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-#include "EffectUnitEditors.h"
-#include "EffectUnitSelectors.h"
+#include "EffectEditors.h"
+#include "EffectSelectors.h"
 
 class EffectsTab : public juce::Component
 {
 public:
     EffectsTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
     {
-        addAndMakeVisible(*chainSelector);
-        chainEditorViewport->setViewedComponent(new EffectUnitEditors(p), true);
-        addAndMakeVisible(*chainEditorViewport);
+        addAndMakeVisible(*chainSelectors);
+        chainEditorsViewport->setViewedComponent(new EffectEditors(p), true);
+        addAndMakeVisible(*chainEditorsViewport);
     }
 
     ~EffectsTab() override {}
@@ -49,23 +49,23 @@ public:
         juce::Grid effectsEditorGrid;
         effectsEditorGrid.templateRows = { TrackInfo( Fr( 1 ) ) };
         effectsEditorGrid.templateColumns = { TrackInfo( Fr( 3 ) ), TrackInfo( Fr( 8 ) ) };
-        effectsEditorGrid.items = { juce::GridItem( *chainSelector ), juce::GridItem( *chainEditorViewport ) };
+        effectsEditorGrid.items = { juce::GridItem( *chainSelectors ), juce::GridItem( *chainEditorsViewport ) };
 
         effectsEditorGrid.setGap( Px( PADDING_PX ) );
         auto bounds = getLocalBounds();
         bounds.reduce(PADDING_PX, PADDING_PX);
         effectsEditorGrid.performLayout(bounds);
 
-        bounds = chainEditorViewport->getViewedComponent()->getBounds();
-        bounds.setWidth(chainEditorViewport->getLocalBounds().getWidth());
-        chainEditorViewport->getViewedComponent()->setBounds(bounds);
+        bounds = chainEditorsViewport->getViewedComponent()->getBounds();
+        bounds.setWidth(chainEditorsViewport->getLocalBounds().getWidth());
+        chainEditorsViewport->getViewedComponent()->setBounds(bounds);
     }
 
 private:
     VST_SynthAudioProcessor& audioProcessor;
 
-    std::unique_ptr<EffectUnitSelectors> chainSelector = std::make_unique<EffectUnitSelectors>(audioProcessor);
-    std::unique_ptr<juce::Viewport> chainEditorViewport = std::make_unique<juce::Viewport>();
+    std::unique_ptr<EffectSelectors> chainSelectors = std::make_unique<EffectSelectors>(audioProcessor);
+    std::unique_ptr<juce::Viewport> chainEditorsViewport = std::make_unique<juce::Viewport>();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectsTab)
 };

@@ -7,135 +7,147 @@
               companyWebsite="https://github.com/HabzdaBalint/VST_Synth" pluginVST3Category="Instrument,Synth"
               companyName="HabzdaBalint">
   <MAINGROUP id="LS9iqU" name="VST_Synth">
-    <GROUP id="{CC94BD7A-A5C5-68F8-3841-4DEE09832232}" name="Model">
-      <GROUP id="{5CFE8B18-4805-72F5-5AAD-8ECCF0C44030}" name="Effects">
-        <GROUP id="{56870E44-5051-8DB0-3764-14865CF922D4}" name="Chorus">
-          <FILE id="WS4yBa" name="ChorusUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Chorus/ChorusUnit.cpp"/>
-          <FILE id="f6tTC2" name="ChorusUnit.h" compile="0" resource="0" file="Source/Model/Effects/Chorus/ChorusUnit.h"/>
+    <GROUP id="{72888683-BDAD-BDB0-B38B-5F3C5D94287B}" name="Model">
+      <GROUP id="{A66ED9BF-1F0B-A7B0-3CFA-707A29CE38CD}" name="Effects">
+        <GROUP id="{FA3689AA-C257-4157-D441-64B3D4CF5547}" name="Chorus">
+          <FILE id="uG8yEO" name="ChorusProcessor.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Chorus/ChorusProcessor.cpp"/>
+          <FILE id="CeKut2" name="ChorusProcessor.h" compile="0" resource="0"
+                file="Source/Model/Effects/Chorus/ChorusProcessor.h"/>
         </GROUP>
-        <GROUP id="{4FD34DF4-0E4B-0840-5CF3-2047B7B7B755}" name="Compressor">
-          <FILE id="xiQLom" name="CompressorUnit.cpp" compile="1" resource="0"
-                file="Source/Model/Effects/Compressor/CompressorUnit.cpp"/>
-          <FILE id="mpd8Kk" name="CompressorUnit.h" compile="0" resource="0"
-                file="Source/Model/Effects/Compressor/CompressorUnit.h"/>
+        <GROUP id="{2F38D1B5-717E-F5BC-591E-AE94C115D20F}" name="Compressor">
+          <FILE id="fyujmn" name="CompressorProcessor.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Compressor/CompressorProcessor.cpp"/>
+          <FILE id="VacVkQ" name="CompressorProcessor.h" compile="0" resource="0"
+                file="Source/Model/Effects/Compressor/CompressorProcessor.h"/>
         </GROUP>
-        <GROUP id="{74D2169D-AD40-099F-ABED-7B980FC5DFEC}" name="Delay">
-          <FILE id="n8LGRz" name="DelayUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Delay/DelayUnit.cpp"/>
-          <FILE id="Q0AKjj" name="DelayUnit.h" compile="0" resource="0" file="Source/Model/Effects/Delay/DelayUnit.h"/>
+        <GROUP id="{24B04F25-6388-3293-BB80-1D7F95EE9F09}" name="Delay">
+          <FILE id="EJk78r" name="DelayProcessor.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Delay/DelayProcessor.cpp"/>
+          <FILE id="KCQegO" name="DelayProcessor.h" compile="0" resource="0"
+                file="Source/Model/Effects/Delay/DelayProcessor.h"/>
         </GROUP>
-        <GROUP id="{0163080F-F578-BB22-EF72-BDCC6668D02C}" name="Equalizer">
-          <FILE id="e8QD0W" name="EqualizerUnit.cpp" compile="1" resource="0"
-                file="Source/Model/Effects/Equalizer/EqualizerUnit.cpp"/>
-          <FILE id="hdhcpu" name="EqualizerUnit.h" compile="0" resource="0" file="Source/Model/Effects/Equalizer/EqualizerUnit.h"/>
+        <GROUP id="{FC219E5A-7F4B-8AD4-1705-C7BA3583D518}" name="Equalizer">
+          <FILE id="AfsHJT" name="EqualizerProcessor.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Equalizer/EqualizerProcessor.cpp"/>
+          <FILE id="cFWoRB" name="EqualizerProcessor.h" compile="0" resource="0"
+                file="Source/Model/Effects/Equalizer/EqualizerProcessor.h"/>
         </GROUP>
-        <GROUP id="{70BFDE9A-9104-14B9-0601-6F6C46F8AEDA}" name="Filter">
-          <FILE id="KXDASi" name="FilterUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Filter/FilterUnit.cpp"/>
-          <FILE id="S8G8uf" name="FilterUnit.h" compile="0" resource="0" file="Source/Model/Effects/Filter/FilterUnit.h"/>
+        <GROUP id="{B592BD2A-5251-AD48-78A4-2FC9476FC43C}" name="Filter">
+          <FILE id="NFDuCO" name="FilterProcessor.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Filter/FilterProcessor.cpp"/>
+          <FILE id="jggnQ0" name="FilterProcessor.h" compile="0" resource="0"
+                file="Source/Model/Effects/Filter/FilterProcessor.h"/>
         </GROUP>
-        <GROUP id="{C5F305ED-5EDA-F4DD-C88A-76E549AF76DA}" name="Phaser">
-          <FILE id="XqPbBE" name="PhaserUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Phaser/PhaserUnit.cpp"/>
-          <FILE id="iFofN6" name="PhaserUnit.h" compile="0" resource="0" file="Source/Model/Effects/Phaser/PhaserUnit.h"/>
+        <GROUP id="{8A56C7B7-7687-1C77-BECD-87CF0460819B}" name="Phaser">
+          <FILE id="VdTLwt" name="PhaserProcessor.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Phaser/PhaserProcessor.cpp"/>
+          <FILE id="qlqQaA" name="PhaserProcessor.h" compile="0" resource="0"
+                file="Source/Model/Effects/Phaser/PhaserProcessor.h"/>
         </GROUP>
-        <GROUP id="{481B344A-7273-EF81-B9B5-52055B11C363}" name="Reverb">
-          <FILE id="oHkPkB" name="ReverbUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Reverb/ReverbUnit.cpp"/>
-          <FILE id="WycaRu" name="ReverbUnit.h" compile="0" resource="0" file="Source/Model/Effects/Reverb/ReverbUnit.h"/>
+        <GROUP id="{1B504DBF-FCCA-9890-3F0E-77C1D7389368}" name="Reverb">
+          <FILE id="iX5QH8" name="ReverbProcessor.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Reverb/ReverbProcessor.cpp"/>
+          <FILE id="ApGjk6" name="ReverbProcessor.h" compile="0" resource="0"
+                file="Source/Model/Effects/Reverb/ReverbProcessor.h"/>
         </GROUP>
-        <GROUP id="{A0A6A796-9E99-E246-E3B0-749EBB67725F}" name="Tremolo">
-          <FILE id="WkagpG" name="TremoloUnit.cpp" compile="1" resource="0" file="Source/Model/Effects/Tremolo/TremoloUnit.cpp"/>
-          <FILE id="Gq7WnK" name="TremoloUnit.h" compile="0" resource="0" file="Source/Model/Effects/Tremolo/TremoloUnit.h"/>
+        <GROUP id="{F19CAE75-7723-18C1-1879-2C4740E1BD18}" name="Tremolo">
+          <FILE id="xHz1QW" name="TremoloProcessor.cpp" compile="1" resource="0"
+                file="Source/Model/Effects/Tremolo/TremoloProcessor.cpp"/>
+          <FILE id="IGp0ul" name="TremoloProcessor.h" compile="0" resource="0"
+                file="Source/Model/Effects/Tremolo/TremoloProcessor.h"/>
         </GROUP>
-        <FILE id="h6rsFJ" name="EffectProcessorUnit.h" compile="0" resource="0"
-              file="Source/Model/Effects/EffectProcessorUnit.h"/>
-        <FILE id="svguIv" name="FXProcessorChain.cpp" compile="1" resource="0"
-              file="Source/Model/Effects/FXProcessorChain.cpp"/>
-        <FILE id="EWwhE5" name="FXProcessorChain.h" compile="0" resource="0"
-              file="Source/Model/Effects/FXProcessorChain.h"/>
+        <FILE id="sxUTiv" name="EffectProcessor.h" compile="0" resource="0"
+              file="Source/Model/Effects/EffectProcessor.h"/>
+        <FILE id="qBVks8" name="EffectProcessorChain.cpp" compile="1" resource="0"
+              file="Source/Model/Effects/EffectProcessorChain.cpp"/>
+        <FILE id="eLQdJD" name="EffectProcessorChain.h" compile="0" resource="0"
+              file="Source/Model/Effects/EffectProcessorChain.h"/>
       </GROUP>
-      <GROUP id="{7A0550A8-9AF6-EDE7-5674-51D583DC5AAB}" name="Synthesizer">
-        <FILE id="kAE8zv" name="AdditiveSound.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveSound.h"/>
-        <FILE id="ihleU0" name="AdditiveSynthesizer.cpp" compile="1" resource="0"
+      <GROUP id="{59DC4D6D-1210-A7E1-3976-4467AAD576D1}" name="Synthesizer">
+        <FILE id="QtPPau" name="AdditiveSound.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveSound.h"/>
+        <FILE id="Prn6gh" name="AdditiveSynthesizer.cpp" compile="1" resource="0"
               file="Source/Model/Synthesizer/AdditiveSynthesizer.cpp"/>
-        <FILE id="KkdlWG" name="AdditiveSynthesizer.h" compile="0" resource="0"
+        <FILE id="XzcYba" name="AdditiveSynthesizer.h" compile="0" resource="0"
               file="Source/Model/Synthesizer/AdditiveSynthesizer.h"/>
-        <FILE id="Jq971l" name="AdditiveSynthParameters.h" compile="0" resource="0"
+        <FILE id="APD5Od" name="AdditiveSynthParameters.h" compile="0" resource="0"
               file="Source/Model/Synthesizer/AdditiveSynthParameters.h"/>
-        <FILE id="vj74Uw" name="AdditiveVoice.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveVoice.h"/>
-        <FILE id="XqWYhZ" name="OscillatorParameters.h" compile="0" resource="0"
+        <FILE id="PSTbg6" name="AdditiveVoice.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveVoice.h"/>
+        <FILE id="cUkqgm" name="OscillatorParameters.h" compile="0" resource="0"
               file="Source/Model/Synthesizer/OscillatorParameters.h"/>
       </GROUP>
     </GROUP>
+    <GROUP id="{F805E09A-6536-40FC-4542-64447BA38E78}" name="Utils">
+      <FILE id="BmVc9k" name="WorkerThread.h" compile="0" resource="0" file="Source/Utils/WorkerThread.h"/>
+    </GROUP>
     <GROUP id="{EC1B2779-625D-D799-7B24-3885CFCB1DE1}" name="View">
       <GROUP id="{308CD48D-FF9B-C445-F620-C94589914757}" name="Effects">
-        <GROUP id="{0674D946-443A-650B-FCE9-0E952FB0ACDA}" name="EffectEditors">
-          <GROUP id="{649240FF-1065-DD35-B094-780AAAAAA60F}" name="Chorus">
-            <FILE id="fTaFeW" name="ChorusEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectEditors/Chorus/ChorusEditor.h"/>
-          </GROUP>
-          <GROUP id="{34D20DE5-25CC-E1D6-237B-D8CF2F6DE882}" name="Compressor">
-            <FILE id="gpnyHE" name="CompressorEditor.h" compile="0" resource="0"
-                  file="Source/View/Effects/EffectEditors/Compressor/CompressorEditor.h"/>
-          </GROUP>
-          <GROUP id="{B70B5689-A98A-5003-1DA5-DFE29F91ED37}" name="Delay">
-            <FILE id="pRafBk" name="DelayEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectEditors/Delay/DelayEditor.h"/>
-          </GROUP>
-          <GROUP id="{6512D013-58E5-700D-DBE0-F9D7A4DB3DE3}" name="Equalizer">
-            <FILE id="F1heSM" name="EqualizerEditor.h" compile="0" resource="0"
-                  file="Source/View/Effects/EffectEditors/Equalizer/EqualizerEditor.h"/>
-          </GROUP>
-          <GROUP id="{FDB10B41-B3CD-A802-2B97-C42A279D4FD1}" name="Filter">
-            <FILE id="G3I3Hx" name="FilterEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectEditors/Filter/FilterEditor.h"/>
-          </GROUP>
-          <GROUP id="{6E97F6DF-C295-B4BC-A452-90820776D104}" name="Phaser">
-            <FILE id="cOLFO5" name="PhaserEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectEditors/Phaser/PhaserEditor.h"/>
-          </GROUP>
-          <GROUP id="{6BB4E0CA-CA6C-8C64-B1CD-34F4B06BAA5D}" name="Reverb">
-            <FILE id="p8wwuC" name="ReverbEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectEditors/Reverb/ReverbEditor.h"/>
-          </GROUP>
-          <GROUP id="{9FECA442-07F0-0FE6-81D5-260D0683200C}" name="Tremolo">
-            <FILE id="ZLQbKN" name="TremoloEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectEditors/Tremolo/TremoloEditor.h"/>
-          </GROUP>
-          <FILE id="HOaMX3" name="EffectEditorUnit.h" compile="0" resource="0"
-                file="Source/View/Effects/EffectEditors/EffectEditorUnit.h"/>
+        <GROUP id="{206D1FA5-B210-1FA1-0497-9E12E66E6AAF}" name="Chorus">
+          <FILE id="bTrSqn" name="ChorusEditor.h" compile="0" resource="0" file="Source/View/Effects/Chorus/ChorusEditor.h"/>
         </GROUP>
-        <FILE id="ozmRct" name="EffectsTab.h" compile="0" resource="0" file="Source/View/Effects/EffectsTab.h"/>
-        <FILE id="Xl44W7" name="EffectUnitEditors.h" compile="0" resource="0"
-              file="Source/View/Effects/EffectUnitEditors.h"/>
-        <FILE id="srNcn6" name="EffectUnitSelector.h" compile="0" resource="0"
-              file="Source/View/Effects/EffectUnitSelector.h"/>
-        <FILE id="DvuFKw" name="EffectUnitSelectors.h" compile="0" resource="0"
-              file="Source/View/Effects/EffectUnitSelectors.h"/>
+        <GROUP id="{C02C9453-A367-721B-2CA3-B5CB49023D9C}" name="Compressor">
+          <FILE id="eU2Pha" name="CompressorEditor.h" compile="0" resource="0"
+                file="Source/View/Effects/Compressor/CompressorEditor.h"/>
+        </GROUP>
+        <GROUP id="{E6BD7CAF-00DE-B005-BA57-C1E240B7686B}" name="Delay">
+          <FILE id="B1mKWg" name="DelayEditor.h" compile="0" resource="0" file="Source/View/Effects/Delay/DelayEditor.h"/>
+        </GROUP>
+        <GROUP id="{CC662E57-B17A-3138-4117-1CCEF20BAB08}" name="Equalizer">
+          <FILE id="w4uxAn" name="EqualizerEditor.h" compile="0" resource="0"
+                file="Source/View/Effects/Equalizer/EqualizerEditor.h"/>
+        </GROUP>
+        <GROUP id="{EB77551D-3B28-AA1C-6A98-87F479FBF62B}" name="Filter">
+          <FILE id="GZ6RLx" name="FilterEditor.h" compile="0" resource="0" file="Source/View/Effects/Filter/FilterEditor.h"/>
+        </GROUP>
+        <GROUP id="{D46E518B-4803-EB10-BAB8-86AEE565EAE5}" name="Phaser">
+          <FILE id="gswq7Y" name="PhaserEditor.h" compile="0" resource="0" file="Source/View/Effects/Phaser/PhaserEditor.h"/>
+        </GROUP>
+        <GROUP id="{57B5E05B-9FF2-24F5-2B62-D8B7A92B217E}" name="Reverb">
+          <FILE id="edXpSf" name="ReverbEditor.h" compile="0" resource="0" file="Source/View/Effects/Reverb/ReverbEditor.h"/>
+        </GROUP>
+        <GROUP id="{068A624C-EE9C-F044-185D-0B2D4AF87244}" name="Tremolo">
+          <FILE id="PyF7ff" name="TremoloEditor.h" compile="0" resource="0" file="Source/View/Effects/Tremolo/TremoloEditor.h"/>
+        </GROUP>
+        <FILE id="ErhhRU" name="EffectEditor.h" compile="0" resource="0" file="Source/View/Effects/EffectEditor.h"/>
+        <FILE id="BwA3Fo" name="EffectEditors.h" compile="0" resource="0" file="Source/View/Effects/EffectEditors.h"/>
+        <FILE id="ILsGIk" name="EffectSelector.h" compile="0" resource="0"
+              file="Source/View/Effects/EffectSelector.h"/>
+        <FILE id="VR9rmq" name="EffectSelectors.h" compile="0" resource="0"
+              file="Source/View/Effects/EffectSelectors.h"/>
+        <FILE id="JWEwsI" name="EffectsTab.h" compile="0" resource="0" file="Source/View/Effects/EffectsTab.h"/>
       </GROUP>
       <GROUP id="{719C8F43-30EA-618B-B28C-2A68E0EA4282}" name="Oscillator">
-        <FILE id="q6ZDwy" name="OscillatorTab.h" compile="0" resource="0" file="Source/View/Oscillator/OscillatorTab.h"/>
-        <FILE id="XnUdj0" name="PartialSlider.h" compile="0" resource="0" file="Source/View/Oscillator/PartialSlider.h"/>
-        <FILE id="BVJYr4" name="WaveformEditor.h" compile="0" resource="0"
+        <FILE id="ASC9Z2" name="OscillatorTab.h" compile="0" resource="0" file="Source/View/Oscillator/OscillatorTab.h"/>
+        <FILE id="Kz0Uke" name="PartialSlider.h" compile="0" resource="0" file="Source/View/Oscillator/PartialSlider.h"/>
+        <FILE id="a6es8J" name="WaveformEditor.h" compile="0" resource="0"
               file="Source/View/Oscillator/WaveformEditor.h"/>
-        <FILE id="QFiKjT" name="WaveformViewer.h" compile="0" resource="0"
+        <FILE id="HX237s" name="WaveformViewer.h" compile="0" resource="0"
               file="Source/View/Oscillator/WaveformViewer.h"/>
       </GROUP>
       <GROUP id="{EA596713-99D1-CB52-7D52-ACAF1665347F}" name="Synthesizer">
         <GROUP id="{8D2B08CF-D4E8-CA07-0966-D3748BAB7DC0}" name="Gain">
-          <FILE id="sAsVaO" name="GainKnob.h" compile="0" resource="0" file="Source/View/Synthesizer/Gain/GainKnob.h"/>
-          <FILE id="Ap8elL" name="LevelMeter.h" compile="0" resource="0" file="Source/View/Synthesizer/Gain/LevelMeter.h"/>
-          <FILE id="CKZdiX" name="SynthGainComponent.h" compile="0" resource="0"
+          <FILE id="R77Ou4" name="GainKnob.h" compile="0" resource="0" file="Source/View/Synthesizer/Gain/GainKnob.h"/>
+          <FILE id="yeodF8" name="LevelMeter.h" compile="0" resource="0" file="Source/View/Synthesizer/Gain/LevelMeter.h"/>
+          <FILE id="VuT7LW" name="SynthGainComponent.h" compile="0" resource="0"
                 file="Source/View/Synthesizer/Gain/SynthGainComponent.h"/>
         </GROUP>
-        <FILE id="c1berf" name="ADSRComponent.h" compile="0" resource="0" file="Source/View/Synthesizer/ADSRComponent.h"/>
-        <FILE id="HSEOyy" name="PhaseComponent.h" compile="0" resource="0"
+        <FILE id="vZsgwA" name="ADSRComponent.h" compile="0" resource="0" file="Source/View/Synthesizer/ADSRComponent.h"/>
+        <FILE id="qRv7Iv" name="PhaseComponent.h" compile="0" resource="0"
               file="Source/View/Synthesizer/PhaseComponent.h"/>
-        <FILE id="nXA3hl" name="SynthesizerTab.h" compile="0" resource="0"
+        <FILE id="SjIfXR" name="SynthesizerTab.h" compile="0" resource="0"
               file="Source/View/Synthesizer/SynthesizerTab.h"/>
-        <FILE id="S1DLQS" name="TuningComponent.h" compile="0" resource="0"
+        <FILE id="upuYey" name="TuningComponent.h" compile="0" resource="0"
               file="Source/View/Synthesizer/TuningComponent.h"/>
-        <FILE id="sknqmW" name="UnisonComponent.h" compile="0" resource="0"
+        <FILE id="TFjXg1" name="UnisonComponent.h" compile="0" resource="0"
               file="Source/View/Synthesizer/UnisonComponent.h"/>
-        <FILE id="YmU8zG" name="WaveformSelector.h" compile="0" resource="0"
+        <FILE id="qrjwca" name="WaveformSelector.h" compile="0" resource="0"
               file="Source/View/Synthesizer/WaveformSelector.h"/>
-        <FILE id="bQlNH4" name="WaveformSelectorItems.h" compile="0" resource="0"
+        <FILE id="U6NtVE" name="WaveformSelectorItems.h" compile="0" resource="0"
               file="Source/View/Synthesizer/WaveformSelectorItems.h"/>
       </GROUP>
-      <FILE id="nCA7wG" name="EditorParameters.h" compile="0" resource="0"
+      <FILE id="cJvw71" name="EditorParameters.h" compile="0" resource="0"
             file="Source/View/EditorParameters.h"/>
-      <FILE id="nGD34R" name="VST_SynthLookAndFeel.h" compile="0" resource="0"
+      <FILE id="ID5cH4" name="VST_SynthLookAndFeel.h" compile="0" resource="0"
             file="Source/View/VST_SynthLookAndFeel.h"/>
     </GROUP>
     <FILE id="wWVVQt" name="PluginEditor.cpp" compile="1" resource="0"

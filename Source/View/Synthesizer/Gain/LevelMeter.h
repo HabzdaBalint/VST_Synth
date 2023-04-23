@@ -42,10 +42,7 @@ public:
         g.fillRoundedRectangle(bounds.removeFromLeft(scaledValue), 4.f);
     }
 
-    void resized() override
-    {
-        repaint();
-    }
+    void resized() override {}
 
     void timerCallback() override
     {
