@@ -27,17 +27,12 @@ public:
 
     void paint(juce::Graphics& g) override
     {
-        level = audioProcessor.atomicSynthRMS[channelIndex].get();
-
-        if(level < -60.f)
-            level = -60.f;
-
         auto bounds = getLocalBounds().toFloat();
         bounds.reduce(PADDING_PX, PADDING_PX);
         g.setColour(findColour(juce::TextButton::buttonColourId));
         g.fillRoundedRectangle(bounds, 4.f);
 
-        auto scaledValue = juce::jmap(level, -60.f, 0.f, 0.f, bounds.getWidth());
+        auto scaledValue = juce::jmap(level, LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, 0.f, bounds.getWidth());
         g.setColour(findColour(juce::TextButton::buttonOnColourId));
         g.fillRoundedRectangle(bounds.removeFromLeft(scaledValue), 4.f);
     }
@@ -46,7 +41,14 @@ public:
 
     void timerCallback() override
     {
-        repaint();
+        float previousLevel = level;
+        level = audioProcessor.atomicSynthRMS[channelIndex].get();
+
+        level = juce::jlimit(LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, level);
+        previousLevel = juce::jlimit(LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, previousLevel);
+
+        if( level != previousLevel)
+            repaint();
     }
 
 private:
@@ -54,7 +56,7 @@ private:
 
     int channelIndex = 0;
 
-    float level = -90.f;
+    float level = LEVEL_METER_LOWER_LIMIT;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LevelMeter)
 };

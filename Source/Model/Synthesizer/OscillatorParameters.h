@@ -212,20 +212,18 @@ namespace Synthesizer
         {
             float peakAmplitude = getPeakAmplitude();
 
-            if(peakAmplitude > 0.f)
+            float gainToNormalize;
+            for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
             {
-                float gainToNormalize = 1.f / peakAmplitude;
-                for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
+                if(peakAmplitude > 0.f)
                 {
+                    gainToNormalize = 1.f / peakAmplitude;
                     mipMap[i]->initialise(
                         [this, i, gainToNormalize] (float x) { return gainToNormalize * getSample( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
                         0, juce::MathConstants<float>::twoPi,
                         LOOKUP_POINTS / pow(2, i));
                 }
-            }
-            else
-            {
-                for (size_t i = 0; i < LOOKUP_SIZE; i++)
+                else
                 {
                     mipMap[i]->initialise(
                         [] (float x) { return 0; },

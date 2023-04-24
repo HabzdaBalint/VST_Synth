@@ -32,3 +32,6 @@ constexpr int HEIGHT_UNISON_KNOB_PX = 115;
 
 constexpr int WIDTH_WAVEFORM_SELECTOR_PX = 120;
 constexpr int HEIGHT_WAVEFORM_SELECTOR_PX = 50;
+
+constexpr float LEVEL_METER_UPPER_LIMIT = 0.f;
+constexpr float LEVEL_METER_LOWER_LIMIT = -60.f;

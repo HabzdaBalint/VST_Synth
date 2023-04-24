@@ -95,7 +95,7 @@ namespace Synthesizer
                         }
 
                         //Generating the fundamental data for the sample
-                        bufferPointer[sample] += velocityGain * (*mipMap[mipMapIndex])(fundamentalCurrentAngle[channel]);
+                        bufferPointer[sample] += velocityGain * (*mipMap[mipMapIndex])[fundamentalCurrentAngle[channel]];
 
                         fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
 
@@ -109,7 +109,7 @@ namespace Synthesizer
                                     unisonCurrentAngles[channel][unison] -= juce::MathConstants<float>::twoPi;
                                 }
 
-                                bufferPointer[sample] += velocityGain * ( unisonGain / 100 ) * (*mipMap[mipMapIndex])(unisonCurrentAngles[channel][unison]);
+                                bufferPointer[sample] += velocityGain * (unisonGain / 100) * (*mipMap[mipMapIndex])[unisonCurrentAngles[channel][unison]];
 
                                 unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
                             }
