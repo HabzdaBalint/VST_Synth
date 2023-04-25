@@ -14,6 +14,50 @@
 
 namespace Synthesizer
 {
+    struct UnisonPairAngleData
+    {
+        float upperCurrentAngle[2] = {0.f , 0.f};
+        float lowerCurrentAngle[2] = {0.f , 0.f};
+        float upperAngleDelta = 0.f;
+        float lowerAngleDelta = 0.f;
+        float upperFrequencyOffset = 0.f;
+        float lowerFrequencyOffset = 0.f;
+
+        void reset()
+        {
+            upperCurrentAngle[0] = 0.f;
+            upperCurrentAngle[1] = 0.f;
+            lowerCurrentAngle[0] = 0.f;
+            lowerCurrentAngle[1] = 0.f;
+            upperAngleDelta = 0.f;
+            lowerAngleDelta = 0.f;
+            upperFrequencyOffset = 0.f;
+            lowerFrequencyOffset = 0.f;
+        }
+    };
+
+    struct VoiceAngleData
+    {
+        float currentAngle[2] = {0.f , 0.f};
+        float angleDelta = 0.f;
+        float frequency = 0.f;
+
+        UnisonPairAngleData unisonData[5];
+
+        void reset()
+        {
+            currentAngle[0] = 0.f;
+            currentAngle[1] = 0.f;
+            angleDelta = 0.f;
+            frequency = 0.f;
+
+            for (size_t i = 0; i < 5; i++)
+            {
+                unisonData[i].reset();
+            }
+        }
+    };
+
     class AdditiveVoice : public juce::SynthesiserVoice
     {
     public:
@@ -74,62 +118,50 @@ namespace Synthesizer
         /// @param numSamples Length of the buffer
         void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override
         {   //No point in updating variables and calculating samples if velocity is 0 or if the voice is not in use
-            if( isVoiceActive() && !bypassPlaying && velocityGain != 0.f )
+            if( isVoiceActive() && velocityGain > 0.f )
             {
-                generatedBuffer.clear();
-                generatedBuffer.setSize(2, numSamples, false, false, true);
-
-                int unisonCount = (int)synthParameters.unisonCount->load();
-                float unisonGain = synthParameters.unisonGain->load();
-
-                /*render buffer, apply gain*/
-                for (size_t channel = 0; channel < 2; channel++)
+                if( !bypassPlaying )
                 {
-                    auto* bufferPointer = generatedBuffer.getWritePointer(channel, 0);
+                    generatedBuffer.clear();
+                    generatedBuffer.setSize(2, numSamples, false, false, true);
 
-                    for (size_t sample = 0; sample < numSamples; sample++)
+                    unisonPairCount = (int)synthParameters.unisonCount->load();
+                    unisonGain = synthParameters.unisonGain->load() / 100.f;
+
+                    /*render buffer, apply gain*/
+                    for (size_t channel = 0; channel < 2; channel++)
                     {
-                        if (fundamentalCurrentAngle[channel] > juce::MathConstants<float>::twoPi)
+                        auto* bufferPointer = generatedBuffer.getWritePointer(channel, 0);
+
+                        for (size_t sample = 0; sample < numSamples; sample++)
                         {
-                            fundamentalCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
-                        }
+                            //Generating the fundamental data for the sample
+                            bufferPointer[sample] += getFundamentalSample(channel);
 
-                        //Generating the fundamental data for the sample
-                        bufferPointer[sample] += velocityGain * (*mipMap[mipMapIndex])[fundamentalCurrentAngle[channel]];
-
-                        fundamentalCurrentAngle[channel] += fundamentalAngleDelta;
-
-                        //Generating unison data for the sample
-                        if( unisonGain > 0.f )
-                        {
-                            for (size_t unison = 0; unison < unisonCount; unison++)
+                            //Generating unison data for the sample
+                            if( unisonGain > 0.f )
                             {
-                                if (unisonCurrentAngles[channel][unison] > juce::MathConstants<float>::twoPi)
+                                for (size_t unison = 0; unison < unisonPairCount; unison++)
                                 {
-                                    unisonCurrentAngles[channel][unison] -= juce::MathConstants<float>::twoPi;
+                                    bufferPointer[sample] += getUnisonSample(channel, unison);
                                 }
-
-                                bufferPointer[sample] += velocityGain * (unisonGain / 100) * (*mipMap[mipMapIndex])[unisonCurrentAngles[channel][unison]];
-
-                                unisonCurrentAngles[channel][unison] += unisonAngleDeltas[unison];
                             }
+
+                            //Applying the envelope to the sample
+                            bufferPointer[sample] *= amplitudeADSR.getNextSample();
                         }
-
-                        //Applying the envelope to the sample
-                        bufferPointer[sample] *= amplitudeADSR.getNextSample();
                     }
-                }
-                
-                for (size_t channel = 0; channel < 2; channel++)
-                {
-                    outputBuffer.addFrom (channel, startSample, generatedBuffer, channel, 0, numSamples);
-
-                    if (!amplitudeADSR.isActive())
+                    
+                    for (size_t channel = 0; channel < 2; channel++)
                     {
-                        clearCurrentNote();
+                        outputBuffer.addFrom (channel, startSample, generatedBuffer, channel, 0, numSamples);
+
+                        if (!amplitudeADSR.isActive())
+                        {
+                            clearCurrentNote();
+                        }
                     }
                 }
-
                 updateFrequencies();
                 updateAngles();
             }
@@ -143,34 +175,75 @@ namespace Synthesizer
 
         const juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap;
 
+        VoiceAngleData voiceData;
+
         float velocityGain = 0;
         int currentNote = 0;
         bool bypassPlaying = false;
 
+        int unisonPairCount = 0;
+        float unisonGain = 0.f;
+
         float pitchWheelOffset = 0;
 
-        float fundamentalCurrentAngle[2] = { 0,0 };
-        float fundamentalAngleDelta = 0;
-        float fundamentalFrequency = 0;
-
-        float unisonCurrentAngles[2][10] = { { 0,0,0,0,0,0,0,0,0,0 }, { 0,0,0,0,0,0,0,0,0,0 } };
-        float unisonAngleDeltas[10] = { 0,0,0,0,0,0,0,0,0,0 };
-        float unisonFrequencyOffsets[5] = { 0,0,0,0,0 };
-
-        float highestCurrentFrequency = 0;
+        float highestCurrentFrequency = 0.f;
         int mipMapIndex = 0;
 
         juce::ADSR amplitudeADSR;
 
+        /// @brief Generates a sample for the fundamental of the voice
+        /// @param channel The channel where the sample is needed (for random phase per channel)
+        /// @return The generated sample
+        const float getFundamentalSample(const int channel)
+        {
+            if (voiceData.currentAngle[channel] > juce::MathConstants<float>::twoPi)
+            {
+                voiceData.currentAngle[channel] -= juce::MathConstants<float>::twoPi;
+            }
+
+            //Generating the fundamental data for the sample
+            float sample = velocityGain * (*mipMap[mipMapIndex])[voiceData.currentAngle[channel]];
+
+            voiceData.currentAngle[channel] += voiceData.angleDelta;
+
+            return sample;
+        }
+
+        /// @brief Generates a sample for the unison of the voice
+        /// @param channel The channel where the sample is needed (for random phase per channel)
+        /// @param unisonNumber The unison pair to generate with
+        /// @return The generated sample
+        const float getUnisonSample(const int channel, const int unisonNumber)
+        {
+            if (voiceData.unisonData[unisonNumber].upperCurrentAngle[channel] > juce::MathConstants<float>::twoPi)
+            {
+                voiceData.unisonData[unisonNumber].upperCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
+            }
+            if (voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] > juce::MathConstants<float>::twoPi)
+            {
+                voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
+            }
+
+            float sample = velocityGain * unisonGain * (*mipMap[mipMapIndex])[voiceData.unisonData[unisonNumber].upperCurrentAngle[channel]];
+            sample += velocityGain * unisonGain * (*mipMap[mipMapIndex])[voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel]];
+
+            voiceData.unisonData[unisonNumber].upperCurrentAngle[channel] += voiceData.unisonData[unisonNumber].upperAngleDelta;
+            voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] += voiceData.unisonData[unisonNumber].lowerAngleDelta;
+
+            return sample;
+        }
+
         /// @brief Used to randomise the starting phases of all generated waveforms
         void updatePhases()
         {
+            unisonPairCount = synthParameters.unisonCount->load();
             for (size_t channel = 0; channel < 2; channel++)
             {
-                fundamentalCurrentAngle[channel] = getRandomPhase();
-                for (size_t i = 0; i < 2 * synthParameters.unisonCount->load(); i++)
+                voiceData.currentAngle[channel] = getRandomPhase() + ( ( synthParameters.globalPhase->load() / 100 ) * juce::MathConstants<float>::twoPi );
+                for (size_t unison = 0; unison < unisonPairCount; unison++)
                 {
-                    unisonCurrentAngles[channel][i] = getRandomPhase();
+                    voiceData.unisonData[unison].upperCurrentAngle[channel] = getRandomPhase() + ( ( synthParameters.globalPhase->load() / 100 ) * juce::MathConstants<float>::twoPi );
+                    voiceData.unisonData[unison].lowerCurrentAngle[channel] = getRandomPhase() + ( ( synthParameters.globalPhase->load() / 100 ) * juce::MathConstants<float>::twoPi );
                 }
             }       
         }
@@ -179,33 +252,37 @@ namespace Synthesizer
         /// @return Returns the generated offset
         const float getRandomPhase()
         {
-            return (((rng.nextFloat() * synthParameters.randomPhaseRange->load() / 100) + ( synthParameters.globalPhase->load() / 100 ) ) * juce::MathConstants<float>::twoPi);
+            return ((rng.nextFloat() * synthParameters.randomPhaseRange->load() / 100) * juce::MathConstants<float>::twoPi);
         }
 
         /// @brief Called to update frequencies with current parameters
         void updateFrequencies()
         {
             //formula for equal temperament from midi note# with A4 at 440Hz
-            fundamentalFrequency = 440.f * pow(2, ((float)currentNote - 69.f) / 12);
+            voiceData.frequency = 440.f * pow(2, ((float)currentNote - 69.f) / 12);
+
             //Applying octave, semitone and fine tuning and pitchwheel offsets
             float unifiedGlobalTuningOffset = pow(2, synthParameters.oscillatorOctaves->load() + (synthParameters.oscillatorSemitones->load() / 12) + (synthParameters.oscillatorFine->load() / 1200) + (synthParameters.pitchWheelRange->load() * pitchWheelOffset / 12));
-            fundamentalFrequency *= unifiedGlobalTuningOffset;
+            voiceData.frequency *= unifiedGlobalTuningOffset;
 
             /*Calculating evenly spaced unison frequency offsets and applying the global tuning offset*/
+            unisonPairCount = synthParameters.unisonCount->load();
             float unisonTuningRange = pow(2, synthParameters.unisonDetune->load() / 1200);
-            float unisonTuningStep = (unisonTuningRange - 1) / synthParameters.unisonCount->load();
-            for (size_t i = 0; i < synthParameters.unisonCount->load(); i++)
+            float unisonTuningStep = (unisonTuningRange - 1) / unisonPairCount;
+
+            for (size_t unison = 0; unison < unisonPairCount; unison++)
             {
-                unisonFrequencyOffsets[i] = 1 + (unisonTuningStep * (i + 1));
+                voiceData.unisonData[unison].upperFrequencyOffset = 1.f + (unisonTuningStep * (unison + 1));
+                voiceData.unisonData[unison].lowerFrequencyOffset = 1.f / ( 1.f + (unisonTuningStep * (unison + 1)));
             }
 
-            if (synthParameters.unisonCount->load() > 0)
+            if (unisonPairCount > 0)
             {
-                highestCurrentFrequency = fundamentalFrequency * unisonTuningRange;
+                highestCurrentFrequency = voiceData.frequency * unisonTuningRange;
             }
             else
             {
-                highestCurrentFrequency = fundamentalFrequency;
+                highestCurrentFrequency = voiceData.frequency;
             }
 
             findMipMapToUse();
@@ -215,19 +292,21 @@ namespace Synthesizer
         void updateAngles()
         {
             auto sampleRate = getSampleRate();
-            float cyclesPerSample = fundamentalFrequency / sampleRate;
-            fundamentalAngleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
+            float cyclesPerSample = voiceData.frequency / sampleRate;
+            voiceData.angleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
 
-            for (size_t i = 0; i < (2 * synthParameters.unisonCount->load()); i += 2)
+            unisonPairCount = synthParameters.unisonCount->load();
+            for (size_t unison = 0; unison < unisonPairCount; unison++)
             {
-                cyclesPerSample = (fundamentalFrequency * unisonFrequencyOffsets[i]) / sampleRate;
-                unisonAngleDeltas[i] = cyclesPerSample * juce::MathConstants<float>::twoPi;
-                cyclesPerSample = (fundamentalFrequency / unisonFrequencyOffsets[i]) / sampleRate;
-                unisonAngleDeltas[i + 1] = cyclesPerSample * juce::MathConstants<float>::twoPi;
+                cyclesPerSample = (voiceData.frequency * voiceData.unisonData[unison].upperFrequencyOffset) / sampleRate;
+                voiceData.unisonData[unison].upperAngleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
+
+                cyclesPerSample = (voiceData.frequency * voiceData.unisonData[unison].lowerFrequencyOffset) / sampleRate;
+                voiceData.unisonData[unison].lowerAngleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
             }
         }
 
-        /// @brief Checks the highest possible overtone the current highest generated frequency (including the up-tuned unison waveforms) that can safely be generated without aliasing at the current sample-rate and selects the right lookup table with the correct number of overtones. Playback is skipped entirely if such a look-up table doesn't exist
+        /// @brief Checks the highest possible overtone the current highest generated frequency (including the up-tuned unison voices) that can safely be generated without aliasing at the current sample-rate and selects the right lookup table with the correct number of overtones. Playback is skipped entirely if such a look-up table doesn't exist
         void findMipMapToUse()
         {
             float highestGeneratedOvertone = getSampleRate();
@@ -235,7 +314,7 @@ namespace Synthesizer
             while (highestGeneratedOvertone >= (getSampleRate() / 2) && mipMapIndex < LOOKUP_SIZE)
             {
                 mipMapIndex++;
-                highestGeneratedOvertone = highestCurrentFrequency * (HARMONIC_N / pow(2, mipMapIndex));
+                highestGeneratedOvertone = highestCurrentFrequency * std::ceilf((HARMONIC_N / pow(2.f, (float)mipMapIndex)));
             }
 
             if(mipMapIndex >= LOOKUP_SIZE)
@@ -252,26 +331,19 @@ namespace Synthesizer
         void resetProperties()
         {
             generatedBuffer.clear();
+
             velocityGain = 0;
             currentNote = 0;
+            bypassPlaying = false;
 
-            pitchWheelOffset = 0;
+            unisonPairCount = 0;
+            unisonGain = 0.f;
 
-            fundamentalCurrentAngle[0] = 0;
-            fundamentalCurrentAngle[1] = 0;
-            fundamentalAngleDelta = 0;
-            fundamentalFrequency = 0;
+            pitchWheelOffset = 0.f;
 
-            for (size_t i = 0; i < 10; i++)
-            {
-                unisonAngleDeltas[i] = 0;
-                unisonCurrentAngles[0][i] = 0;
-                unisonCurrentAngles[1][i] = 0;
-            }
-            for (size_t i = 0; i < 5; i++)
-            {
-                unisonFrequencyOffsets[i] = 0;
-            }
+            highestCurrentFrequency = 0.f;
+
+            voiceData.reset();
         }
 
         void updateADSRParams()
