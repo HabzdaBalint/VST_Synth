@@ -65,9 +65,10 @@ namespace Effects::Tremolo
         }
     }
 
-    void TremoloProcessor::releaseResources() 
+    void TremoloProcessor::releaseResources()
     {
-        dryWetMixer.reset();
+        currentAngle = 0.f;
+        angleDelta = 0.f;
     }
     
     void TremoloProcessor::registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const

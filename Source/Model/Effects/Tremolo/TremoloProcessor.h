@@ -14,8 +14,6 @@
 
 namespace Effects::Tremolo
 {
-    using DryWetMixer = juce::dsp::DryWetMixer<float>;
-
     static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
         std::unique_ptr<juce::AudioProcessorParameterGroup> tremoloGroup (
@@ -63,8 +61,6 @@ namespace Effects::Tremolo
         EffectEditor* createEditorUnit() override;
 
     private:
-        DryWetMixer dryWetMixer;
-
         float depth = 0;
         float rate = 0;
         bool isAutoPan = false;
