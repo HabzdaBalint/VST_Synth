@@ -24,6 +24,8 @@
 namespace Effects::EffectsChain
 {
     static const juce::StringArray choices = { "Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo" };
+    enum EffectChoices { Empty = 0, EQ = 1, Filter = 2, Compressor = 3, Delay = 4, Reverb = 5, Chorus = 6, Phaser = 7, Tremolo = 8 };
+
     const int FX_MAX_SLOTS = choices.size() - 1;
 
     struct EffectSlot
@@ -101,7 +103,7 @@ namespace Effects::EffectsChain
     }
 
     class EffectProcessorChain : public juce::AudioProcessor,
-                             public juce::AudioProcessorValueTreeState::Listener
+                                 public juce::AudioProcessorValueTreeState::Listener
     {
     public:
         EffectProcessorChain(juce::AudioProcessorValueTreeState&);
@@ -132,7 +134,8 @@ namespace Effects::EffectsChain
 
         void registerListener(juce::AudioProcessorValueTreeState::Listener*) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener*) const;
-
+        
+        bool isProcessorInChain(const std::type_info& type) const;
         const juce::Array<EffectEditor*> getLoadedEffectEditors() const;
 
     private:
@@ -141,6 +144,7 @@ namespace Effects::EffectsChain
         juce::OwnedArray<EffectSlot> chain;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
+
 
         //==============================================================================
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectProcessorChain)

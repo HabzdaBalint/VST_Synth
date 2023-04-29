@@ -128,7 +128,7 @@ namespace Synthesizer
                     unisonPairCount = (int)synthParameters.unisonCount->load();
                     unisonGain = synthParameters.unisonGain->load() / 100.f;
 
-                    /*render buffer, apply gain*/
+                    /*render buffer*/
                     for (size_t channel = 0; channel < 2; channel++)
                     {
                         auto* bufferPointer = generatedBuffer.getWritePointer(channel, 0);
@@ -146,15 +146,15 @@ namespace Synthesizer
                                     bufferPointer[sample] += getUnisonSample(channel, unison);
                                 }
                             }
-
-                            //Applying the envelope to the sample
-                            bufferPointer[sample] *= amplitudeADSR.getNextSample();
                         }
                     }
+
+                    //Applying the envelope to the buffer
+                    amplitudeADSR.applyEnvelopeToBuffer(generatedBuffer, 0, numSamples);
                     
                     for (size_t channel = 0; channel < 2; channel++)
                     {
-                        outputBuffer.addFrom (channel, startSample, generatedBuffer, channel, 0, numSamples);
+                        outputBuffer.addFrom(channel, startSample, generatedBuffer, channel, 0, numSamples);
 
                         if (!amplitudeADSR.isActive())
                         {

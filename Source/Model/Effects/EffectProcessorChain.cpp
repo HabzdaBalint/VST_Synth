@@ -118,40 +118,41 @@ namespace Effects::EffectsChain
                     chain[idx]->processor.load()->prepareToPlay(getSampleRate(), getBlockSize());
             }
         }
-        else
+        else if(parameterID.contains("fxChoice"))
         {
             jassert(juce::isPositiveAndBelow(newValue, choices.size()));
 
+            auto choice = static_cast<EffectChoices>(newValue);
             int idx = getFXIndexFromChoiceParameterID(parameterID);
 
             std::unique_ptr<Effects::EffectProcessor> newProcessor;
-            switch ((int)newValue)
+            switch (choice)
             {
-            case 0:
+            case Empty:
                 newProcessor = nullptr;
                 break;
-            case 1:
+            case EQ:
                 newProcessor = std::make_unique<Effects::Equalizer::EqualizerProcessor>(apvts);
                 break;
-            case 2:
+            case Filter:
                 newProcessor = std::make_unique<Effects::Filter::FilterProcessor>(apvts);
                 break;
-            case 3:
+            case Compressor:
                 newProcessor = std::make_unique<Effects::Compressor::CompressorProcessor>(apvts);
                 break;
-            case 4:
+            case Delay:
                 newProcessor = std::make_unique<Effects::Delay::DelayProcessor>(apvts);
                 break;
-            case 5:
+            case Reverb:
                 newProcessor = std::make_unique<Effects::Reverb::ReverbProcessor>(apvts);
                 break;
-            case 6:
+            case Chorus:
                 newProcessor = std::make_unique<Effects::Chorus::ChorusProcessor>(apvts);
                 break;
-            case 7:
+            case Phaser:
                 newProcessor = std::make_unique<Effects::Phaser::PhaserProcessor>(apvts);
                 break;
-            case 8:
+            case Tremolo:
                 newProcessor = std::make_unique<Effects::Tremolo::TremoloProcessor>(apvts);
                 break;
             default:
@@ -159,16 +160,39 @@ namespace Effects::EffectsChain
                 break;
             }
 
-            if(newProcessor && getSampleRate() > 0)
+            //If the selected effect is Empty or isn't already on the chain, add it
+            if( !newProcessor || !isProcessorInChain(typeid(*newProcessor)) )
             {
-                newProcessor->prepareToPlay(getSampleRate(), getBlockSize());
-            }
+                if(newProcessor && getSampleRate() > 0)
+                {
+                    newProcessor->prepareToPlay(getSampleRate(), getBlockSize());
+                }
 
-            if(chain[idx]->processor.load())
-            {
-                chain[idx]->processor.load()->releaseResources();
+                if(chain[idx]->processor.load())
+                {
+                    chain[idx]->processor.load()->releaseResources();
+                }
+                chain[idx]->processor = std::move(newProcessor);
             }
-            chain[idx]->processor = std::move(newProcessor);
+            else    //If the new parameter is already in the chain, discard it and load empty instead
+            {
+                auto thisParam = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(parameterID));
+                thisParam->setValueNotifyingHost(thisParam->convertTo0to1(Empty));
+                chain[idx]->processor.store(nullptr);
+            }
         }
     }
+
+    bool EffectProcessorChain::isProcessorInChain(const std::type_info& type) const
+    {
+        for(const auto& item : chain)
+        {
+            if(item->processor.load() && typeid(*item->processor.load()) == type)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
