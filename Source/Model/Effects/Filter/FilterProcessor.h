@@ -30,8 +30,8 @@ namespace Effects::Filter
 
     enum FilterType
     {
-        lowPass,
-        highPass
+        Low_Pass,
+        High_Pass
     };
 
     static const juce::StringArray filterTypeChoices = {"Low-pass", "High-pass"};
@@ -100,7 +100,7 @@ namespace Effects::Filter
         juce::ReferenceCountedArray<Coefficients> makeHighPassCoefficients(float frequency, FilterSlope slope);
 
         template<int Index>
-        void updatePassFilter(PassFilter& chain, const juce::ReferenceCountedArray<Coefficients>& coefficients);
+        void updatePassFilter(PassFilter& filter, const juce::ReferenceCountedArray<Coefficients>& coefficients);
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FilterProcessor);
     };

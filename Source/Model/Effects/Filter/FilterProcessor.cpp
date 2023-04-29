@@ -117,10 +117,10 @@ namespace Effects::Filter
 
             switch (type)
             {
-                case lowPass:
+                case Low_Pass:
                     coeffs = makeLowPassCoefficients(frequency, slope);
                     break;
-                case highPass:
+                case High_Pass:
                     coeffs = makeHighPassCoefficients(frequency, slope);
                     break;
                 default:
@@ -174,10 +174,10 @@ namespace Effects::Filter
     }
 
     template<int Index>
-    void FilterProcessor::updatePassFilter(PassFilter& chain, const juce::ReferenceCountedArray<Coefficients>& coefficients)
+    void FilterProcessor::updatePassFilter(PassFilter& filter, const juce::ReferenceCountedArray<Coefficients>& coefficients)
     {
-        *chain.get<Index>().coefficients = *coefficients[Index];
-        chain.setBypassed<Index>(false);
+        *(filter.get<Index>().coefficients) = *(coefficients[Index]);
+        filter.setBypassed<Index>(false);
     }
 
     EffectEditor* FilterProcessor::createEditorUnit()
