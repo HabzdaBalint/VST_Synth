@@ -12,7 +12,7 @@
 
 #include "../../../View/Effects/Phaser/PhaserEditor.h"
 
-namespace Effects::Phaser
+namespace Processor::Effects::Phaser
 {
     PhaserProcessor::PhaserProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
@@ -88,8 +88,8 @@ namespace Effects::Phaser
         updatePhaserParameters();
     }
     
-    EffectEditor* PhaserProcessor::createEditorUnit()
+    Editor::Effects::EffectEditor* PhaserProcessor::createEditorUnit()
     {
-        return new PhaserEditor(apvts);
+        return new Editor::Effects::PhaserEditor(apvts);
     }
 }

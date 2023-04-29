@@ -12,7 +12,7 @@
 
 #include "AdditiveSynthesizer.h"
 
-namespace Synthesizer
+namespace Processor::Synthesizer
 {
     AdditiveSynthesizer::AdditiveSynthesizer(juce::AudioProcessorValueTreeState& apvts) :
                             AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo())),

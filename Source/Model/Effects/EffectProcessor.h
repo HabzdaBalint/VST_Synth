@@ -14,7 +14,7 @@
 
 #include "../../View/Effects/EffectEditor.h"
 
-namespace Effects
+namespace Processor::Effects
 {
     class EffectProcessor : public juce::AudioProcessor,
                             public juce::AudioProcessorValueTreeState::Listener
@@ -48,7 +48,7 @@ namespace Effects
 
     //=================================================================
 
-        virtual EffectEditor* createEditorUnit() = 0;
+        virtual Editor::Effects::EffectEditor* createEditorUnit() = 0;
 
     protected:
         juce::AudioProcessorValueTreeState& apvts;

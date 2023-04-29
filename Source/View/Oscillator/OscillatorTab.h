@@ -16,56 +16,59 @@
 #include "WaveformViewer.h"
 #include "WaveformEditor.h"
 
-class OscillatorTab : public juce::Component
+namespace Editor::Oscillator
 {
-public:
-    OscillatorTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
+    class OscillatorTab : public juce::Component
     {
-        addAndMakeVisible(*waveformViewer);
-        waveformEditorViewport->setViewedComponent(new WaveformEditor(p), true);
-        addAndMakeVisible(*waveformEditorViewport);
-    }
-
-    ~OscillatorTab() override {}
-
-    void paint(juce::Graphics& g) override
-    {
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-
-        for(auto child : getChildren())
+    public:
+        OscillatorTab(VST_SynthAudioProcessor& p) : audioProcessor(p)
         {
-            auto bounds = child->getBounds();
-            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+            addAndMakeVisible(*waveformViewer);
+            waveformEditorViewport->setViewedComponent(new WaveformEditor(p), true);
+            addAndMakeVisible(*waveformEditorViewport);
         }
-    }
 
-    void resized() override
-    {
-        using TrackInfo = juce::Grid::TrackInfo;
-        using Fr = juce::Grid::Fr;
-        using Px = juce::Grid::Px;
+        ~OscillatorTab() override {}
 
-        juce::Grid grid;
-        grid.templateRows = { TrackInfo( Fr( 3 ) ), TrackInfo( Fr( 4 ) ) };
-        grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
-        grid.items = { juce::GridItem( *waveformViewer ).withColumn( { 1 } ).withRow( { 1 } ), 
-                                       juce::GridItem( *waveformEditorViewport ).withColumn( { 1 } ).withRow( { 2 } ) };
+        void paint(juce::Graphics& g) override
+        {
+            g.setColour(findColour(juce::GroupComponent::outlineColourId));
 
-        grid.setGap( Px( PADDING_PX ) );
-        auto bounds = getLocalBounds();
-        bounds.reduce(PADDING_PX, PADDING_PX);
-        grid.performLayout(bounds);
+            for(auto child : getChildren())
+            {
+                auto bounds = child->getBounds();
+                g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+            }
+        }
 
-        bounds = waveformEditorViewport->getViewedComponent()->getBounds();
-        bounds.setHeight(waveformEditorViewport->getBounds().getHeight() - 8); //8 is the height of the scroll bar
-        waveformEditorViewport->getViewedComponent()->setBounds(bounds);
-    }
+        void resized() override
+        {
+            using TrackInfo = juce::Grid::TrackInfo;
+            using Fr = juce::Grid::Fr;
+            using Px = juce::Grid::Px;
 
-private:
-    VST_SynthAudioProcessor& audioProcessor;
+            juce::Grid grid;
+            grid.templateRows = { TrackInfo( Fr( 3 ) ), TrackInfo( Fr( 4 ) ) };
+            grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+            grid.items = { juce::GridItem( *waveformViewer ).withColumn( { 1 } ).withRow( { 1 } ), 
+                                        juce::GridItem( *waveformEditorViewport ).withColumn( { 1 } ).withRow( { 2 } ) };
 
-    std::unique_ptr<WaveformViewer> waveformViewer = std::make_unique<WaveformViewer>(audioProcessor);
-    std::unique_ptr<juce::Viewport> waveformEditorViewport = std::make_unique<juce::Viewport>();
+            grid.setGap( Px( PADDING_PX ) );
+            auto bounds = getLocalBounds();
+            bounds.reduce(PADDING_PX, PADDING_PX);
+            grid.performLayout(bounds);
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscillatorTab)
-};
+            bounds = waveformEditorViewport->getViewedComponent()->getBounds();
+            bounds.setHeight(waveformEditorViewport->getBounds().getHeight() - 8); //8 is the height of the scroll bar
+            waveformEditorViewport->getViewedComponent()->setBounds(bounds);
+        }
+
+    private:
+        VST_SynthAudioProcessor& audioProcessor;
+
+        std::unique_ptr<WaveformViewer> waveformViewer = std::make_unique<WaveformViewer>(audioProcessor);
+        std::unique_ptr<juce::Viewport> waveformEditorViewport = std::make_unique<juce::Viewport>();
+
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OscillatorTab)
+    };
+}

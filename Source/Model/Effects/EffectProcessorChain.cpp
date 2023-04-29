@@ -13,7 +13,7 @@
 #include <JuceHeader.h>
 #include "EffectProcessorChain.h"
 
-namespace Effects::EffectsChain
+namespace Processor::Effects::EffectsChain
 {
     EffectProcessorChain::EffectProcessorChain(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
@@ -88,9 +88,9 @@ namespace Effects::EffectsChain
         }
     }
 
-    const juce::Array<EffectEditor*> EffectProcessorChain::getLoadedEffectEditors() const
+    const juce::Array<Editor::Effects::EffectEditor*> EffectProcessorChain::getLoadedEffectEditors() const
     {
-        juce::Array<EffectEditor*> editorComponents;
+        juce::Array<Editor::Effects::EffectEditor*> editorComponents;
 
         for(auto item : chain)
         {
@@ -120,7 +120,7 @@ namespace Effects::EffectsChain
         }
         else if(parameterID.contains("fxChoice"))
         {
-            jassert(juce::isPositiveAndBelow(newValue, choices.size()));
+            jassert(juce::isPositiveAndBelow(newValue, chainChoices.size()));
 
             auto choice = static_cast<EffectChoices>(newValue);
             int idx = getFXIndexFromChoiceParameterID(parameterID);
@@ -132,28 +132,28 @@ namespace Effects::EffectsChain
                 newProcessor = nullptr;
                 break;
             case EQ:
-                newProcessor = std::make_unique<Effects::Equalizer::EqualizerProcessor>(apvts);
+                newProcessor = std::make_unique<Equalizer::EqualizerProcessor>(apvts);
                 break;
             case Filter:
-                newProcessor = std::make_unique<Effects::Filter::FilterProcessor>(apvts);
+                newProcessor = std::make_unique<Filter::FilterProcessor>(apvts);
                 break;
             case Compressor:
-                newProcessor = std::make_unique<Effects::Compressor::CompressorProcessor>(apvts);
+                newProcessor = std::make_unique<Compressor::CompressorProcessor>(apvts);
                 break;
             case Delay:
-                newProcessor = std::make_unique<Effects::Delay::DelayProcessor>(apvts);
+                newProcessor = std::make_unique<Delay::DelayProcessor>(apvts);
                 break;
             case Reverb:
-                newProcessor = std::make_unique<Effects::Reverb::ReverbProcessor>(apvts);
+                newProcessor = std::make_unique<Reverb::ReverbProcessor>(apvts);
                 break;
             case Chorus:
-                newProcessor = std::make_unique<Effects::Chorus::ChorusProcessor>(apvts);
+                newProcessor = std::make_unique<Chorus::ChorusProcessor>(apvts);
                 break;
             case Phaser:
-                newProcessor = std::make_unique<Effects::Phaser::PhaserProcessor>(apvts);
+                newProcessor = std::make_unique<Phaser::PhaserProcessor>(apvts);
                 break;
             case Tremolo:
-                newProcessor = std::make_unique<Effects::Tremolo::TremoloProcessor>(apvts);
+                newProcessor = std::make_unique<Tremolo::TremoloProcessor>(apvts);
                 break;
             default:
                 newProcessor = nullptr;

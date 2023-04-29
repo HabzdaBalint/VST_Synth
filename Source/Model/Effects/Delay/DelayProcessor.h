@@ -12,7 +12,7 @@
 
 #include "../EffectProcessor.h"
 
-namespace Effects::Delay
+namespace Processor::Effects::Delay
 {
     using Delay = juce::dsp::DelayLine<float>;
     using Filter = juce::dsp::IIR::Filter<float>;
@@ -80,7 +80,7 @@ namespace Effects::Delay
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
 
-        EffectEditor* createEditorUnit() override;
+        Editor::Effects::EffectEditor* createEditorUnit() override;
 
     private:
         DryWetMixer dryWetMixer;

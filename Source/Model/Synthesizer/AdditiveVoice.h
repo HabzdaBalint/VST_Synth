@@ -12,7 +12,7 @@
 
 #include "AdditiveSynthParameters.h"
 
-namespace Synthesizer
+namespace Processor::Synthesizer
 {
     struct UnisonPairAngleData
     {

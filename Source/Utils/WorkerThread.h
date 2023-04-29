@@ -11,17 +11,20 @@
 #pragma once
 #include <JuceHeader.h>
 
-struct WorkerThread : public juce::Thread
+namespace Utils
 {
-    WorkerThread(std::function<void()> func) :
-        juce::Thread("Worker"),
-        func(func)
-    {}
-
-    void run() override
+    struct WorkerThread : public juce::Thread
     {
-        func();
-    }
-private:
-    std::function<void()> func;
-};
+        WorkerThread(std::function<void()> func) :
+            juce::Thread("Worker"),
+            func(func)
+        {}
+
+        void run() override
+        {
+            func();
+        }
+    private:
+        std::function<void()> func;
+    };
+}

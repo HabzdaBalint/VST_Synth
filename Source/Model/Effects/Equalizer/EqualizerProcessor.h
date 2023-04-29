@@ -12,7 +12,7 @@
 
 #include "../EffectProcessor.h"
 
-namespace Effects::Equalizer
+namespace Processor::Effects::Equalizer
 {
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
@@ -90,7 +90,7 @@ namespace Effects::Equalizer
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
 
-        EffectEditor* createEditorUnit() override;
+        Editor::Effects::EffectEditor* createEditorUnit() override;
 
     private:
         juce::OwnedArray<juce::OwnedArray<Filter>> equalizers;

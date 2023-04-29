@@ -12,7 +12,7 @@
 
 #include "../EffectProcessor.h"
 
-namespace Effects::Compressor
+namespace Processor::Effects::Compressor
 {
     using Compressor = juce::dsp::Compressor<float>;
     using DryWetMixer = juce::dsp::DryWetMixer<float>;
@@ -82,7 +82,7 @@ namespace Effects::Compressor
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
 
-        EffectEditor* createEditorUnit() override;
+        Editor::Effects::EffectEditor* createEditorUnit() override;
 
     private:
         DryWetMixer dryWetMixer;

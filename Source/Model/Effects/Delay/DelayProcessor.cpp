@@ -12,7 +12,7 @@
 
 #include "../../../View/Effects/Delay/DelayEditor.h"
 
-namespace Effects::Delay
+namespace Processor::Effects::Delay
 {
     DelayProcessor::DelayProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
@@ -131,8 +131,8 @@ namespace Effects::Delay
         updateDelayParameters();
     }
     
-    EffectEditor* DelayProcessor::createEditorUnit()
+    Editor::Effects::EffectEditor* DelayProcessor::createEditorUnit()
     {
-        return new DelayEditor(apvts);
+        return new Editor::Effects::DelayEditor(apvts);
     }
 }

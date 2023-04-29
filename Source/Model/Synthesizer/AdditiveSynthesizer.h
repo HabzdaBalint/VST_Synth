@@ -16,7 +16,7 @@
 #include "AdditiveSound.h"
 #include "AdditiveVoice.h"
 
-namespace Synthesizer
+namespace Processor::Synthesizer
 {
     using Gain = juce::dsp::Gain<float>;
 

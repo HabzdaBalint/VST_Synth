@@ -14,83 +14,86 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-class PartialSlider : public juce::Component
+namespace Editor::Oscillator
 {
-public:
-    PartialSlider(VST_SynthAudioProcessor& p, int partialIndex) : audioProcessor(p), partialIndex(partialIndex)
+    class PartialSlider : public juce::Component
     {
-        gainSlider = std::make_unique<juce::Slider>(
-            juce::Slider::SliderStyle::LinearBarVertical,
-            juce::Slider::TextEntryBoxPosition::TextBoxBelow);
-        gainSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            audioProcessor.apvts,
-            Synthesizer::OscillatorParameters::getPartialGainParameterID(partialIndex),
-            *gainSlider);
-        gainSlider->setScrollWheelEnabled(false);
-        gainSlider->setTextValueSuffix("%");
-        gainSlider->setTextBoxIsEditable(false);
-        addAndMakeVisible(*gainSlider);
-
-        phaseSlider = std::make_unique<juce::Slider>(
-            juce::Slider::SliderStyle::LinearBar,
-            juce::Slider::TextEntryBoxPosition::TextBoxBelow);
-        phaseSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            audioProcessor.apvts,
-            Synthesizer::OscillatorParameters::getPartialPhaseParameterID(partialIndex),
-            *phaseSlider);    
-        phaseSlider->setScrollWheelEnabled(false);
-        phaseSlider->setTextValueSuffix("%");
-        phaseSlider->setTextBoxIsEditable(false);
-        addAndMakeVisible(*phaseSlider);
-
-        partialNumberLabel = std::make_unique<juce::Label>();
-        partialNumberLabel->setText("#" + juce::String(partialIndex + 1), juce::NotificationType::dontSendNotification);
-        partialNumberLabel->setJustificationType(juce::Justification::centred);
-        addAndMakeVisible(*partialNumberLabel);
-    }
-
-    ~PartialSlider() override {}
-
-    void paint(juce::Graphics& g) override
-    {
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-
-        for(auto child : getChildren())
+    public:
+        PartialSlider(VST_SynthAudioProcessor& p, int partialIndex) : audioProcessor(p), partialIndex(partialIndex)
         {
-            auto bounds = child->getBounds();
-            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+            gainSlider = std::make_unique<juce::Slider>(
+                juce::Slider::SliderStyle::LinearBarVertical,
+                juce::Slider::TextEntryBoxPosition::TextBoxBelow);
+            gainSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.apvts,
+                Processor::Synthesizer::OscillatorParameters::getPartialGainParameterID(partialIndex),
+                *gainSlider);
+            gainSlider->setScrollWheelEnabled(false);
+            gainSlider->setTextValueSuffix("%");
+            gainSlider->setTextBoxIsEditable(false);
+            addAndMakeVisible(*gainSlider);
+
+            phaseSlider = std::make_unique<juce::Slider>(
+                juce::Slider::SliderStyle::LinearBar,
+                juce::Slider::TextEntryBoxPosition::TextBoxBelow);
+            phaseSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.apvts,
+                Processor::Synthesizer::OscillatorParameters::getPartialPhaseParameterID(partialIndex),
+                *phaseSlider);    
+            phaseSlider->setScrollWheelEnabled(false);
+            phaseSlider->setTextValueSuffix("%");
+            phaseSlider->setTextBoxIsEditable(false);
+            addAndMakeVisible(*phaseSlider);
+
+            partialNumberLabel = std::make_unique<juce::Label>();
+            partialNumberLabel->setText("#" + juce::String(partialIndex + 1), juce::NotificationType::dontSendNotification);
+            partialNumberLabel->setJustificationType(juce::Justification::centred);
+            addAndMakeVisible(*partialNumberLabel);
         }
-    }
 
-    void resized() override
-    {
-        using TrackInfo = juce::Grid::TrackInfo;
-        using Fr = juce::Grid::Fr;
-        using Px = juce::Grid::Px;
+        ~PartialSlider() override {}
 
-        juce::Grid grid;
-        grid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( LABEL_HEIGHT + PADDING_PX ) ) };
-        grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
-        grid.items = {
-            juce::GridItem( *gainSlider ).withColumn( { 1 } ).withRow( { 1 } ),
-            juce::GridItem( *phaseSlider ).withColumn( { 1 } ).withRow( { 2 } ),
-            juce::GridItem( *partialNumberLabel ).withColumn( { 1 } ).withRow( { 3 } ) };
+        void paint(juce::Graphics& g) override
+        {
+            g.setColour(findColour(juce::GroupComponent::outlineColourId));
 
-        grid.setGap( Px( PADDING_PX ) );
-        auto bounds = getLocalBounds();
-        bounds.reduce(PADDING_PX/2, PADDING_PX/2);
-        grid.performLayout(bounds);
-    }
-    
-private:
-    VST_SynthAudioProcessor& audioProcessor;
+            for(auto child : getChildren())
+            {
+                auto bounds = child->getBounds();
+                g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+            }
+        }
 
-    int partialIndex;
+        void resized() override
+        {
+            using TrackInfo = juce::Grid::TrackInfo;
+            using Fr = juce::Grid::Fr;
+            using Px = juce::Grid::Px;
 
-    std::unique_ptr<juce::Slider> gainSlider, phaseSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainSliderAttachment, phaseSliderAttachment;
+            juce::Grid grid;
+            grid.templateRows = { TrackInfo( Fr( 5 ) ), TrackInfo( Px( HEIGHT_PARTIAL_PHASE_PX ) ), TrackInfo( Px( LABEL_HEIGHT + PADDING_PX ) ) };
+            grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+            grid.items = {
+                juce::GridItem( *gainSlider ).withColumn( { 1 } ).withRow( { 1 } ),
+                juce::GridItem( *phaseSlider ).withColumn( { 1 } ).withRow( { 2 } ),
+                juce::GridItem( *partialNumberLabel ).withColumn( { 1 } ).withRow( { 3 } ) };
 
-    std::unique_ptr<juce::Label> partialNumberLabel;
+            grid.setGap( Px( PADDING_PX ) );
+            auto bounds = getLocalBounds();
+            bounds.reduce(PADDING_PX/2, PADDING_PX/2);
+            grid.performLayout(bounds);
+        }
+        
+    private:
+        VST_SynthAudioProcessor& audioProcessor;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PartialSlider)
-};
+        int partialIndex;
+
+        std::unique_ptr<juce::Slider> gainSlider, phaseSlider;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainSliderAttachment, phaseSliderAttachment;
+
+        std::unique_ptr<juce::Label> partialNumberLabel;
+
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PartialSlider)
+    };
+}

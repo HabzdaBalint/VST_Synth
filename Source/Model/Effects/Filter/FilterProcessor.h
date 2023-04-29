@@ -12,7 +12,7 @@
 
 #include "../EffectProcessor.h"
 
-namespace Effects::Filter
+namespace Processor::Effects::Filter
 {
     using Filter = juce::dsp::IIR::Filter<float>;
     using Coefficients = juce::dsp::IIR::Coefficients<float>;
@@ -86,7 +86,7 @@ namespace Effects::Filter
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
 
-        EffectEditor* createEditorUnit() override;
+        Editor::Effects::EffectEditor* createEditorUnit() override;
 
     private:
         juce::OwnedArray<PassFilter> filters;

@@ -12,7 +12,7 @@
 
 #include "../EffectProcessor.h"
 
-namespace Effects::Chorus
+namespace Processor::Effects::Chorus
 {
     using Chorus = juce::dsp::Chorus<float>;
 
@@ -75,7 +75,7 @@ namespace Effects::Chorus
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         
-        EffectEditor* createEditorUnit() override;
+        Editor::Effects::EffectEditor* createEditorUnit() override;
 
     private:
         Chorus chorus;

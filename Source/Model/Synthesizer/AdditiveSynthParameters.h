@@ -13,7 +13,7 @@
 #include <JuceHeader.h>
 #include "OscillatorParameters.h"
 
-namespace Synthesizer
+namespace Processor::Synthesizer
 {
     constexpr int SYNTH_MAX_VOICES = 32;                    //The number of voices the synth can handle simultaneously
 

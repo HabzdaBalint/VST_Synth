@@ -12,7 +12,7 @@
 
 #include "../../../View/Effects/Reverb/ReverbEditor.h"
 
-namespace Effects::Reverb
+namespace Processor::Effects::Reverb
 {
     ReverbProcessor::ReverbProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
@@ -90,8 +90,8 @@ namespace Effects::Reverb
         updateReverbParameters();
     }
     
-    EffectEditor* ReverbProcessor::createEditorUnit()
+    Editor::Effects::EffectEditor* ReverbProcessor::createEditorUnit()
     {
-        return new ReverbEditor(apvts);
+        return new Editor::Effects::ReverbEditor(apvts);
     }
 }

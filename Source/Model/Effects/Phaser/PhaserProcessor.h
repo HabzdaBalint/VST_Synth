@@ -12,7 +12,7 @@
 
 #include "../EffectProcessor.h"
 
-namespace Effects::Phaser
+namespace Processor::Effects::Phaser
 {
     using Phaser = juce::dsp::Phaser<float>;
 
@@ -75,7 +75,7 @@ namespace Effects::Phaser
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         
-        EffectEditor* createEditorUnit() override;
+        Editor::Effects::EffectEditor* createEditorUnit() override;
 
     private:
         Phaser phaser;

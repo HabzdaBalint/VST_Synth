@@ -12,16 +12,19 @@
 
 #include <JuceHeader.h>
 
-class EffectEditor : public juce::Component
+namespace Editor::Effects
 {
-public:
-    EffectEditor() {}
+    class EffectEditor : public juce::Component
+    {
+    public:
+        EffectEditor() {}
 
-    ~EffectEditor() override {}
+        ~EffectEditor() override {}
 
-    void paint(juce::Graphics& g) override = 0;
+        void paint(juce::Graphics& g) override = 0;
 
-    void resized() override = 0;
+        void resized() override = 0;
 
-    virtual const int getIdealHeight() = 0;
-};
+        virtual const int getIdealHeight() = 0;
+    };
+}

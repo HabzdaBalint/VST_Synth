@@ -14,7 +14,7 @@
 
 #include "../../../View/Effects/Chorus/ChorusEditor.h"
 
-namespace Effects::Chorus
+namespace Processor::Effects::Chorus
 {
     ChorusProcessor::ChorusProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
@@ -90,8 +90,8 @@ namespace Effects::Chorus
         updateChorusParameters();
     }
 
-    EffectEditor* ChorusProcessor::createEditorUnit()
+    Editor::Effects::EffectEditor* ChorusProcessor::createEditorUnit()
     {
-        return new ChorusEditor(apvts);
+        return new Editor::Effects::ChorusEditor(apvts);
     }
 }

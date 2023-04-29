@@ -13,7 +13,7 @@
 #include <JuceHeader.h>
 #include "../../Utils/WorkerThread.h"
 
-namespace Synthesizer
+namespace Processor::Synthesizer
 {
     constexpr int HARMONIC_N = 256;                         //The number of harmonics the oscillator uses
     constexpr int LOOKUP_POINTS = HARMONIC_N * 32;          //The number of calculated points in the lookup table
@@ -170,7 +170,7 @@ namespace Synthesizer
         std::unordered_map<juce::String, std::atomic<float>> paramMap;
 
         juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
-        WorkerThread lutUpdater { [&] () { updateLookupTable(); } };
+        Utils::WorkerThread lutUpdater { [&] () { updateLookupTable(); } };
         std::atomic<bool> needUpdate = { false };
 
         void parameterChanged(const juce::String &parameterID, float newValue) override

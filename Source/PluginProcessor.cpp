@@ -9,23 +9,21 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
 VST_SynthAudioProcessor::VST_SynthAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+    : AudioProcessor (BusesProperties()
+                    #if ! JucePlugin_IsMidiEffect
+                    #if ! JucePlugin_IsSynth
+                    .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+                    #endif
+                    .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+                    #endif
+                    )
 #endif
 {}
 
 VST_SynthAudioProcessor::~VST_SynthAudioProcessor() {}
 
-//==============================================================================
 const juce::String VST_SynthAudioProcessor::getName() const
 {
     return JucePlugin_Name;
@@ -33,29 +31,29 @@ const juce::String VST_SynthAudioProcessor::getName() const
 
 bool VST_SynthAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool VST_SynthAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool VST_SynthAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double VST_SynthAudioProcessor::getTailLengthSeconds() const { return 0.0; }
@@ -70,7 +68,6 @@ const juce::String VST_SynthAudioProcessor::getProgramName (int index) { return 
 
 void VST_SynthAudioProcessor::changeProgramName (int index, const juce::String& newName) { }
 
-//==============================================================================
 void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     additiveSynth.prepareToPlay(sampleRate, samplesPerBlock);
@@ -89,20 +86,20 @@ void VST_SynthAudioProcessor::releaseResources() {}
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool VST_SynthAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
     return true;
-  #else
+#else
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-   #if ! JucePlugin_IsSynth
+#if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-   #endif
+#endif
     return true;
-  #endif
+#endif
 }
 #endif
 
@@ -136,20 +133,17 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     }
 
     fxChain.processBlock(buffer, midiMessages);
- 
+    
     midiMessages.clear();
 }
 
-//==============================================================================
 bool VST_SynthAudioProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor* VST_SynthAudioProcessor::createEditor()
 {
-    return new VST_SynthAudioProcessorEditor(*this);
-    //return new juce::GenericAudioProcessorEditor(*this);
+    return new Editor::VST_SynthAudioProcessorEditor(*this);
 }
 
-//==============================================================================
 void VST_SynthAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     juce::MemoryOutputStream outputStream(destData, true);
@@ -169,19 +163,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout VST_SynthAudioProcessor::cre
 {
     std::vector<std::unique_ptr<juce::AudioProcessorParameterGroup>> layout;
 
-    layout.push_back(Synthesizer::OscillatorParameters::createParameterLayout());
-    layout.push_back(Synthesizer::AdditiveSynthParameters::createParameterLayout());
+    using namespace Processor::Synthesizer;
+    layout.push_back(OscillatorParameters::createParameterLayout());
+    layout.push_back(AdditiveSynthParameters::createParameterLayout());
 
-    layout.push_back(Effects::EffectsChain::createParameterLayout());
+    using namespace Processor::Effects;
+    layout.push_back(EffectsChain::createParameterLayout());
     
-    layout.push_back(Effects::Equalizer::createParameterLayout());
-    layout.push_back(Effects::Filter::createParameterLayout());
-    layout.push_back(Effects::Compressor::createParameterLayout());
-    layout.push_back(Effects::Delay::createParameterLayout());
-    layout.push_back(Effects::Reverb::createParameterLayout());
-    layout.push_back(Effects::Chorus::createParameterLayout());
-    layout.push_back(Effects::Phaser::createParameterLayout());
-    layout.push_back(Effects::Tremolo::createParameterLayout());
+    layout.push_back(Equalizer::createParameterLayout());
+    layout.push_back(Filter::createParameterLayout());
+    layout.push_back(Compressor::createParameterLayout());
+    layout.push_back(Delay::createParameterLayout());
+    layout.push_back(Reverb::createParameterLayout());
+    layout.push_back(Chorus::createParameterLayout());
+    layout.push_back(Phaser::createParameterLayout());
+    layout.push_back(Tremolo::createParameterLayout());
 
     return { layout.begin(), layout.end() };
 }

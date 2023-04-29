@@ -12,7 +12,7 @@
 
 #include "../../../View/Effects/Tremolo/TremoloEditor.h"
 
-namespace Effects::Tremolo
+namespace Processor::Effects::Tremolo
 {
     TremoloProcessor::TremoloProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
@@ -114,9 +114,9 @@ namespace Effects::Tremolo
         angleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
     }
 
-    EffectEditor* TremoloProcessor::createEditorUnit()
+    Editor::Effects::EffectEditor* TremoloProcessor::createEditorUnit()
     {
-        return new TremoloEditor(apvts);
+        return new Editor::Effects::TremoloEditor(apvts);
     }
 }
 

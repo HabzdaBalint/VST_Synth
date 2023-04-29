@@ -21,12 +21,12 @@
 #include "Phaser/PhaserProcessor.h"
 #include "Tremolo/TremoloProcessor.h"
 
-namespace Effects::EffectsChain
+namespace Processor::Effects::EffectsChain
 {
-    static const juce::StringArray choices = { "Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo" };
+    static const juce::StringArray chainChoices = { "Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo" };
     enum EffectChoices { Empty = 0, EQ = 1, Filter = 2, Compressor = 3, Delay = 4, Reverb = 5, Chorus = 6, Phaser = 7, Tremolo = 8 };
 
-    const int FX_MAX_SLOTS = choices.size() - 1;
+    const int FX_MAX_SLOTS = chainChoices.size() - 1;
 
     struct EffectSlot
     {
@@ -93,7 +93,7 @@ namespace Effects::EffectsChain
             auto processorChoice = std::make_unique<juce::AudioParameterChoice>(
                 getFXChoiceParameterID(i),
                 "FX Slot " + juce::String(i+1),
-                choices,
+                chainChoices,
                 0,
                 attr.withAutomatable(false).withMeta(true));
             fxChainGroup.get()->addChild(std::move(processorChoice));
@@ -136,7 +136,7 @@ namespace Effects::EffectsChain
         void removeListener(juce::AudioProcessorValueTreeState::Listener*) const;
         
         bool isProcessorInChain(const std::type_info& type) const;
-        const juce::Array<EffectEditor*> getLoadedEffectEditors() const;
+        const juce::Array<Editor::Effects::EffectEditor*> getLoadedEffectEditors() const;
 
     private:
         juce::AudioProcessorValueTreeState& apvts;
@@ -144,7 +144,6 @@ namespace Effects::EffectsChain
         juce::OwnedArray<EffectSlot> chain;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
-
 
         //==============================================================================
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectProcessorChain)

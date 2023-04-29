@@ -12,9 +12,6 @@
 #include "Model/Synthesizer/AdditiveSynthesizer.h"
 #include "Model/Effects/EffectProcessorChain.h"
 
-//==============================================================================
-/**
-*/
 class VST_SynthAudioProcessor : public juce::AudioProcessor
 #if JucePlugin_Enable_ARA
     , public juce::AudioProcessorARAExtension
@@ -60,8 +57,8 @@ public:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, juce::Identifier(JucePlugin_Name), createParameterLayout() };
 
-    Synthesizer::AdditiveSynthesizer additiveSynth = Synthesizer::AdditiveSynthesizer(apvts);
-    Effects::EffectsChain::EffectProcessorChain fxChain = Effects::EffectsChain::EffectProcessorChain(apvts);
+    Processor::Synthesizer::AdditiveSynthesizer additiveSynth = Processor::Synthesizer::AdditiveSynthesizer(apvts);
+    Processor::Effects::EffectsChain::EffectProcessorChain fxChain = Processor::Effects::EffectsChain::EffectProcessorChain(apvts);
 
     juce::LinearSmoothedValue<float> synthRMS[2];
     juce::Atomic<float> atomicSynthRMS[2];

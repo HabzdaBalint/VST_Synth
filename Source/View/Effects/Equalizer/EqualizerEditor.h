@@ -16,81 +16,86 @@
 
 #include "../EffectEditor.h"
 
-class EqualizerEditor : public EffectEditor
+namespace Editor::Effects
 {
-public:
-    EqualizerEditor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
+    class EqualizerEditor : public EffectEditor
     {
-        for (size_t i = 0; i < 10; i++)
+    public:
+        EqualizerEditor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
         {
-            bandSliders.add(std::make_unique<juce::Slider>(
-                juce::Slider::SliderStyle::LinearVertical,
-                juce::Slider::TextEntryBoxPosition::TextBoxBelow));
-            bandSliders[i]->setScrollWheelEnabled(false);
-            bandSliders[i]->setTextValueSuffix(" dB");
-            bandSliders[i]->setTextBoxIsEditable(true);
-            addAndMakeVisible(*bandSliders[i]);
+            using namespace Processor::Effects::Equalizer;
 
-            bandSliderAttachments.add(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-                apvts,
-                Effects::Equalizer::getBandGainParameterID(i),
-                *bandSliders[i]));
-            bandLabels.add(std::make_unique<juce::Label>());
+            for (size_t i = 0; i < 10; i++)
+            {
+                bandSliders.add(std::make_unique<juce::Slider>(
+                    juce::Slider::SliderStyle::LinearVertical,
+                    juce::Slider::TextEntryBoxPosition::TextBoxBelow));
+                bandSliders[i]->setScrollWheelEnabled(false);
+                bandSliders[i]->setTextValueSuffix(" dB");
+                bandSliders[i]->setTextBoxIsEditable(true);
+                addAndMakeVisible(*bandSliders[i]);
 
-            bandLabels[i]->setText(Effects::Equalizer::getBandFrequencyLabel(i), juce::NotificationType::dontSendNotification);
-            bandLabels[i]->setJustificationType(juce::Justification::centred);
-            addAndMakeVisible(*bandLabels[i]);
+                bandSliderAttachments.add(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                    apvts,
+                    getBandGainParameterID(i),
+                    *bandSliders[i]));
+                bandLabels.add(std::make_unique<juce::Label>());
 
-            nameLabel = std::make_unique<juce::Label>();
-            nameLabel->setText("EQ", juce::NotificationType::dontSendNotification);
-            nameLabel->setFont(juce::Font(20));
-            nameLabel->setJustificationType(juce::Justification::centredLeft);
-            addAndMakeVisible(*nameLabel);
-        }
-    }
+                bandLabels[i]->setText(getBandFrequencyLabel(i), juce::NotificationType::dontSendNotification);
+                bandLabels[i]->setJustificationType(juce::Justification::centred);
+                addAndMakeVisible(*bandLabels[i]);
 
-    ~EqualizerEditor() override {}
-
-    void paint(juce::Graphics& g) override {}
-
-    void resized() override
-    {
-        using TrackInfo = juce::Grid::TrackInfo;
-        using Fr = juce::Grid::Fr;
-        using Px = juce::Grid::Px;
-
-        juce::Grid grid;
-        grid.templateRows = { TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
-
-        grid.items.add( juce::GridItem( *nameLabel ).withColumn( { 1, 11 } ).withRow( { 1 } ) );
-
-        for (int i = 0; i < Effects::Equalizer::NUM_BANDS; i++)
-        {
-            grid.templateColumns.add( TrackInfo( Fr( 1 ) ) );
-            grid.items.add( juce::GridItem(*bandSliders[i]).withColumn( { i + 1 } ).withRow( { 2 } ) );
-            grid.items.add( juce::GridItem( *bandLabels[i] ).withColumn( { i + 1 } ).withRow( { 3 } ) );
+                nameLabel = std::make_unique<juce::Label>();
+                nameLabel->setText("EQ", juce::NotificationType::dontSendNotification);
+                nameLabel->setFont(juce::Font(20));
+                nameLabel->setJustificationType(juce::Justification::centredLeft);
+                addAndMakeVisible(*nameLabel);
+            }
         }
 
-        grid.rowGap = Px( PADDING_PX );
-        auto bounds = getLocalBounds();
-        bounds.reduce(PADDING_PX, PADDING_PX);
-        grid.performLayout(bounds);
-    }
+        ~EqualizerEditor() override {}
 
-    const int getIdealHeight() override
-    {
-        return 225 + 2 * PADDING_PX;
-    }
+        void paint(juce::Graphics& g) override {}
+
+        void resized() override
+        {
+            using TrackInfo = juce::Grid::TrackInfo;
+            using Fr = juce::Grid::Fr;
+            using Px = juce::Grid::Px;
+
+            juce::Grid grid;
+            grid.templateRows = { TrackInfo( Px( LABEL_HEIGHT ) ), TrackInfo( Fr( 1 ) ), TrackInfo( Px( LABEL_HEIGHT ) ) };
+
+            grid.items.add( juce::GridItem( *nameLabel ).withColumn( { 1, 11 } ).withRow( { 1 } ) );
+
+            for (int i = 0; i < Processor::Effects::Equalizer::NUM_BANDS; i++)
+            {
+                grid.templateColumns.add( TrackInfo( Fr( 1 ) ) );
+                grid.items.add( juce::GridItem(*bandSliders[i]).withColumn( { i + 1 } ).withRow( { 2 } ) );
+                grid.items.add( juce::GridItem( *bandLabels[i] ).withColumn( { i + 1 } ).withRow( { 3 } ) );
+            }
+
+            grid.rowGap = Px( PADDING_PX );
+            auto bounds = getLocalBounds();
+            bounds.reduce(PADDING_PX, PADDING_PX);
+            grid.performLayout(bounds);
+        }
+
+        const int getIdealHeight() override
+        {
+            return 225 + 2 * PADDING_PX;
+        }
 
 
-private:
-    juce::AudioProcessorValueTreeState& apvts;
+    private:
+        juce::AudioProcessorValueTreeState& apvts;
 
-    juce::OwnedArray<juce::Slider> bandSliders;
-    juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> bandSliderAttachments;
-    juce::OwnedArray<juce::Label> bandLabels;
+        juce::OwnedArray<juce::Slider> bandSliders;
+        juce::OwnedArray<juce::AudioProcessorValueTreeState::SliderAttachment> bandSliderAttachments;
+        juce::OwnedArray<juce::Label> bandLabels;
 
-    std::unique_ptr<juce::Label> nameLabel;
+        std::unique_ptr<juce::Label> nameLabel;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EqualizerEditor)
-};
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EqualizerEditor)
+    };
+}

@@ -12,7 +12,7 @@
 
 #include "../EffectProcessor.h"
 
-namespace Effects::Tremolo
+namespace Processor::Effects::Tremolo
 {
     static std::unique_ptr<juce::AudioProcessorParameterGroup> createParameterLayout()
     {
@@ -58,7 +58,7 @@ namespace Effects::Tremolo
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         
-        EffectEditor* createEditorUnit() override;
+        Editor::Effects::EffectEditor* createEditorUnit() override;
 
     private:
         float depth = 0;

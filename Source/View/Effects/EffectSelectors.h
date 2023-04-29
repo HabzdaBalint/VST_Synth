@@ -16,101 +16,108 @@
 
 #include "EffectSelector.h"
 
-class EffectSelectors : public juce::Component,
-                        public juce::AudioProcessorValueTreeState::Listener,
-                        public juce::ComboBox::Listener
+namespace Editor::Effects
 {
-public:
-    EffectSelectors(VST_SynthAudioProcessor& p) : audioProcessor(p)
+    class EffectSelectors : public juce::Component,
+                            public juce::AudioProcessorValueTreeState::Listener,
+                            public juce::ComboBox::Listener
     {
-        for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
+    public:
+        EffectSelectors(VST_SynthAudioProcessor& p) : audioProcessor(p)
         {
-            selectors.add(std::make_unique<EffectSelector>(p, i, selectedIndexes));
-            addAndMakeVisible(*selectors[i]);
-            selectors[i]->getSelector().addListener(this);
+            using namespace Processor::Effects::EffectsChain;
+
+            for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+            {
+                selectors.add(std::make_unique<EffectSelector>(p, i, selectedIndexes));
+                addAndMakeVisible(*selectors[i]);
+                selectors[i]->getSelector().addListener(this);
+            }
+
+            for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+            {
+                audioProcessor.apvts.addParameterListener(getFXChoiceParameterID(i), this);
+            }
         }
 
-        for (size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
+        ~EffectSelectors() override
         {
-            audioProcessor.apvts.addParameterListener(Effects::EffectsChain::getFXChoiceParameterID(i), this);
-        }
-    }
+            using namespace Processor::Effects::EffectsChain;
+            
+            for(size_t i = 0; i < FX_MAX_SLOTS; i++)
+            {
+                audioProcessor.apvts.removeParameterListener(getFXChoiceParameterID(i), this);
+            }
 
-    ~EffectSelectors() override
-    {
-        for(size_t i = 0; i < Effects::EffectsChain::FX_MAX_SLOTS; i++)
+            for(auto selector : selectors)
+            {
+                selector->getSelector().removeListener(this);
+            }
+        }
+
+        void paint(juce::Graphics& g) override
         {
-            audioProcessor.apvts.removeParameterListener(Effects::EffectsChain::getFXChoiceParameterID(i), this);
+            g.setColour(findColour(juce::GroupComponent::outlineColourId));
+
+            for(auto child : getChildren())
+            {
+                auto bounds = child->getBounds();
+                g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+            }
         }
 
-        for(auto selector : selectors)
+        void resized() override
         {
-            selector->getSelector().removeListener(this);
+            using TrackInfo = juce::Grid::TrackInfo;
+            using Fr = juce::Grid::Fr;
+            using Px = juce::Grid::Px;
+
+            juce::Grid chainSelectorGrid;
+            chainSelectorGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
+
+            for(auto selector : selectors)
+            {
+                chainSelectorGrid.templateRows.add( TrackInfo( Fr( 1 ) ) );
+                chainSelectorGrid.items.add(selector);
+            }
+
+            chainSelectorGrid.setGap( Px( PADDING_PX ) );
+            auto bounds = getLocalBounds();
+            bounds.reduce(PADDING_PX, PADDING_PX);
+            chainSelectorGrid.performLayout(bounds);
         }
-    }
 
-    void paint(juce::Graphics& g) override
-    {
-        g.setColour(findColour(juce::GroupComponent::outlineColourId));
-
-        for(auto child : getChildren())
+        void updateSelectors()
         {
-            auto bounds = child->getBounds();
-            g.drawRoundedRectangle(bounds.toFloat(), 4.f, OUTLINE_WIDTH);
+            selectedIndexes.clearQuick();
+            for(auto selector : selectors)
+            {   //collect selected selector indexes
+                selectedIndexes.add(selector->getSelector().getSelectedItemIndex());
+            }
+
+            for(auto selector : selectors)
+            {
+                selector->updateChoices();
+            }
         }
-    }
 
-    void resized() override
-    {
-        using TrackInfo = juce::Grid::TrackInfo;
-        using Fr = juce::Grid::Fr;
-        using Px = juce::Grid::Px;
-
-        juce::Grid chainSelectorGrid;
-        chainSelectorGrid.templateColumns = { TrackInfo( Fr( 1 ) ) };
-
-        for(auto selector : selectors)
+        void parameterChanged(const juce::String &parameterID, float newValue) override
         {
-            chainSelectorGrid.templateRows.add( TrackInfo( Fr( 1 ) ) );
-            chainSelectorGrid.items.add(selector);
+            updateSelectors();
         }
 
-        chainSelectorGrid.setGap( Px( PADDING_PX ) );
-        auto bounds = getLocalBounds();
-        bounds.reduce(PADDING_PX, PADDING_PX);
-        chainSelectorGrid.performLayout(bounds);
-    }
-
-    void updateSelectors()
-    {
-        selectedIndexes.clearQuick();
-        for(auto selector : selectors)
-        {   //collect selected selector indexes
-            selectedIndexes.add(selector->getSelector().getSelectedItemIndex());
-        }
-
-        for(auto selector : selectors)
+        void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override
         {
-            selector->updateChoices();
+            updateSelectors();
         }
-    }
 
-    void parameterChanged(const juce::String &parameterID, float newValue) override
-    {
-        updateSelectors();
-    }
+    private:
+        VST_SynthAudioProcessor& audioProcessor;
 
-    void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override
-    {
-        updateSelectors();
-    }
+        juce::Array<int> selectedIndexes;
 
-private:
-    VST_SynthAudioProcessor& audioProcessor;
+        juce::OwnedArray<EffectSelector> selectors;
 
-    juce::Array<int> selectedIndexes;
-
-    juce::OwnedArray<EffectSelector> selectors;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectSelectors)
-};
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectSelectors)
+    };
+}

@@ -12,7 +12,7 @@
 
 #include "../../../View/Effects/Filter/FilterEditor.h"
 
-namespace Effects::Filter
+namespace Processor::Effects::Filter
 {
     FilterProcessor::FilterProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
@@ -98,7 +98,7 @@ namespace Effects::Filter
         }
     }
 
-    void FilterProcessor::parameterChanged(const juce::String &parameterID, float newValue) 
+    void FilterProcessor::parameterChanged(const juce::String &parameterID, float newValue)
     {
         updateFilterParameters();
     }
@@ -180,8 +180,8 @@ namespace Effects::Filter
         filter.setBypassed<Index>(false);
     }
 
-    EffectEditor* FilterProcessor::createEditorUnit()
+    Editor::Effects::EffectEditor* FilterProcessor::createEditorUnit()
     {
-        return new FilterEditor(apvts);
+        return new Editor::Effects::FilterEditor(apvts);
     }
 }

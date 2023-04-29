@@ -14,49 +14,52 @@
 #include "../../PluginProcessor.h"
 #include "../EditorParameters.h"
 
-class LevelMeter : public juce::Component,
-                   public juce::Timer
+namespace Editor::Synthesizer
 {
-public:
-    LevelMeter(VST_SynthAudioProcessor& p, int channelIndex) : audioProcessor(p), channelIndex(channelIndex)
+    class LevelMeter : public juce::Component,
+                       public juce::Timer
     {
-        startTimerHz(60);
-    }
+    public:
+        LevelMeter(VST_SynthAudioProcessor& p, int channelIndex) : audioProcessor(p), channelIndex(channelIndex)
+        {
+            startTimerHz(60);
+        }
 
-    ~LevelMeter() override {}
+        ~LevelMeter() override {}
 
-    void paint(juce::Graphics& g) override
-    {
-        auto bounds = getLocalBounds().toFloat();
-        bounds.reduce(PADDING_PX, PADDING_PX);
-        g.setColour(findColour(juce::TextButton::buttonColourId));
-        g.fillRoundedRectangle(bounds, 4.f);
+        void paint(juce::Graphics& g) override
+        {
+            auto bounds = getLocalBounds().toFloat();
+            bounds.reduce(PADDING_PX, PADDING_PX);
+            g.setColour(findColour(juce::TextButton::buttonColourId));
+            g.fillRoundedRectangle(bounds, 4.f);
 
-        auto scaledValue = juce::jmap(level, LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, 0.f, bounds.getWidth());
-        g.setColour(findColour(juce::TextButton::buttonOnColourId));
-        g.fillRoundedRectangle(bounds.removeFromLeft(scaledValue), 4.f);
-    }
+            auto scaledValue = juce::jmap(level, LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, 0.f, bounds.getWidth());
+            g.setColour(findColour(juce::TextButton::buttonOnColourId));
+            g.fillRoundedRectangle(bounds.removeFromLeft(scaledValue), 4.f);
+        }
 
-    void resized() override {}
+        void resized() override {}
 
-    void timerCallback() override
-    {
-        float previousLevel = level;
-        level = audioProcessor.atomicSynthRMS[channelIndex].get();
+        void timerCallback() override
+        {
+            float previousLevel = level;
+            level = audioProcessor.atomicSynthRMS[channelIndex].get();
 
-        level = juce::jlimit(LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, level);
-        previousLevel = juce::jlimit(LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, previousLevel);
+            level = juce::jlimit(LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, level);
+            previousLevel = juce::jlimit(LEVEL_METER_LOWER_LIMIT, LEVEL_METER_UPPER_LIMIT, previousLevel);
 
-        if( level != previousLevel)
-            repaint();
-    }
+            if( level != previousLevel)
+                repaint();
+        }
 
-private:
-    VST_SynthAudioProcessor& audioProcessor;
+    private:
+        VST_SynthAudioProcessor& audioProcessor;
 
-    int channelIndex = 0;
+        int channelIndex = 0;
 
-    float level = LEVEL_METER_LOWER_LIMIT;
+        float level = LEVEL_METER_LOWER_LIMIT;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LevelMeter)
-};
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LevelMeter)
+    };
+}

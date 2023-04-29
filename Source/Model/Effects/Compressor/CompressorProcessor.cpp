@@ -12,7 +12,7 @@
 
 #include "../../../View/Effects/Compressor/CompressorEditor.h"
 
-namespace Effects::Compressor
+namespace Processor::Effects::Compressor
 {
     CompressorProcessor::CompressorProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
@@ -92,8 +92,8 @@ namespace Effects::Compressor
         updateCompressorParameters();
     }
 
-    EffectEditor* CompressorProcessor::createEditorUnit()
+    Editor::Effects::EffectEditor* CompressorProcessor::createEditorUnit()
     {
-        return new CompressorEditor(apvts);
+        return new Editor::Effects::CompressorEditor(apvts);
     }
 }

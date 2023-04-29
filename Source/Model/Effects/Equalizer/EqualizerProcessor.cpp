@@ -12,7 +12,7 @@
 
 #include "../../../View/Effects/Equalizer/EqualizerEditor.h"
 
-namespace Effects::Equalizer
+namespace Processor::Effects::Equalizer
 {
     EqualizerProcessor::EqualizerProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
@@ -139,8 +139,8 @@ namespace Effects::Equalizer
         return 31.25 * pow(2, index);
     }
 
-    EffectEditor* EqualizerProcessor::createEditorUnit()
+    Editor::Effects::EffectEditor* EqualizerProcessor::createEditorUnit()
     {
-        return new EqualizerEditor(apvts);
+        return new Editor::Effects::EqualizerEditor(apvts);
     }
 }

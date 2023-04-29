@@ -12,7 +12,7 @@
 
 #include "../EffectProcessor.h"
 
-namespace Effects::Reverb
+namespace Processor::Effects::Reverb
 {
     using Reverb = juce::dsp::Reverb;
 
@@ -75,7 +75,7 @@ namespace Effects::Reverb
         void registerListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener* listener) const;
         
-        EffectEditor* createEditorUnit() override;
+        Editor::Effects::EffectEditor* createEditorUnit() override;
 
     private:
         Reverb reverb;
