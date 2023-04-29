@@ -104,7 +104,18 @@ public:
         bounds.reduce(PADDING_PX, PADDING_PX);
         grid.performLayout(bounds);
     }
-
+    
+    bool isEditorInEditors(const std::type_info& type) const
+    {
+        for(const auto& item : editors)
+        {
+            if(item && typeid(*item) == type)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
 private:
     VST_SynthAudioProcessor& audioProcessor;
@@ -165,18 +176,6 @@ private:
 
             resized();
         }
-    }
-
-    bool isEditorInEditors(const std::type_info& type) const
-    {
-        for(const auto& item : editors)
-        {
-            if(item && typeid(*item) == type)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectEditors)
