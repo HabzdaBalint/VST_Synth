@@ -79,7 +79,7 @@ namespace Editor
     void VST_SynthTabbedComponent::lookAndFeelChanged()
     {
         auto color = findColour(juce::ResizableWindow::backgroundColourId);
-        for (size_t i = 0; i < getNumTabs(); i++)
+        for(int i = 0; i < getNumTabs(); i++)
         {
             setTabBackgroundColour(i, color);
         }

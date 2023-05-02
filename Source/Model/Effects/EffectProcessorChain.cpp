@@ -17,9 +17,10 @@ namespace Processor::Effects::EffectsChain
 {
     EffectProcessorChain::EffectProcessorChain(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
-        for (size_t i = 0; i < FX_MAX_SLOTS ; i++)
+        for(int i = 0; i < FX_MAX_SLOTS ; i++)
         {
-            chain.add(std::make_unique<EffectSlot>());
+            //chain.add(std::make_unique<EffectSlot>());
+            chain.add(std::make_unique<Utils::TripleBuffer<EffectSlot>>());
         }
 
         registerListener(this);
@@ -35,9 +36,11 @@ namespace Processor::Effects::EffectsChain
         setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
         for(auto item : chain)
         {
-            std::shared_ptr<Effects::EffectProcessor> localProcessor = item->processor;
-            if( localProcessor != nullptr )
-                localProcessor->prepareToPlay(sampleRate, samplesPerBlock);
+            item->acquire();
+            auto& localSlot = item->read();
+
+            if( localSlot.processor != nullptr )
+                localSlot.processor->prepareToPlay(sampleRate, samplesPerBlock);
         }
     }
 
@@ -45,9 +48,10 @@ namespace Processor::Effects::EffectsChain
     {
         for(auto item : chain)
         {
-            std::shared_ptr<Effects::EffectProcessor> localProcessor = item->processor;
-            if( localProcessor != nullptr )
-                localProcessor->releaseResources();
+            item->acquire();
+            auto& localSlot = item->read();
+            if( localSlot.processor != nullptr )
+                localSlot.processor->releaseResources();
         }
     }
 
@@ -55,11 +59,12 @@ namespace Processor::Effects::EffectsChain
     {
         for(auto item : chain)
         {
-            if( !item->bypass )
+            item->acquire();
+            auto& localSlot = item->read();
+            if( !localSlot.bypass )
             {
-                std::shared_ptr<Effects::EffectProcessor> localProcessor = item->processor;
-                if( localProcessor != nullptr )
-                    localProcessor->processBlock(buffer, midiMessages);
+                if( localSlot.processor != nullptr )
+                    localSlot.processor->processBlock(buffer, midiMessages);
             }
         }
     }
@@ -94,8 +99,11 @@ namespace Processor::Effects::EffectsChain
 
         for(auto item : chain)
         {
-            if( item->processor.load() )
-                editorComponents.add( item->processor.load()->createEditorUnit() );
+            item->acquire();
+            auto& localSlot = item->read();
+
+            if( localSlot.processor )
+                editorComponents.add( localSlot.processor->createEditorUnit() );
             else
                 editorComponents.add( nullptr );
         }
@@ -108,15 +116,19 @@ namespace Processor::Effects::EffectsChain
         if(parameterID.contains("fxBypass"))
         {
             int idx = getFXIndexFromBypassParameterID(parameterID);
-            chain[idx]->bypass = (bool)newValue;
 
-            if(chain[idx]->processor.load())
+            auto& localSlot = chain[idx]->write();
+            localSlot.bypass = (bool)newValue;
+
+            if( localSlot.processor )
             {
-                if( chain[idx]->bypass )
-                    chain[idx]->processor.load()->releaseResources();
+                if( localSlot.bypass )
+                    localSlot.processor->releaseResources();
                 else if( getSampleRate() > 0 )
-                    chain[idx]->processor.load()->prepareToPlay(getSampleRate(), getBlockSize());
+                    localSlot.processor->prepareToPlay(getSampleRate(), getBlockSize());
             }
+
+            chain[idx]->release();
         }
         else if(parameterID.contains("fxChoice"))
         {
@@ -168,17 +180,26 @@ namespace Processor::Effects::EffectsChain
                     newProcessor->prepareToPlay(getSampleRate(), getBlockSize());
                 }
 
-                if(chain[idx]->processor.load())
+                auto& localSlot = chain[idx]->write();
+
+                if( localSlot.processor )
                 {
-                    chain[idx]->processor.load()->releaseResources();
+                    localSlot.processor->releaseResources();
                 }
-                chain[idx]->processor = std::move(newProcessor);
+                localSlot.processor = std::move(newProcessor);
+
+                chain[idx]->release();
             }
             else    //If the new parameter is already in the chain, discard it and load empty instead
             {
                 auto thisParam = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(parameterID));
                 thisParam->setValueNotifyingHost(thisParam->convertTo0to1(Empty));
-                chain[idx]->processor.store(nullptr);
+
+                auto& localSlot = chain[idx]->write();
+
+                localSlot.processor = nullptr;
+
+                chain[idx]->release();
             }
         }
     }
@@ -187,7 +208,10 @@ namespace Processor::Effects::EffectsChain
     {
         for(const auto& item : chain)
         {
-            if(item->processor.load() && typeid(*item->processor.load()) == type)
+            item->acquire();
+            auto& localSlot = item->read();
+
+            if( localSlot.processor && typeid( *localSlot.processor ) == type)
             {
                 return true;
             }

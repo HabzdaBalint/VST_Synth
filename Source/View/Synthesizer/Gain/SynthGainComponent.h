@@ -27,7 +27,7 @@ namespace Editor::Synthesizer
             addAndMakeVisible(*gainKnob);
 
             auto numChannels = p.getTotalNumOutputChannels();
-            for (size_t i = 0; i < numChannels; i++)
+            for(int i = 0; i < numChannels; i++)
             {
                 levelMeters.add(std::make_unique<LevelMeter>(p, i));
                 addAndMakeVisible(*levelMeters[i]);

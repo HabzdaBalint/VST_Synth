@@ -21,7 +21,7 @@ namespace Processor::Synthesizer
     {
         synth.addSound(new AdditiveSound());
 
-        for (size_t i = 0; i < SYNTH_MAX_VOICES; i++)
+        for(int i = 0; i < SYNTH_MAX_VOICES; i++)
         {
             synth.addVoice(new AdditiveVoice(synthParameters, oscParameters.getLookupTable()));
         }
@@ -37,7 +37,7 @@ namespace Processor::Synthesizer
     void AdditiveSynthesizer::prepareToPlay(double sampleRate, int maximumExpectedSamplesPerBlock)
     {
         synth.setCurrentPlaybackSampleRate(sampleRate);
-        for (size_t i = 0; i < synth.getNumVoices(); i++)
+        for(int i = 0; i < synth.getNumVoices(); i++)
         {
             if (auto voice = dynamic_cast<AdditiveVoice*>(synth.getVoice(i)))
             {

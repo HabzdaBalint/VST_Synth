@@ -108,7 +108,7 @@ namespace Editor::Synthesizer
 
             using namespace Processor::Synthesizer;
 
-            for (size_t i = 0; i < HARMONIC_N; i++)
+            for(int i = 0; i < HARMONIC_N; i++)
             {
                 audioProcessor.apvts.getParameter(OscillatorParameters::getPartialGainParameterID(i))->beginChangeGesture();
                 audioProcessor.apvts.getParameter(OscillatorParameters::getPartialPhaseParameterID(i))->beginChangeGesture();
@@ -172,7 +172,7 @@ namespace Editor::Synthesizer
             std::vector<float> amplitudes;
             amplitudes.resize(r.getWidth());
 
-            for (size_t i = 0; i < amplitudes.size(); i++)
+            for(int i = 0; i < amplitudes.size(); i++)
             {
                 amplitudes[i] = sin( juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1.f ), 0.f, juce::MathConstants<float>::twoPi ) );
             }
@@ -184,7 +184,7 @@ namespace Editor::Synthesizer
             previewPath.startNewSubPath( r.getX(), 
                 juce::jmap( -1 * amplitudes.front(), -1.f, 1.f, (float)r.getY(), (float)( r.getHeight()+r.getY() ) ) );
 
-            for (size_t i = 1; i < amplitudes.size(); i++)
+            for(int i = 1; i < amplitudes.size(); i++)
             {
                 previewPath.lineTo( r.getX() + i, juce::jmap( -1 * amplitudes[i], -1.f, 1.f, (float)r.getY(), (float)( r.getHeight()+r.getY() ) ) );
             }
@@ -212,7 +212,7 @@ namespace Editor::Synthesizer
             juce::Array<PartialState> state;
 
             //A triangle's partials' gains quickly tend to 0. Only odd harmonics are used, and every second odd harmonic is offset by half its phase
-            for (size_t i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
+            for(int i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
             {
                 float gain, phase;
                 
@@ -260,7 +260,7 @@ namespace Editor::Synthesizer
             juce::Array<PartialState> state;
 
             //A square's partials' gains tend to 0 like the triangle's, but slower. Only odd harmonics are used, all in the same phase
-            for (size_t i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
+            for(int i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
             {
                 float gain, phase;
                 
@@ -310,7 +310,7 @@ namespace Editor::Synthesizer
             juce::Array<PartialState> state;
 
             //A sawtooth has every partial in the harmonic series. Every even partial is offset by half its phase
-            for (size_t i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
+            for(int i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
             {
                 float gain, phase;
                 
@@ -358,7 +358,7 @@ namespace Editor::Synthesizer
             juce::Array<PartialState> state;
 
             //A saw-square has every partial, but the even partials are lower in amplitude. Phases are 0
-            for (size_t i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
+            for(int i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
             {
                 float gain, phase;
                 

@@ -73,7 +73,7 @@ void VST_SynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     additiveSynth.prepareToPlay(sampleRate, samplesPerBlock);
     fxChain.prepareToPlay(sampleRate, samplesPerBlock);
 
-    for (size_t i = 0; i < 2; i++)
+    for(int i = 0; i < 2; i++)
     {
         synthRMS[i].reset(sampleRate, 0.3);
         synthRMS[i].setCurrentAndTargetValue(-90.f);
@@ -112,12 +112,12 @@ void VST_SynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
 
     keyboardState.processNextMidiBuffer(midiMessages, 0, numSamples, true);
 
-    for (size_t i = totalNumInputChannels; i < totalNumOutputChannels; i++)
+    for(int i = totalNumInputChannels; i < totalNumOutputChannels; i++)
         buffer.clear (i, 0, numSamples);
 
     additiveSynth.processBlock(buffer, midiMessages);
 
-    for (size_t i = 0; i < 2; i++)
+    for(int i = 0; i < 2; i++)
     {
         synthRMS[i].skip(numSamples);
         auto value = juce::Decibels::gainToDecibels(buffer.getRMSLevel(i, 0, numSamples));

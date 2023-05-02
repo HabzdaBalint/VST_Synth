@@ -51,7 +51,7 @@ namespace Processor::Synthesizer
             angleDelta = 0.f;
             frequency = 0.f;
 
-            for (size_t i = 0; i < 5; i++)
+            for (int i = 0; i < 5; i++)
             {
                 unisonData[i].reset();
             }
@@ -61,7 +61,7 @@ namespace Processor::Synthesizer
     class AdditiveVoice : public juce::SynthesiserVoice
     {
     public:
-        AdditiveVoice(AdditiveSynthParameters& synthParams, const juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap) :
+        AdditiveVoice(AdditiveSynthParameters& synthParams, const juce::OwnedArray<Utils::TripleBuffer<juce::dsp::LookupTableTransform<float>>>& mipMap) :
             synthParameters(synthParams),
             mipMap(mipMap) {}
 
@@ -128,22 +128,25 @@ namespace Processor::Synthesizer
                     unisonPairCount = (int)synthParameters.unisonCount->load();
                     unisonGain = synthParameters.unisonGain->load() / 100.f;
 
+                    mipMap[mipMapIndex]->acquire();
+                    auto& localMipMap = mipMap[mipMapIndex]->read();
+
                     /*render buffer*/
-                    for (size_t channel = 0; channel < 2; channel++)
+                    for (int channel = 0; channel < 2; channel++)
                     {
                         auto* bufferPointer = generatedBuffer.getWritePointer(channel, 0);
 
-                        for (size_t sample = 0; sample < numSamples; sample++)
+                        for (int sample = 0; sample < numSamples; sample++)
                         {
                             //Generating the fundamental data for the sample
-                            bufferPointer[sample] += getFundamentalSample(channel);
+                            bufferPointer[sample] += getFundamentalSample(channel, localMipMap);
 
                             //Generating unison data for the sample
                             if( unisonGain > 0.f )
                             {
-                                for (size_t unison = 0; unison < unisonPairCount; unison++)
+                                for (int unison = 0; unison < unisonPairCount; unison++)
                                 {
-                                    bufferPointer[sample] += getUnisonSample(channel, unison);
+                                    bufferPointer[sample] += getUnisonSample(channel, unison, localMipMap);
                                 }
                             }
                         }
@@ -152,7 +155,7 @@ namespace Processor::Synthesizer
                     //Applying the envelope to the buffer
                     amplitudeADSR.applyEnvelopeToBuffer(generatedBuffer, 0, numSamples);
                     
-                    for (size_t channel = 0; channel < 2; channel++)
+                    for (int channel = 0; channel < 2; channel++)
                     {
                         outputBuffer.addFrom(channel, startSample, generatedBuffer, channel, 0, numSamples);
 
@@ -173,7 +176,7 @@ namespace Processor::Synthesizer
         
         juce::Random rng;
 
-        const juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& mipMap;
+        const juce::OwnedArray<Utils::TripleBuffer<juce::dsp::LookupTableTransform<float>>>& mipMap;
 
         VoiceAngleData voiceData;
 
@@ -194,7 +197,7 @@ namespace Processor::Synthesizer
         /// @brief Generates a sample for the fundamental of the voice
         /// @param channel The channel where the sample is needed (for random phase per channel)
         /// @return The generated sample
-        const float getFundamentalSample(const int channel)
+        const float getFundamentalSample(const int channel, const juce::dsp::LookupTableTransform<float>& localMipMap)
         {
             if (voiceData.currentAngle[channel] > juce::MathConstants<float>::twoPi)
             {
@@ -202,7 +205,7 @@ namespace Processor::Synthesizer
             }
 
             //Generating the fundamental data for the sample
-            float sample = velocityGain * (*mipMap[mipMapIndex])[voiceData.currentAngle[channel]];
+            float sample = velocityGain * localMipMap[voiceData.currentAngle[channel]];
 
             voiceData.currentAngle[channel] += voiceData.angleDelta;
 
@@ -213,7 +216,7 @@ namespace Processor::Synthesizer
         /// @param channel The channel where the sample is needed (for random phase per channel)
         /// @param unisonNumber The unison pair to generate with
         /// @return The generated sample
-        const float getUnisonSample(const int channel, const int unisonNumber)
+        const float getUnisonSample(const int channel, const int unisonNumber, const juce::dsp::LookupTableTransform<float>& localMipMap)
         {
             if (voiceData.unisonData[unisonNumber].upperCurrentAngle[channel] > juce::MathConstants<float>::twoPi)
             {
@@ -224,8 +227,8 @@ namespace Processor::Synthesizer
                 voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
             }
 
-            float sample = velocityGain * unisonGain * (*mipMap[mipMapIndex])[voiceData.unisonData[unisonNumber].upperCurrentAngle[channel]];
-            sample += velocityGain * unisonGain * (*mipMap[mipMapIndex])[voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel]];
+            float sample = velocityGain * unisonGain * localMipMap[voiceData.unisonData[unisonNumber].upperCurrentAngle[channel]];
+            sample += velocityGain * unisonGain * localMipMap[voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel]];
 
             voiceData.unisonData[unisonNumber].upperCurrentAngle[channel] += voiceData.unisonData[unisonNumber].upperAngleDelta;
             voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] += voiceData.unisonData[unisonNumber].lowerAngleDelta;
@@ -237,10 +240,10 @@ namespace Processor::Synthesizer
         void updatePhases()
         {
             unisonPairCount = synthParameters.unisonCount->load();
-            for (size_t channel = 0; channel < 2; channel++)
+            for (int channel = 0; channel < 2; channel++)
             {
                 voiceData.currentAngle[channel] = getRandomPhase() + ( ( synthParameters.globalPhase->load() / 100 ) * juce::MathConstants<float>::twoPi );
-                for (size_t unison = 0; unison < unisonPairCount; unison++)
+                for (int unison = 0; unison < unisonPairCount; unison++)
                 {
                     voiceData.unisonData[unison].upperCurrentAngle[channel] = getRandomPhase() + ( ( synthParameters.globalPhase->load() / 100 ) * juce::MathConstants<float>::twoPi );
                     voiceData.unisonData[unison].lowerCurrentAngle[channel] = getRandomPhase() + ( ( synthParameters.globalPhase->load() / 100 ) * juce::MathConstants<float>::twoPi );
@@ -270,7 +273,7 @@ namespace Processor::Synthesizer
             float unisonTuningRange = pow(2, synthParameters.unisonDetune->load() / 1200);
             float unisonTuningStep = (unisonTuningRange - 1) / unisonPairCount;
 
-            for (size_t unison = 0; unison < unisonPairCount; unison++)
+            for (int unison = 0; unison < unisonPairCount; unison++)
             {
                 voiceData.unisonData[unison].upperFrequencyOffset = 1.f + (unisonTuningStep * (unison + 1));
                 voiceData.unisonData[unison].lowerFrequencyOffset = 1.f / ( 1.f + (unisonTuningStep * (unison + 1)));
@@ -296,7 +299,7 @@ namespace Processor::Synthesizer
             voiceData.angleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
 
             unisonPairCount = synthParameters.unisonCount->load();
-            for (size_t unison = 0; unison < unisonPairCount; unison++)
+            for (int unison = 0; unison < unisonPairCount; unison++)
             {
                 cyclesPerSample = (voiceData.frequency * voiceData.unisonData[unison].upperFrequencyOffset) / sampleRate;
                 voiceData.unisonData[unison].upperAngleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;

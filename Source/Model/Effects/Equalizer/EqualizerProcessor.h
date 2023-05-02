@@ -64,7 +64,7 @@ namespace Processor::Effects::Equalizer
                 "Equalizer", 
                 "|"));
 
-        for (size_t i = 0; i < NUM_BANDS; i++)
+        for(int i = 0; i < NUM_BANDS; i++)
         {
             auto bandGain = std::make_unique<juce::AudioParameterFloat>(
                 getBandGainParameterID(i),

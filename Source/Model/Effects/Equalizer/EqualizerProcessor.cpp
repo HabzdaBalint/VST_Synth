@@ -16,10 +16,10 @@ namespace Processor::Effects::Equalizer
 {
     EqualizerProcessor::EqualizerProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
     {
-        for (size_t i = 0; i < 2; i++)
+        for(int i = 0; i < 2; i++)
         {
             equalizers.add(std::make_unique<juce::OwnedArray<Filter>>());
-            for (size_t j = 0; j < NUM_BANDS; j++)
+            for(int j = 0; j < NUM_BANDS; j++)
             {
                 equalizers[i]->add(std::make_unique<Filter>());
             }
@@ -52,7 +52,7 @@ namespace Processor::Effects::Equalizer
 
         for(auto equalizer : equalizers)
         {
-            for (size_t i = 0; i < NUM_BANDS; i++)
+            for(int i = 0; i < NUM_BANDS; i++)
             {
                 float gain = apvts.getRawParameterValue(getBandGainParameterID(i))->load();
                 updateBand(*(*equalizer)[i], getFrequency(i), proportionalQ(gain, Q_SCALE), juce::Decibels::decibelsToGain(gain));

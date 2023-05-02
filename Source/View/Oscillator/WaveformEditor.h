@@ -22,7 +22,7 @@ namespace Editor::Oscillator
     public:
         WaveformEditor(VST_SynthAudioProcessor& p) : audioProcessor(p)
         {
-            for (size_t i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
+            for(int i = 0; i < Processor::Synthesizer::HARMONIC_N; i++)
             {
                 partialSliders.add(std::make_unique<PartialSlider>(audioProcessor, i));
                 addAndMakeVisible(partialSliders[i]);

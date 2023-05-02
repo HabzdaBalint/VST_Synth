@@ -27,14 +27,14 @@ namespace Editor::Effects
         {
             using namespace Processor::Effects::EffectsChain;
 
-            for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+            for(int i = 0; i < FX_MAX_SLOTS; i++)
             {
                 selectors.add(std::make_unique<EffectSelector>(p, i, selectedIndexes));
                 addAndMakeVisible(*selectors[i]);
                 selectors[i]->getSelector().addListener(this);
             }
 
-            for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+            for(int i = 0; i < FX_MAX_SLOTS; i++)
             {
                 audioProcessor.apvts.addParameterListener(getFXChoiceParameterID(i), this);
             }

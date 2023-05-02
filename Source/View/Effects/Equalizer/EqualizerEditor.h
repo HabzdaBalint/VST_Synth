@@ -25,7 +25,7 @@ namespace Editor::Effects
         {
             using namespace Processor::Effects::Equalizer;
 
-            for (size_t i = 0; i < 10; i++)
+            for(int i = 0; i < 10; i++)
             {
                 bandSliders.add(std::make_unique<juce::Slider>(
                     juce::Slider::SliderStyle::LinearVertical,

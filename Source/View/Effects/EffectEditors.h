@@ -33,7 +33,7 @@ namespace Editor::Effects
         {
             using namespace Processor::Effects::EffectsChain;
 
-            for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+            for(int i = 0; i < FX_MAX_SLOTS; i++)
             {
                 audioProcessor.apvts.addParameterListener(getFXChoiceParameterID(i), this);
             }
@@ -52,7 +52,7 @@ namespace Editor::Effects
         {
             using namespace Processor::Effects::EffectsChain;
 
-            for (size_t i = 0; i < FX_MAX_SLOTS; i++)
+            for(int i = 0; i < FX_MAX_SLOTS; i++)
             {
                 audioProcessor.apvts.removeParameterListener(getFXChoiceParameterID(i), this);
             }

@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "../../Utils/WorkerThread.h"
+#include "../../Utils/TripleBuffer.h"
 
 namespace Processor::Synthesizer
 {
@@ -25,9 +26,9 @@ namespace Processor::Synthesizer
     public:
         OscillatorParameters(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
         {
-            for (size_t i = 0; i < LOOKUP_SIZE; i++)
+            for(int i = 0; i < LOOKUP_SIZE; i++)
             {
-                mipMap.add(new juce::dsp::LookupTableTransform<float>());
+                mipMap.add(std::make_unique<Utils::TripleBuffer<juce::dsp::LookupTableTransform<float>>>());
             }
 
             registerListener(this);
@@ -76,7 +77,7 @@ namespace Processor::Synthesizer
                     "Oscillator", 
                     "|"));
 
-            for (size_t i = 0; i < HARMONIC_N; i++)
+            for(int i = 0; i < HARMONIC_N; i++)
             {
                 juce::String namePrefix = "Partial " + juce::String(i + 1) + " ";
 
@@ -126,7 +127,7 @@ namespace Processor::Synthesizer
 
             float sample = 0.f;
 
-            for (size_t i = 0; i < harmonics; i++)
+            for(int i = 0; i < harmonics; i++)
             {
                 float gain = partialGains[i]->load() / 100;
                 float phase = partialPhases[i]->load() / 100;
@@ -145,7 +146,7 @@ namespace Processor::Synthesizer
         {
             float peakAmplitude = 0.f;
             float gainToNormalize = 1.f;
-            for (size_t i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the lut
+            for(int i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the lut
             {
                 float sample = getSample( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);
 
@@ -158,7 +159,7 @@ namespace Processor::Synthesizer
             return peakAmplitude;
         }
 
-        const juce::OwnedArray<juce::dsp::LookupTableTransform<float>>& getLookupTable() const
+        const juce::OwnedArray<Utils::TripleBuffer<juce::dsp::LookupTableTransform<float>>>& getLookupTable() const
         {
             return mipMap;
         }
@@ -169,7 +170,7 @@ namespace Processor::Synthesizer
         juce::AudioProcessorValueTreeState& apvts;
         std::unordered_map<juce::String, std::atomic<float>> paramMap;
 
-        juce::OwnedArray<juce::dsp::LookupTableTransform<float>> mipMap;
+        juce::OwnedArray<Utils::TripleBuffer<juce::dsp::LookupTableTransform<float>>> mipMap;
         Utils::WorkerThread lutUpdater { [&] () { updateLookupTable(); } };
         std::atomic<bool> needUpdate = { false };
 
@@ -200,7 +201,7 @@ namespace Processor::Synthesizer
                 paramMap.emplace(id, value);
             }
 
-            for (size_t i = 0; i < HARMONIC_N; i++)
+            for(int i = 0; i < HARMONIC_N; i++)
             {
                 partialGains[i] = &paramMap[getPartialGainParameterID(i)];
                 partialPhases[i] = &paramMap[getPartialPhaseParameterID(i)];
@@ -213,22 +214,26 @@ namespace Processor::Synthesizer
             float peakAmplitude = getPeakAmplitude();
 
             float gainToNormalize;
-            for (size_t i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
+            for(int i = 0; i < LOOKUP_SIZE; i++)    //Generating peak-normalized lookup table
             {
                 if(peakAmplitude > 0.f)
                 {
                     gainToNormalize = 1.f / peakAmplitude;
-                    mipMap[i]->initialise(
+                    auto& localMipMap = mipMap[i]->write();
+                    localMipMap.initialise(
                         [this, i, gainToNormalize] (float x) { return gainToNormalize * getSample( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
                         0, juce::MathConstants<float>::twoPi,
                         LOOKUP_POINTS / pow(2, i));
+                    mipMap[i]->release();
                 }
                 else
                 {
-                    mipMap[i]->initialise(
+                    auto& localMipMap = mipMap[i]->write();
+                    localMipMap.initialise(
                         [] (float x) { return 0; },
                         0, juce::MathConstants<float>::twoPi,
                         2);
+                    mipMap[i]->release();
                 }
             }
         }

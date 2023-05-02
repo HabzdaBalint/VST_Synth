@@ -60,11 +60,11 @@ namespace Processor::Effects::Delay
 
         dryWetMixer.pushDrySamples(audioBlock);
 
-        for (size_t channel = 0; channel < 2; channel++)
+        for(int channel = 0; channel < 2; channel++)
         {
             auto *bufferPointer = buffer.getWritePointer(channel);
 
-            for (size_t sample = 0; sample < buffer.getNumSamples(); sample++)
+            for(int sample = 0; sample < buffer.getNumSamples(); sample++)
             {
                 float delayedSample = delay.popSample(channel, delay.getDelay(), true);
 

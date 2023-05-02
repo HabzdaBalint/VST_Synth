@@ -47,7 +47,7 @@ namespace Processor::Effects::Tremolo
 
         updateAngles();
 
-        for (size_t sample = 0; sample < buffer.getNumSamples(); sample++)
+        for(int sample = 0; sample < buffer.getNumSamples(); sample++)
         {
             amplitudeMultiplier = sin(currentAngle);
             amplitudeMultiplier = ( ( -1 * depth * amplitudeMultiplier ) + ( ( -1 * depth ) + 2 ) ) / 2;

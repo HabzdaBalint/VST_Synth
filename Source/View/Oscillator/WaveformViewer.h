@@ -82,7 +82,7 @@ namespace Editor::Oscillator
                 std::vector<float> amplitudes;
                 amplitudes.resize(bounds.getWidth());
 
-                for (size_t i = 0; i < amplitudes.size(); i++)
+                for(int i = 0; i < amplitudes.size(); i++)
                 {
                     amplitudes[i] = audioProcessor.additiveSynth.getOscParameters().getSample(
                         juce::jmap( (float)i, 0.f, (float)( amplitudes.size() - 1 ), 0.f, juce::MathConstants<float>::twoPi ), Processor::Synthesizer::HARMONIC_N);
@@ -94,14 +94,14 @@ namespace Editor::Oscillator
 
                 waveformPath.startNewSubPath(bounds.getX(),
                     juce::jmap( -1 * amplitudes.front(), -1.f, 1.f, (float)bounds.getY(), (float)( bounds.getHeight() + bounds.getY() ) ) );
-                for (size_t i = 1; i < amplitudes.size(); i++)
+                for(int i = 1; i < amplitudes.size(); i++)
                 {
                     waveformPath.lineTo(bounds.getX() + i,
                         juce::jmap( -1 * amplitudes[i], -1.f, 1.f, (float)bounds.getY(), (float)( bounds.getHeight() + bounds.getY() ) ) );
                 }
 
                 int zeroCount = 0;
-                for (size_t i = 0; i < amplitudes.size(); i++)
+                for(int i = 0; i < amplitudes.size(); i++)
                 {
                     if (amplitudes[i] == 0)
                         zeroCount++;

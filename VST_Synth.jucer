@@ -78,6 +78,7 @@
       </GROUP>
     </GROUP>
     <GROUP id="{F805E09A-6536-40FC-4542-64447BA38E78}" name="Utils">
+      <FILE id="ozgRbz" name="TripleBuffer.h" compile="0" resource="0" file="Source/Utils/TripleBuffer.h"/>
       <FILE id="BmVc9k" name="WorkerThread.h" compile="0" resource="0" file="Source/Utils/WorkerThread.h"/>
     </GROUP>
     <GROUP id="{EC1B2779-625D-D799-7B24-3885CFCB1DE1}" name="View">
