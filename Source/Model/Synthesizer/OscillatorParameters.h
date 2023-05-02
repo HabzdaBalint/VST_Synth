@@ -29,6 +29,12 @@ namespace Processor::Synthesizer
             for(int i = 0; i < LOOKUP_SIZE; i++)
             {
                 mipMap.add(std::make_unique<Utils::TripleBuffer<juce::dsp::LookupTableTransform<float>>>());
+                auto& mipMapInstance = mipMap[i]->write();
+                mipMapInstance.initialise([] (float x) { return 0; },
+                        0,
+                        juce::MathConstants<float>::twoPi,
+                        2);
+                mipMap[i]->release();
             }
 
             registerListener(this);
@@ -222,7 +228,8 @@ namespace Processor::Synthesizer
                     auto& localMipMap = mipMap[i]->write();
                     localMipMap.initialise(
                         [this, i, gainToNormalize] (float x) { return gainToNormalize * getSample( x, std::floor( HARMONIC_N / pow(2, i) ) ); },
-                        0, juce::MathConstants<float>::twoPi,
+                        0,
+                        juce::MathConstants<float>::twoPi,
                         LOOKUP_POINTS / pow(2, i));
                     mipMap[i]->release();
                 }
@@ -231,7 +238,8 @@ namespace Processor::Synthesizer
                     auto& localMipMap = mipMap[i]->write();
                     localMipMap.initialise(
                         [] (float x) { return 0; },
-                        0, juce::MathConstants<float>::twoPi,
+                        0,
+                        juce::MathConstants<float>::twoPi,
                         2);
                     mipMap[i]->release();
                 }

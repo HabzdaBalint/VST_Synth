@@ -39,9 +39,6 @@ namespace Processor::Effects::EffectsChain
 
         EffectSlot() {}
 
-        //std::atomic<bool> bypass {false};
-        //std::atomic<std::shared_ptr<EffectProcessor>> processor {nullptr};
-
         bool bypass {false};
         std::unique_ptr<EffectProcessor> processor {nullptr};
     };
@@ -147,7 +144,6 @@ namespace Processor::Effects::EffectsChain
         juce::AudioProcessorValueTreeState& apvts;
 
         juce::OwnedArray<Utils::TripleBuffer<EffectSlot>> chain;
-        //juce::OwnedArray<EffectSlot> chain;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

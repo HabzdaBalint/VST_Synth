@@ -19,7 +19,6 @@ namespace Processor::Effects::EffectsChain
     {
         for(int i = 0; i < FX_MAX_SLOTS ; i++)
         {
-            //chain.add(std::make_unique<EffectSlot>());
             chain.add(std::make_unique<Utils::TripleBuffer<EffectSlot>>());
         }
 
