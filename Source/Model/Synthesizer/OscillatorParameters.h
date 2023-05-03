@@ -17,7 +17,7 @@
 namespace Processor::Synthesizer
 {
     constexpr int HARMONIC_N = 256;                         //The number of harmonics the oscillator uses
-    constexpr int LOOKUP_POINTS = HARMONIC_N * 32;          //The number of calculated points in the lookup table
+    constexpr int LOOKUP_POINTS = 32 * HARMONIC_N;          //The number of calculated points in the lookup table
     const int LOOKUP_SIZE = ceil(log2(HARMONIC_N) + 1);     //The number of mipmaps that need to be generated to avoid aliasing at a given harmonic count
 
     struct OscillatorParameters : public juce::AudioProcessorValueTreeState::Listener,
@@ -151,7 +151,6 @@ namespace Processor::Synthesizer
         const float getPeakAmplitude() const
         {
             float peakAmplitude = 0.f;
-            float gainToNormalize = 1.f;
             for(int i = 0; i < LOOKUP_POINTS; i++)  //Finding the peak amplitude of the lut
             {
                 float sample = getSample( juce::jmap( (float)i, 0.f, LOOKUP_POINTS-1.f, 0.f, juce::MathConstants<float>::twoPi), HARMONIC_N);

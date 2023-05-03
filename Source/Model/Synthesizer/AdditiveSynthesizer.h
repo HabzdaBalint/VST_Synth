@@ -18,8 +18,6 @@
 
 namespace Processor::Synthesizer
 {
-    using Gain = juce::dsp::Gain<float>;
-
     class AdditiveSynthesizer : public juce::AudioProcessor
     {
     public:
@@ -61,7 +59,7 @@ namespace Processor::Synthesizer
         AdditiveSynthParameters synthParameters;
         OscillatorParameters oscParameters;
 
-        Gain synthGain;
+        juce::dsp::Gain<float> synthGain;
         juce::Synthesiser synth;
         
         //==============================================================================

@@ -72,6 +72,8 @@
               file="Source/Model/Synthesizer/AdditiveSynthesizer.h"/>
         <FILE id="APD5Od" name="AdditiveSynthParameters.h" compile="0" resource="0"
               file="Source/Model/Synthesizer/AdditiveSynthParameters.h"/>
+        <FILE id="k8IDp4" name="AdditiveVoice.cpp" compile="1" resource="0"
+              file="Source/Model/Synthesizer/AdditiveVoice.cpp"/>
         <FILE id="PSTbg6" name="AdditiveVoice.h" compile="0" resource="0" file="Source/Model/Synthesizer/AdditiveVoice.h"/>
         <FILE id="cUkqgm" name="OscillatorParameters.h" compile="0" resource="0"
               file="Source/Model/Synthesizer/OscillatorParameters.h"/>
