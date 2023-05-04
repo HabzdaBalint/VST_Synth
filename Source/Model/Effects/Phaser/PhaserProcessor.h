@@ -77,7 +77,14 @@ namespace Processor::Effects::Phaser
         
         Editor::Effects::EffectEditor* createEditorUnit() override;
 
+        const juce::String getName() const override
+        {
+            return "Phaser";
+        }
+
     private:
+        juce::AudioProcessorValueTreeState& apvts;
+        
         Phaser phaser;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;

@@ -60,7 +60,14 @@ namespace Processor::Effects::Tremolo
         
         Editor::Effects::EffectEditor* createEditorUnit() override;
 
+        const juce::String getName() const override
+        {
+            return "Tremolo";
+        }
+
     private:
+        juce::AudioProcessorValueTreeState& apvts;
+
         float depth = 0;
         float rate = 0;
         bool isAutoPan = false;

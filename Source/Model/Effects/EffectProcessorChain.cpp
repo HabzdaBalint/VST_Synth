@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "EffectProcessorChain.h"
+#include <Windows.h>
 
 namespace Processor::Effects::EffectsChain
 {
@@ -19,7 +20,7 @@ namespace Processor::Effects::EffectsChain
     {
         for(int i = 0; i < FX_MAX_SLOTS ; i++)
         {
-            chain.add(std::make_unique<Utils::TripleBuffer<EffectSlot>>());
+            chain.add(std::make_unique<EffectSlot>());
         }
 
         registerListener(this);
@@ -35,22 +36,7 @@ namespace Processor::Effects::EffectsChain
         setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), sampleRate, samplesPerBlock);
         for(auto item : chain)
         {
-            item->acquire();
-            auto& localSlot = item->read();
-
-            if( localSlot.processor != nullptr )
-                localSlot.processor->prepareToPlay(sampleRate, samplesPerBlock);
-        }
-    }
-
-    void EffectProcessorChain::releaseResources()
-    {
-        for(auto item : chain)
-        {
-            item->acquire();
-            auto& localSlot = item->read();
-            if( localSlot.processor != nullptr )
-                localSlot.processor->releaseResources();
+            item->processor.load()->prepareToPlay(sampleRate, samplesPerBlock);
         }
     }
 
@@ -58,13 +44,18 @@ namespace Processor::Effects::EffectsChain
     {
         for(auto item : chain)
         {
-            item->acquire();
-            auto& localSlot = item->read();
-            if( !localSlot.bypass )
+            if( !item->bypass )
             {
-                if( localSlot.processor != nullptr )
-                    localSlot.processor->processBlock(buffer, midiMessages);
+                item->processor.load()->processBlock(buffer, midiMessages);
             }
+        }
+    }
+
+    void EffectProcessorChain::releaseResources()
+    {
+        for(auto item : chain)
+        {
+            item->processor.load()->releaseResources();
         }
     }
 
@@ -98,13 +89,7 @@ namespace Processor::Effects::EffectsChain
 
         for(auto item : chain)
         {
-            item->acquire();
-            auto& localSlot = item->read();
-
-            if( localSlot.processor )
-                editorComponents.add( localSlot.processor->createEditorUnit() );
-            else
-                editorComponents.add( nullptr );
+            editorComponents.add( item->processor.load()->createEditorUnit() );
         }
 
         return editorComponents;
@@ -116,31 +101,24 @@ namespace Processor::Effects::EffectsChain
         {
             int idx = getFXIndexFromBypassParameterID(parameterID);
 
-            auto& localSlot = chain[idx]->write();
-            localSlot.bypass = (bool)newValue;
+            chain[idx]->bypass = bool(newValue);
 
-            if( localSlot.processor )
-            {
-                if( localSlot.bypass )
-                    localSlot.processor->releaseResources();
-                else if( getSampleRate() > 0 )
-                    localSlot.processor->prepareToPlay(getSampleRate(), getBlockSize());
-            }
-
-            chain[idx]->release();
+            if( chain[idx]->bypass )
+                chain[idx]->processor.load()->releaseResources();
+            else if( getSampleRate() > 0 )
+                chain[idx]->processor.load()->prepareToPlay(getSampleRate(), getBlockSize());
         }
         else if(parameterID.contains("fxChoice"))
         {
             jassert(juce::isPositiveAndBelow(newValue, chainChoices.size()));
-
-            auto choice = static_cast<EffectChoices>(newValue);
             int idx = getFXIndexFromChoiceParameterID(parameterID);
 
+            auto choice = static_cast<EffectChoices>(newValue);
             std::unique_ptr<Effects::EffectProcessor> newProcessor;
             switch (choice)
             {
             case Empty:
-                newProcessor = nullptr;
+                newProcessor = std::make_unique<EffectProcessor>();
                 break;
             case EQ:
                 newProcessor = std::make_unique<Equalizer::EqualizerProcessor>(apvts);
@@ -167,55 +145,36 @@ namespace Processor::Effects::EffectsChain
                 newProcessor = std::make_unique<Tremolo::TremoloProcessor>(apvts);
                 break;
             default:
-                newProcessor = nullptr;
-                break;
+                return;
             }
 
-            //If the selected effect is Empty or isn't already on the chain, add it
-            if( !newProcessor || !isProcessorInChain(typeid(*newProcessor)) )
+            //If the selected choice is Empty or isn't already on the chain, add it
+            if( choice == Empty || !isProcessorInChain(*newProcessor) )
             {
-                if(newProcessor && getSampleRate() > 0)
+                if( getSampleRate() > 0 )
                 {
                     newProcessor->prepareToPlay(getSampleRate(), getBlockSize());
                 }
-
-                auto& localSlot = chain[idx]->write();
-
-                if( localSlot.processor )
-                {
-                    localSlot.processor->releaseResources();
-                }
-                localSlot.processor = std::move(newProcessor);
-
-                chain[idx]->release();
+                chain[idx]->processor.store(std::move(newProcessor));
             }
             else    //If the new parameter is already in the chain, discard it and load empty instead
             {
                 auto thisParam = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(parameterID));
                 thisParam->setValueNotifyingHost(thisParam->convertTo0to1(Empty));
-
-                auto& localSlot = chain[idx]->write();
-
-                localSlot.processor = nullptr;
-
-                chain[idx]->release();
+                chain[idx]->processor.store(std::make_unique<EffectProcessor>());
             }
         }
     }
 
-    bool EffectProcessorChain::isProcessorInChain(const std::type_info& type) const
+    bool EffectProcessorChain::isProcessorInChain(const EffectProcessor& processor) const
     {
         for(const auto& item : chain)
         {
-            item->acquire();
-            auto& localSlot = item->read();
-
-            if( localSlot.processor && typeid( *localSlot.processor ) == type)
+            if( typeid( *item->processor.load() ) == typeid( processor ) )
             {
                 return true;
             }
         }
         return false;
     }
-
 }

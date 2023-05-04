@@ -14,7 +14,7 @@
 
 namespace Processor::Effects::Delay
 {
-    DelayProcessor::DelayProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
+    DelayProcessor::DelayProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
         filters.add(std::make_unique<Filter>());
         filters.add(std::make_unique<Filter>());

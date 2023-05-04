@@ -82,7 +82,14 @@ namespace Processor::Effects::Delay
 
         Editor::Effects::EffectEditor* createEditorUnit() override;
 
+        const juce::String getName() const override
+        {
+            return "Delay";
+        }
+
     private:
+        juce::AudioProcessorValueTreeState& apvts;
+
         DryWetMixer dryWetMixer;
         Delay delay;
         juce::OwnedArray<Filter> filters;

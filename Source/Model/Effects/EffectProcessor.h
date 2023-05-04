@@ -20,8 +20,7 @@ namespace Processor::Effects
                             public juce::AudioProcessorValueTreeState::Listener
     {
     public:
-        EffectProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts),
-                            AudioProcessor(BusesProperties().withInput("Input", juce::AudioChannelSet::stereo())
+        EffectProcessor() : AudioProcessor(BusesProperties().withInput("Input", juce::AudioChannelSet::stereo())
                                                             .withOutput("Output", juce::AudioChannelSet::stereo()))
         {}
 
@@ -32,7 +31,7 @@ namespace Processor::Effects
         juce::AudioProcessorEditor* createEditor() override { return nullptr; }
         bool hasEditor() const override { return false; }
 
-        const juce::String getName() const override { return {}; }
+        const juce::String getName() const override { return "Empty"; }
         bool acceptsMidi() const override { return true; }
         bool producesMidi() const override { return true; }
         double getTailLengthSeconds() const override { return 0; }
@@ -46,16 +45,11 @@ namespace Processor::Effects
         void getStateInformation(juce::MemoryBlock&) override {}
         void setStateInformation(const void*, int) override {}
 
-    //=================================================================
+        //=================================================================//
+        virtual Editor::Effects::EffectEditor* createEditorUnit() { return nullptr; }
+        void parameterChanged (const juce::String& parameterID, float newValue) {}
 
-        virtual Editor::Effects::EffectEditor* createEditorUnit() = 0;
-
-    protected:
-        juce::AudioProcessorValueTreeState& apvts;
-        
     private:
-
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectProcessor)
     };
 }
-

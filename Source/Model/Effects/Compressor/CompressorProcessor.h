@@ -84,7 +84,14 @@ namespace Processor::Effects::Compressor
 
         Editor::Effects::EffectEditor* createEditorUnit() override;
 
+        const juce::String getName() const override
+        {
+            return "Compressor";
+        }
+
     private:
+        juce::AudioProcessorValueTreeState& apvts;
+
         DryWetMixer dryWetMixer;
         Compressor compressor;
 

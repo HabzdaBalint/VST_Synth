@@ -14,7 +14,7 @@
 
 namespace Processor::Effects::Reverb
 {
-    ReverbProcessor::ReverbProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
+    ReverbProcessor::ReverbProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
         registerListener(this);
     }

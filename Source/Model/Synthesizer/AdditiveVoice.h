@@ -11,6 +11,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "OscillatorParameters.h"
+#include "AdditiveSynthParameters.h"
 
 namespace Processor::Synthesizer
 {

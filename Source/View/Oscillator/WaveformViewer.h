@@ -37,15 +37,16 @@ namespace Editor::Oscillator
         
         void parameterChanged(const juce::String &parameterID, float newValue) override
         {
-            needUpdate.set(true);
+            needUpdate = true;
         }
 
         void timerCallback() override
         {
-            if( needUpdate.compareAndSetBool(false, true) )
+            if( needUpdate )
             {
                 redrawPath();
                 repaint();
+                needUpdate = false;
             }
         }
 
@@ -70,7 +71,7 @@ namespace Editor::Oscillator
 
         juce::Path waveformPath;
 
-        juce::Atomic<bool> needUpdate { false };
+        std::atomic<bool> needUpdate { false };
 
         void redrawPath()
         {

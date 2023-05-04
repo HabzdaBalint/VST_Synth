@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 
+#include "OscillatorParameters.h"
 #include "AdditiveSynthParameters.h"
 #include "AdditiveSound.h"
 #include "AdditiveVoice.h"

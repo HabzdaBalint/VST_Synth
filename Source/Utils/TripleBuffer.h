@@ -16,8 +16,15 @@ namespace Utils
     template <typename T>
     struct TripleBuffer
     {
-        auto& read() const { return buf_[r_]; }
-        auto& write()      { return buf_[w_]; }
+        auto& read() const
+        {
+            return buf_[r_];
+        }
+
+        auto& write()
+        {
+            return buf_[w_];
+        }
 
         bool acquire()
         {
@@ -26,7 +33,10 @@ namespace Utils
             return changed;
         }
 
-        void release() { w_ = ready_.exchange (w_ | 4, std::memory_order_release) & 3; };
+        void release()
+        {
+            w_ = ready_.exchange (w_ | 4, std::memory_order_release) & 3;
+        };
 
     private:
         T buf_[3]{};

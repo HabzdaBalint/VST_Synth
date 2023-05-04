@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "AdditiveSynthParameters.h"
 #include "AdditiveVoice.h"
 
 namespace Processor::Synthesizer
@@ -53,8 +52,7 @@ namespace Processor::Synthesizer
 
     void AdditiveVoice::stopNote(float velocity, bool allowTailOff)
     {
-        if( !isSustainPedalDown() && !isSostenutoPedalDown() )
-            amplitudeADSR.noteOff();
+        amplitudeADSR.noteOff();
         
         if( !allowTailOff || !amplitudeADSR.isActive() )
         {
@@ -91,11 +89,17 @@ namespace Processor::Synthesizer
                         //Generating unison data for the sample
                         if( unisonGain > 0.f )
                         {
+                            float unisonSample = 0.f;
                             for (int unison = 0; unison < unisonPairCount; unison++)
                             {
-                                bufferPointer[sample] += getUnisonSample(channel, unison, localMipMap);
+                                unisonSample += getUnisonSample(channel, unison, localMipMap);
                             }
+                            unisonSample *= unisonGain;
+
+                            bufferPointer[sample] += unisonSample;
                         }
+
+                        bufferPointer[sample] *= velocityGain;
                     }
                 }
 
@@ -125,7 +129,7 @@ namespace Processor::Synthesizer
         }
 
         //Generating the fundamental data for the sample
-        float sample = velocityGain * localMipMap[voiceData.currentAngle[channel]];
+        float sample = localMipMap[voiceData.currentAngle[channel]];
 
         voiceData.currentAngle[channel] += voiceData.angleDelta;
 
@@ -143,8 +147,8 @@ namespace Processor::Synthesizer
             voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
         }
 
-        float sample = velocityGain * unisonGain * localMipMap[voiceData.unisonData[unisonNumber].upperCurrentAngle[channel]];
-        sample += velocityGain * unisonGain * localMipMap[voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel]];
+        float sample = unisonGain * localMipMap[voiceData.unisonData[unisonNumber].upperCurrentAngle[channel]];
+        sample += unisonGain * localMipMap[voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel]];
 
         voiceData.unisonData[unisonNumber].upperCurrentAngle[channel] += voiceData.unisonData[unisonNumber].upperAngleDelta;
         voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] += voiceData.unisonData[unisonNumber].lowerAngleDelta;

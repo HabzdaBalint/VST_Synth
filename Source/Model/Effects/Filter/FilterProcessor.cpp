@@ -14,7 +14,7 @@
 
 namespace Processor::Effects::Filter
 {
-    FilterProcessor::FilterProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
+    FilterProcessor::FilterProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
         filters.add(std::make_unique<PassFilter>());
         filters.add(std::make_unique<PassFilter>());

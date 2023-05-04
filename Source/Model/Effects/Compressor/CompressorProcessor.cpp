@@ -14,7 +14,7 @@
 
 namespace Processor::Effects::Compressor
 {
-    CompressorProcessor::CompressorProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
+    CompressorProcessor::CompressorProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
         dryWetMixer.setMixingRule(juce::dsp::DryWetMixingRule::linear);
         registerListener(this);

@@ -26,7 +26,8 @@
 namespace Editor::Effects
 {
     class EffectEditors : public juce::Component,
-                        public juce::AudioProcessorValueTreeState::Listener
+                          public juce::Timer,
+                          public juce::AudioProcessorValueTreeState::Listener
     {
     public:
         EffectEditors(VST_SynthAudioProcessor& p) : audioProcessor(p)
@@ -38,14 +39,7 @@ namespace Editor::Effects
                 audioProcessor.apvts.addParameterListener(getFXChoiceParameterID(i), this);
             }
 
-            auto loadedEditors = audioProcessor.fxChain.getLoadedEffectEditors();
-            editors.addArray(loadedEditors);
-
-            for (auto editor : editors)
-            {
-                if (editor)
-                    addAndMakeVisible(*editor);
-            }
+            startTimerHz(30);
         }
 
         ~EffectEditors() override
@@ -75,13 +69,6 @@ namespace Editor::Effects
             using Fr = juce::Grid::Fr;
             using Px = juce::Grid::Px;
 
-            for (auto child : getChildren())
-            {
-                auto bounds = child->getBounds();
-                bounds.setHeight(0);
-                child->setBounds(bounds);
-            }
-
             juce::Grid grid;
             grid.templateColumns = { TrackInfo( Fr( 1 ) ) };
 
@@ -110,80 +97,40 @@ namespace Editor::Effects
             bounds.reduce(PADDING_PX, PADDING_PX);
             grid.performLayout(bounds);
         }
-        
-        bool isEditorInEditors(const std::type_info& type) const
-        {
-            for(const auto& item : editors)
-            {
-                if(item && typeid(*item) == type)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
 
     private:
         VST_SynthAudioProcessor& audioProcessor;
 
         juce::OwnedArray<EffectEditor> editors;
 
+        std::atomic<bool> needUpdate { true };
+
+        void timerCallback() override
+        {
+            if( needUpdate )
+            {
+                using namespace Processor::Effects::EffectsChain;
+
+                editors.clearQuick(true);
+                auto loadedEditors = audioProcessor.fxChain.getLoadedEffectEditors();
+                editors.addArray(loadedEditors);
+
+                for(auto& editor : editors)
+                {
+                    if( editor )
+                        addAndMakeVisible(*editor);
+                }
+
+                resized();
+                needUpdate = false;
+            }
+        }
+
         void parameterChanged(const juce::String &parameterID, float newValue) override
         {
             using namespace Processor::Effects::EffectsChain;
-
-            //Querying fxProcessor via getLoadedEffectEditors doesn't work because parameterChanged calls might happen in the wrong order, where this component gets a list of components that doesn't yet include the newly selected fx unit's editor
             jassert(juce::isPositiveAndBelow(newValue, chainChoices.size()));
-
-            auto choice = static_cast<EffectChoices>(newValue);
-
-            int idx = std::stoi(parameterID.trimCharactersAtStart("fxChoice").toStdString());
-
-            std::unique_ptr<EffectEditor> newEditor;
-            switch (choice)
-            {
-            case Empty:
-                newEditor = nullptr;
-                break;
-            case EQ:
-                newEditor = std::make_unique<EqualizerEditor>(audioProcessor.apvts);
-                break;
-            case Filter:
-                newEditor = std::make_unique<FilterEditor>(audioProcessor.apvts);
-                break;
-            case Compressor:
-                newEditor = std::make_unique<CompressorEditor>(audioProcessor.apvts);
-                break;
-            case Delay:
-                newEditor = std::make_unique<DelayEditor>(audioProcessor.apvts);
-                break;
-            case Reverb:
-                newEditor = std::make_unique<ReverbEditor>(audioProcessor.apvts);
-                break;
-            case Chorus:
-                newEditor = std::make_unique<ChorusEditor>(audioProcessor.apvts);
-                break;
-            case Phaser:
-                newEditor = std::make_unique<PhaserEditor>(audioProcessor.apvts);
-                break;
-            case Tremolo:
-                newEditor = std::make_unique<TremoloEditor>(audioProcessor.apvts);
-                break;
-            default:
-                newEditor = nullptr;
-                break;
-            }
-
-            if( !newEditor || !isEditorInEditors(typeid(*newEditor)) )
-            {
-                editors.remove(idx);
-                editors.insert(idx, std::move(newEditor));
-
-                if(editors[idx])
-                    addAndMakeVisible(*editors[idx]);
-
-                resized();
-            }
+            needUpdate = true;
         }
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectEditors)

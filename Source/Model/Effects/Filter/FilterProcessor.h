@@ -88,7 +88,14 @@ namespace Processor::Effects::Filter
 
         Editor::Effects::EffectEditor* createEditorUnit() override;
 
+        const juce::String getName() const override
+        {
+            return "Filter";
+        }
+
     private:
+        juce::AudioProcessorValueTreeState& apvts;
+
         juce::OwnedArray<PassFilter> filters;
         DryWetMixer dryWetMixer;
 

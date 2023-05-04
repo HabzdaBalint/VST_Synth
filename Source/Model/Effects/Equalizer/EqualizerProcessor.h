@@ -92,7 +92,14 @@ namespace Processor::Effects::Equalizer
 
         Editor::Effects::EffectEditor* createEditorUnit() override;
 
+        const juce::String getName() const override
+        {
+            return "Equalizer";
+        }
+
     private:
+        juce::AudioProcessorValueTreeState& apvts;
+
         juce::OwnedArray<juce::OwnedArray<Filter>> equalizers;
         
         void parameterChanged(const juce::String &parameterID, float newValue) override;

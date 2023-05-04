@@ -77,7 +77,14 @@ namespace Processor::Effects::Chorus
         
         Editor::Effects::EffectEditor* createEditorUnit() override;
 
+        const juce::String getName() const override
+        {
+            return "Chorus";
+        }
+
     private:
+        juce::AudioProcessorValueTreeState& apvts;
+
         Chorus chorus;
         
         void parameterChanged(const juce::String &parameterID, float newValue) override;

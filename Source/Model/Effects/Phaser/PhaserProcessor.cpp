@@ -14,7 +14,7 @@
 
 namespace Processor::Effects::Phaser
 {
-    PhaserProcessor::PhaserProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
+    PhaserProcessor::PhaserProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
         registerListener(this);
     }

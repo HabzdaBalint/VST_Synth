@@ -14,7 +14,7 @@
 
 namespace Processor::Effects::Tremolo
 {
-    TremoloProcessor::TremoloProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
+    TremoloProcessor::TremoloProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
         registerListener(this);
     }

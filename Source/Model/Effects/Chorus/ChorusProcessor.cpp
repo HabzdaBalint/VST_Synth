@@ -16,7 +16,7 @@
 
 namespace Processor::Effects::Chorus
 {
-    ChorusProcessor::ChorusProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
+    ChorusProcessor::ChorusProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
         registerListener(this);
     }

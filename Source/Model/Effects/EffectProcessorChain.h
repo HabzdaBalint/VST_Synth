@@ -21,8 +21,6 @@
 #include "Phaser/PhaserProcessor.h"
 #include "Tremolo/TremoloProcessor.h"
 
-#include "../../Utils/TripleBuffer.h"
-
 namespace Processor::Effects::EffectsChain
 {
     static const juce::StringArray chainChoices = { "Empty", "EQ", "Fliter", "Compressor", "Delay", "Reverb", "Chorus", "Phaser", "Tremolo" };
@@ -32,15 +30,18 @@ namespace Processor::Effects::EffectsChain
 
     struct EffectSlot
     {
-        EffectSlot(bool bypass, std::unique_ptr<EffectProcessor> processor) :
+        EffectSlot(bool bypass, std::shared_ptr<EffectProcessor> newProcessor) :
             bypass(bypass),
-            processor(std::move(processor))
+            processor(newProcessor)
         {}
 
-        EffectSlot() {}
+        EffectSlot()
+        {
+            processor.store(std::make_shared<EffectProcessor>());
+        }
 
-        bool bypass {false};
-        std::unique_ptr<EffectProcessor> processor {nullptr};
+        std::atomic<bool> bypass {false};
+        std::atomic<std::shared_ptr<EffectProcessor>> processor;
     };
 
     /// @brief Used for making the parameter ids of the the FX slots' bypass parameters consistent
@@ -137,13 +138,15 @@ namespace Processor::Effects::EffectsChain
         void registerListener(juce::AudioProcessorValueTreeState::Listener*) const;
         void removeListener(juce::AudioProcessorValueTreeState::Listener*) const;
         
-        bool isProcessorInChain(const std::type_info& type) const;
         const juce::Array<Editor::Effects::EffectEditor*> getLoadedEffectEditors() const;
+
+        bool isProcessorInChain(const EffectProcessor& processor) const;
 
     private:
         juce::AudioProcessorValueTreeState& apvts;
+        std::unordered_map<juce::String, std::atomic<float>> paramMap;
 
-        juce::OwnedArray<Utils::TripleBuffer<EffectSlot>> chain;
+        juce::OwnedArray<EffectSlot> chain;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

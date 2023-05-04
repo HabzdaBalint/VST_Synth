@@ -17,7 +17,7 @@
 namespace Processor::Synthesizer
 {
     constexpr int HARMONIC_N = 256;                         //The number of harmonics the oscillator uses
-    constexpr int LOOKUP_POINTS = 32 * HARMONIC_N;          //The number of calculated points in the lookup table
+    constexpr int LOOKUP_POINTS = 32 * HARMONIC_N + 1;      //The number of calculated points in the lookup table
     const int LOOKUP_SIZE = ceil(log2(HARMONIC_N) + 1);     //The number of mipmaps that need to be generated to avoid aliasing at a given harmonic count
 
     struct OscillatorParameters : public juce::AudioProcessorValueTreeState::Listener,
@@ -189,8 +189,8 @@ namespace Processor::Synthesizer
         {
             if (!lutUpdater.isThreadRunning() && needUpdate)
             {
-                needUpdate = false;
                 lutUpdater.startThread();
+                needUpdate = false;
             }
         }
 

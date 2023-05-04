@@ -77,7 +77,14 @@ namespace Processor::Effects::Reverb
         
         Editor::Effects::EffectEditor* createEditorUnit() override;
 
+        const juce::String getName() const override
+        {
+            return "Reverb";
+        }
+
     private:
+        juce::AudioProcessorValueTreeState& apvts;
+        
         Reverb reverb;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;

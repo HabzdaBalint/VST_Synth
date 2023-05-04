@@ -14,7 +14,7 @@
 
 namespace Processor::Effects::Equalizer
 {
-    EqualizerProcessor::EqualizerProcessor(juce::AudioProcessorValueTreeState& apvts) : EffectProcessor(apvts)
+    EqualizerProcessor::EqualizerProcessor(juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
         for(int i = 0; i < 2; i++)
         {
