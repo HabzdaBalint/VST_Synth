@@ -68,12 +68,12 @@ namespace Processor::Effects::Tremolo
     private:
         juce::AudioProcessorValueTreeState& apvts;
 
-        float depth = 0;
-        float rate = 0;
-        bool isAutoPan = false;
+        std::atomic<float> depth = 0;
+        std::atomic<float> rate = 0;
+        std::atomic<bool> isAutoPan = false;
 
-        float currentAngle = 0;
-        float angleDelta = 0;
+        double currentAngle = 0;
+        double angleDelta = 0;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

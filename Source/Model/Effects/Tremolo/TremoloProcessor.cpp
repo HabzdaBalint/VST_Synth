@@ -105,13 +105,18 @@ namespace Processor::Effects::Tremolo
         depth = apvts.getRawParameterValue("tremoloDepth")->load()/100;
         rate = apvts.getRawParameterValue("tremoloRate")->load();
         isAutoPan = apvts.getRawParameterValue("tremoloAutoPan")->load();
+        
+        if(getSampleRate() > 0)
+        {
+            updateAngles();
+        }
     }
 
     void TremoloProcessor::updateAngles()
     {
         auto sampleRate = getSampleRate();
-        float cyclesPerSample = rate/sampleRate;
-        angleDelta = cyclesPerSample * juce::MathConstants<float>::twoPi;
+        double cyclesPerSample = rate/sampleRate;
+        angleDelta = cyclesPerSample * juce::MathConstants<double>::twoPi;
     }
 
     Editor::Effects::EffectEditor* TremoloProcessor::createEditorUnit()

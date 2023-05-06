@@ -94,7 +94,7 @@ namespace Processor::Effects::Delay
         Delay delay;
         juce::OwnedArray<Filter> filters;
 
-        float feedback = 0;
+        std::atomic<float> feedback = 0;
 
         void parameterChanged(const juce::String &parameterID, float newValue) override;
 

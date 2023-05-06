@@ -172,7 +172,15 @@ namespace Processor::Synthesizer
 
     const float AdditiveVoice::getRandomPhase()
     {
-        return ((rng.nextFloat() * synthParameters.randomPhaseRange->load() / 100) * juce::MathConstants<float>::twoPi);
+        float randomPhaseRange = synthParameters.randomPhaseRange->load();
+        float randomPhase = 0.f;
+
+        if(randomPhaseRange > 0.f)
+        {
+            randomPhase = ((rng.nextFloat() * randomPhaseRange / 100.f) * juce::MathConstants<float>::twoPi);
+        }
+
+        return randomPhase;
     }
 
     void AdditiveVoice::updateFrequencies()
