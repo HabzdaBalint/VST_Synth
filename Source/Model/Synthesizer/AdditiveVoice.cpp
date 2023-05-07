@@ -147,8 +147,8 @@ namespace Processor::Synthesizer
             voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] -= juce::MathConstants<float>::twoPi;
         }
 
-        float sample = unisonGain * localMipMap[voiceData.unisonData[unisonNumber].upperCurrentAngle[channel]];
-        sample += unisonGain * localMipMap[voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel]];
+        float sample = localMipMap[voiceData.unisonData[unisonNumber].upperCurrentAngle[channel]];
+        sample += localMipMap[voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel]];
 
         voiceData.unisonData[unisonNumber].upperCurrentAngle[channel] += voiceData.unisonData[unisonNumber].upperAngleDelta;
         voiceData.unisonData[unisonNumber].lowerCurrentAngle[channel] += voiceData.unisonData[unisonNumber].lowerAngleDelta;
