@@ -1,3 +1,5 @@
 **/Builds
 **/.vscode
 **/.vs
+Debug.filtergraph
+Release.filtergraph
