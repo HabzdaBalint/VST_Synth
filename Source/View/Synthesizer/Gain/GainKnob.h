@@ -29,7 +29,6 @@ namespace Editor::Synthesizer
                 "synthGain",
                 *gainKnob);
             gainKnob->setScrollWheelEnabled(false);
-            //gainKnob->setTextValueSuffix("%");
             gainKnob->setTextBoxIsEditable(true);
             gainKnob->setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, gainKnob->getTextBoxWidth()*1.3, gainKnob->getTextBoxHeight());
             addAndMakeVisible(*gainKnob);

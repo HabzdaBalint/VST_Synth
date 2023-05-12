@@ -47,7 +47,7 @@ namespace Processor::Effects
 
         //=================================================================//
         virtual Editor::Effects::EffectEditor* createEditorUnit() { return nullptr; }
-        void parameterChanged (const juce::String& parameterID, float newValue) {}
+        void parameterChanged (const juce::String& parameterID, float newValue) override {}
 
     private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EffectProcessor)
