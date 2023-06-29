@@ -6,8 +6,6 @@
 ==============================================================================
 */
 
-#pragma once
-
 #include "PluginEditor.h"
 
 namespace Editor

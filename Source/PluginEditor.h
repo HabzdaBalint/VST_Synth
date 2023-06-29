@@ -27,7 +27,7 @@ namespace Editor
     private:
         VST_SynthAudioProcessor& audioProcessor;
 
-        void lookAndFeelChanged();
+        void lookAndFeelChanged() override;
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VST_SynthTabbedComponent)
     };

@@ -8,8 +8,6 @@
 ==============================================================================
 */
 
-#pragma once
-
 #include "AdditiveSynthesizer.h"
 
 namespace Processor::Synthesizer

@@ -8,11 +8,8 @@
 ==============================================================================
 */
 
-#pragma once
-
 #include <JuceHeader.h>
 #include "EffectProcessorChain.h"
-#include <Windows.h>
 
 namespace Processor::Effects::EffectsChain
 {

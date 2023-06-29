@@ -185,7 +185,7 @@ namespace Processor::Synthesizer
             needUpdate = true;
         }
 
-        void timerCallback()
+        void timerCallback() override
         {
             if (!lutUpdater.isThreadRunning() && needUpdate)
             {

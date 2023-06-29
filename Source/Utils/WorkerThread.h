@@ -26,5 +26,7 @@ namespace Utils
         }
     private:
         std::function<void()> func;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WorkerThread)
     };
 }
